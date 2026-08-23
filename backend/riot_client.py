@@ -228,7 +228,7 @@ class LocalAuth:
         _riot_throttle()
         self.req_count += 1
         return requests.post(self.glz_url + endpoint, headers=self.headers(),
-                             json=json, verify=False, timeout=8)
+                             json=json, timeout=8)
 
     @staticmethod
     def _json(resp):
@@ -244,7 +244,7 @@ class LocalAuth:
         _riot_throttle()
         self.req_count += 1
         return self._json(requests.get(self.glz_url + endpoint, headers=self.headers(),
-                                       verify=False, timeout=8))
+                                       timeout=8))
 
     def pd_get(self, endpoint: str, refresh: bool = False, retries: int = 0) -> dict:
         pass
@@ -253,7 +253,7 @@ class LocalAuth:
             _riot_throttle(endpoint)
             self.req_count += 1
             resp = requests.get(self.pd_url + endpoint, headers=self.headers(refresh),
-                                verify=False, timeout=8)
+                                timeout=8)
             if resp.status_code == 429:
 
                 try:
@@ -272,7 +272,7 @@ class LocalAuth:
         _riot_throttle(endpoint)
         self.req_count += 1
         return self._json(requests.put(self.pd_url + endpoint, headers=self.headers(refresh),
-                                       json=payload, verify=False, timeout=8))
+                                       json=payload, timeout=8))
 
     def local_get(self, endpoint: str) -> dict:
         local = {"Authorization": "Basic " + base64.b64encode(
