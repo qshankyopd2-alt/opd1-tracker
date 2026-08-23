@@ -232,6 +232,7 @@ export function MatchDetailModal({
               </div>
             )}
             <button
+              aria-label="Close"
               data-testid="match-detail-close"
               onClick={onClose}
               className="ml-auto p-1.5 border border-edge rounded-sm text-zinc-400 hover:text-zinc-100 hover:bg-zinc-800 transition-colors"

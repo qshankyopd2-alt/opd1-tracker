@@ -267,6 +267,7 @@ export function PlayerDrawer({
               </div>
             </div>
             <button
+              aria-label="Close"
               data-testid="player-drawer-close"
               onClick={onClose}
               className="absolute right-4 top-4 rounded-sm border border-edge p-1.5 text-zinc-400 transition-colors hover:bg-zinc-800 hover:text-zinc-100"
