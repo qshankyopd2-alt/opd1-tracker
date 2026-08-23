@@ -1,0 +1,98 @@
+{
+  "theme": "dark",
+  "typography": {
+    "headings": {
+      "fontFamily": "Barlow Condensed, sans-serif",
+      "weights": ["600", "700", "900"],
+      "usage": "Used for all main metrics (KD, ACS, RR), player names, and dashboard headers. Provides a bold, tactical athletic feel that fits a competitive tracker."
+    },
+    "body": {
+      "fontFamily": "IBM Plex Sans, sans-serif",
+      "weights": ["400", "500", "600"],
+      "usage": "Highly legible, slightly technical font for tables, lists, and secondary data. Perfect for high information density."
+    }
+  },
+  "colors": {
+    "background": {
+      "app": "#09090B",
+      "card": "#18181B",
+      "hover": "#27272A",
+      "header": "#09090B"
+    },
+    "text": {
+      "primary": "#F4F4F5",
+      "secondary": "#A1A1AA",
+      "muted": "#71717A"
+    },
+    "accents": {
+      "brand": "#F97316",
+      "brand_hover": "#EA580C",
+      "brand_muted": "#FFF7ED",
+      "danger": "#EF4444",
+      "warning": "#F59E0B",
+      "success": "#10B981"
+    },
+    "domain_valorant": {
+      "iron": "#5A5751",
+      "bronze": "#BB8F5A",
+      "silver": "#AEB2B2",
+      "gold": "#C5BA3F",
+      "platinum": "#18A7B9",
+      "diamond": "#D864C7",
+      "ascendant": "#189452",
+      "immortal": "#DD4444",
+      "radiant": "#FFFDCD",
+      "victory": "#10B981",
+      "defeat": "#EF4444",
+      "party_1": "#3B82F6",
+      "party_2": "#8B5CF6",
+      "party_3": "#EC4899"
+    }
+  },
+  "visual_enhancers": {
+    "borders": "1px solid border-zinc-800. Use exposed skeleton grids for technical aesthetic.",
+    "shadows": "Minimal to none. Rely on 1px solid strokes or subtle inner glows for definition, avoiding soft muddy shadows.",
+    "textures": "Flat, matte finish. Avoid glassmorphism as it detracts from data legibility.",
+    "radius": "Strict 4px (rounded-sm or rounded-md) for sharp, precise desktop feel."
+  },
+  "layouts": {
+    "app_shell": "Flex layout: Left Sidebar Navigation (w-64 or w-16 collapsed) + Main Content (flex-1). Fixed Bottom Status Bar (h-10).",
+    "live_match": "High-density Grid. Two-column split (grid-cols-1 xl:grid-cols-2) for Ally vs Enemy teams. Highly compressed table rows for players.",
+    "competitive": "Bento Grid Pattern. Top span for RR line chart (Recharts) and Current Rank card. Bottom for dense stat split tables.",
+    "spacing": "Tight spacing (gap-2 to gap-4) within data tables. Generous padding (p-6) around major container edges.",
+    "alignment": "Left-align text columns, right-align numeric metrics (KD, Win %, RR). Never center-align tabular data."
+  },
+  "component_instructions": {
+    "navigation": "Persistent left sidebar. Highlight active route with brand accent left-border and lighter background. Include clear labels.",
+    "status_bar": "Fixed at window bottom. Display client states (Offline, Lobby, Agent Select, In Game). Use bright badging (Red/Green/Yellow) to indicate status.",
+    "tables": "Zebra striping (subtle bg-zinc-900/50) or border-b for row separation. Use explicit width for metric columns to maintain alignment.",
+    "player_row": "Complex component: Agent avatar (left), Stacked Name/Rank, K/D, Headshot %, Win Rate, Smurf warning flag, Party color vertical bar indicator on the left edge.",
+    "badges": "Sharp edges, uppercase (tracking-wider), distinct high-contrast colors. CRITICAL for 'SIMULATION', 'Stale Data', 'Smurf'.",
+    "charts": "Use Shadcn charts / Recharts. Minimal axes lines, vibrant stroke for the primary line chart (RR progression), detailed custom tooltip."
+  },
+  "motion": {
+    "hover": "Instant background shift (bg-zinc-800), subtle border highlight.",
+    "transitions": "Use transition-colors transition-transform duration-200. Do NOT use 'transition-all'.",
+    "lists": "Minimal motion on desktop to preserve snappy, native application feel."
+  },
+  "accessibility": {
+    "contrast": "Ensure text over domain colors (especially bright ones like Radiant or Platinum) uses proper contrast (e.g., black text over Radiant yellow).",
+    "interactive": "Clear focus rings (ring-brand) on all inputs, tabs, and buttons."
+  },
+  "media": {
+    "offline_hero": "https://images.unsplash.com/photo-1626958390943-a70309376444?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjA1ODh8MHwxfHNlYXJjaHwxfHxkYXJrJTIwdGFjdGljYWwlMjBzZXR1cCUyMGtleWJvYXJkJTIwbmVvbnxlbnwwfHx8fDE3ODc0MTM0ODB8MA&ixlib=rb-4.1.0&q=85",
+    "valorant_assets": "Fetch all external imagery (agents, ranks, maps, skins, cards) strictly from media.valorant-api.com."
+  },
+  "UNIVERSAL_GUIDELINES_FOR_MAIN_AGENT": [
+    "CRITICAL: You MUST use JavaScript (.js/.jsx) ONLY. Do NOT use TypeScript (.ts/.tsx) anywhere in the frontend.",
+    "Implement the layout strictly with Tailwind CSS and Shadcn UI components. Rely on Grid and Flexbox for the high-density tracker layouts.",
+    "DO NOT use generic centered text alignments. Left-align data/labels, right-align numbers.",
+    "Every interactive element and key informational wrapper MUST have a `data-testid` attribute (e.g., `data-testid=\"live-match-ally-table\"`).",
+    "DO NOT use completely transparent backgrounds where text overlays images/content. Always use a solid background or a heavy backdrop filter.",
+    "Use `@phosphor-icons/react` for sharp, technical UI icons.",
+    "Use `recharts` for the RR history graph.",
+    "Ensure 'Smurf' flags and 'SIMULATION' mode badges are extremely visible and visually alarming.",
+    "Do NOT use glassmorphism, cyberpunk, or retro terminal styles. Stick to a solid, flat, tactical 'Performance Pro' aesthetic designed for pure usability and readability.",
+    "Handle all 'Loading' and 'Empty/Offline' states elegantly. If VALORANT is not running, show a full-page 'Offline' hero state using the offline_hero image with an overlay, rather than just empty tables."
+  ]
+}

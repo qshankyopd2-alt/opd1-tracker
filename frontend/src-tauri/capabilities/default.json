@@ -1,0 +1,6 @@
+{
+  "identifier": "default",
+  "description": "OPD1 Tracker main window",
+  "windows": ["main"],
+  "permissions": ["core:default"]
+}

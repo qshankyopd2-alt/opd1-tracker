@@ -1,0 +1,42 @@
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+.build/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+*.egg-info/
+.coverage
+htmlcov/
+
+# Local runtime data (never commit: personal match history, notes, tokens)
+backend/data/
+.scout/
+backend/.env.local
+
+node_modules/
+frontend/dist/
+frontend/src-tauri/target/
+frontend/src-tauri/gen/
+frontend/src-tauri/resources/
+frontend/src-tauri/binaries/
+
+.DS_Store
+*.log
+.env
+.env.*
+!.env.example
+*.env
+credentials.json
+.credentials
+*.pem
+*.key
+
+# Editors / OS
+.vscode/
+.idea/
+Thumbs.db
+desktop.ini
+~$*
