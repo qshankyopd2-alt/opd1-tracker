@@ -1,7 +1,5 @@
 from __future__ import annotations
 
-from collections import defaultdict
-
 PARTY_THRESHOLD = 2
 
 def build_cooccurrence(matches: list[dict]) -> dict[str, dict]:
