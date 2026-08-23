@@ -495,7 +495,7 @@ class LiveMatch:
         try:
             data = requests.get(
                 f"https://shared.{self.auth.shard}.a.pvp.net/content-service/v3/content",
-                headers=self.auth.headers(), verify=False, timeout=8).json()
+                headers=self.auth.headers(), verify=True, timeout=8).json()
             seasons = data.get("Seasons", []) if isinstance(data, dict) else []
             if seasons:
                 _CONTENT_CACHE["seasons"] = seasons
