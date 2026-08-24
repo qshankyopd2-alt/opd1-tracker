@@ -12,7 +12,6 @@ import threading
 import time
 import re
 import secrets
-import urllib.parse
 import urllib.request
 import uuid
 
