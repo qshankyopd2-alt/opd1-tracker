@@ -4,7 +4,6 @@ import logging
 import re
 import time
 from logging.handlers import RotatingFileHandler
-from pathlib import Path
 
 from runtime_paths import log_dir
 
