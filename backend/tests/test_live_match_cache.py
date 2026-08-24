@@ -9,6 +9,7 @@ if str(BACKEND) not in sys.path:
 
 import live_match
 
+
 class FakeAuth:
     puuid = "self-puuid"
     req_count = 0
@@ -16,12 +17,13 @@ class FakeAuth:
     def headers(self, refresh=False):
         return {}
 
-def test_cache_is_bounded():
+
+def test_scoreboard_cache_is_bounded(monkeypatch):
     live_match._CACHE.clear()
+    live_match._MATCH_META.clear()
 
     match = live_match.LiveMatch(FakeAuth())
 
-    # Mock rank_info properly to return the keys it expects
     match.rank_info = lambda puuid, season, prev_season: {
         "ok": True, "tier": 10, "rr": 50, "peak": 12, "wr": 55, "games": 20,
         "lb": 0, "peak_season": "season1", "prev": 0
@@ -30,7 +32,10 @@ def test_cache_is_bounded():
     match.level_from_history = lambda puuid: 100
     match.act_episode = lambda season: "Episode 1 Act 1"
 
-    raw_players = [{"Subject": f"puuid-{i}", "PlayerIdentity": {}} for i in range(500)]
+    raw_players = [
+        {"Subject": f"puuid-{i}", "PlayerIdentity": {}}
+        for i in range(live_match._CACHE_MAX + 1)
+    ]
 
     match.game_state = lambda presences: "INGAME"
     match._current_players = lambda state: (
@@ -48,13 +53,18 @@ def test_cache_is_bounded():
     match.match_score = lambda pres: None
     match.loadouts = lambda state, match_id: {}
 
-    original_finalize = live_match.finalize
-    live_match.finalize = lambda *args, **kwargs: {"state": "INGAME"}
+    monkeypatch.setattr(
+        live_match,
+        "finalize",
+        lambda *args, **kwargs: {"state": "INGAME"},
+    )
 
     try:
         match.build_scoreboard(include_stats=False)
 
-        cache_size = len(live_match._CACHE)
-        assert cache_size <= 300, f"_CACHE grew unbounded to {cache_size} items"
+        assert len(live_match._CACHE) == live_match._CACHE_MAX
+        assert "fake_match_id:puuid-0" not in live_match._CACHE
+        assert f"fake_match_id:puuid-{live_match._CACHE_MAX}" in live_match._CACHE
     finally:
-        live_match.finalize = original_finalize
+        live_match._CACHE.clear()
+        live_match._MATCH_META.clear()

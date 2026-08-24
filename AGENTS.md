@@ -74,7 +74,7 @@ npm run typecheck  # tsc --noEmit only
 npm run tauri dev  # full desktop shell (Windows + Rust toolchain required)
 
 # backend (from backend/)
-python -m pytest tests/test_saved_players.py tests/test_live_name_refresh.py tests/test_live_party_detection.py -q
+python -m pytest tests/test_saved_players.py tests/test_live_name_refresh.py tests/test_live_party_detection.py tests/test_live_match_cache.py -q
 
 # full Windows release (backend freeze + tests + NSIS installer)
 powershell -ExecutionPolicy Bypass -File scripts/build-windows.ps1
