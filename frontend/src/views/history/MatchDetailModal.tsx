@@ -110,7 +110,7 @@ function MetaEditor({
         <button
           data-testid="meta-bookmark-toggle"
           onClick={() => setBookmarked((b) => !b)}
-          className={`inline-flex items-center gap-1 border rounded-sm px-2 py-1 text-[10px] uppercase tracking-wider font-semibold transition-colors ${
+          className={`inline-flex items-center gap-1 border rounded-sm px-2 py-1 text-[10px] uppercase tracking-wider font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand ${
             bookmarked ? "border-amber-400 text-amber-300 bg-amber-400/10" : "border-edge text-zinc-400 hover:bg-zinc-800"
           }`}
         >
@@ -138,7 +138,7 @@ function MetaEditor({
           data-testid="meta-save-button"
           disabled={busy}
           onClick={save}
-          className="bg-brand hover:bg-brand-hover text-ink rounded-sm px-3 text-[11px] uppercase tracking-wider font-bold transition-colors disabled:opacity-50"
+          className="bg-brand hover:bg-brand-hover text-ink rounded-sm px-3 text-[11px] uppercase tracking-wider font-bold transition-colors disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand"
         >
           Save
         </button>
@@ -235,7 +235,7 @@ export function MatchDetailModal({
               aria-label="Close"
               data-testid="match-detail-close"
               onClick={onClose}
-              className="ml-auto p-1.5 border border-edge rounded-sm text-zinc-400 hover:text-zinc-100 hover:bg-zinc-800 transition-colors"
+              className="ml-auto p-1.5 border border-edge rounded-sm text-zinc-400 hover:text-zinc-100 hover:bg-zinc-800 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand"
             >
               <X size={15} />
             </button>

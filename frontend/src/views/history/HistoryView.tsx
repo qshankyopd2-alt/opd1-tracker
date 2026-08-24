@@ -208,7 +208,7 @@ export function HistoryView() {
               key={f}
               data-testid={`history-filter-${f}`}
               onClick={() => setFilter(f)}
-              className={`px-2.5 py-1 text-[11px] uppercase tracking-wider font-semibold transition-colors ${
+              className={`px-2.5 py-1 text-[11px] uppercase tracking-wider font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand ${
                 filter === f ? "bg-zinc-800 text-zinc-100" : "text-zinc-500 hover:text-zinc-300"
               }`}
             >
@@ -227,7 +227,7 @@ export function HistoryView() {
         <button
           data-testid="history-refresh-button"
           onClick={refresh}
-          className="ml-auto inline-flex items-center gap-1.5 border border-edge rounded-sm px-2.5 py-1.5 text-[11px] uppercase tracking-wider font-semibold text-zinc-400 hover:bg-zinc-800 transition-colors"
+          className="ml-auto inline-flex items-center gap-1.5 border border-edge rounded-sm px-2.5 py-1.5 text-[11px] uppercase tracking-wider font-semibold text-zinc-400 hover:bg-zinc-800 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand"
         >
           <RotateCw size={12} /> Refresh
         </button>
