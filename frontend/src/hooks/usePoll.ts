@@ -27,8 +27,11 @@ export function usePoll<T>(fetcher: () => Promise<T>, intervalMs: number | null,
   useEffect(() => {
     let alive = true;
     let timer: number | undefined;
+    let fetching = false;
 
     const run = async () => {
+      if (fetching) return;
+      fetching = true;
       try {
         const result = await fetcherRef.current();
         if (!alive) return;
@@ -39,6 +42,7 @@ export function usePoll<T>(fetcher: () => Promise<T>, intervalMs: number | null,
         if (!alive) return;
         setError(err instanceof ApiError ? err.message : "Something went wrong.");
       } finally {
+        fetching = false;
         if (alive) {
           setLoading(false);
           schedule();
