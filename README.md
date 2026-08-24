@@ -80,7 +80,7 @@ the UI rejects it and renders an offline state. Generated data is never presente
 
 ```bash
 cd backend
-python -m pytest tests/test_saved_players.py tests/test_live_name_refresh.py tests/test_live_party_detection.py -q
+python -m pytest tests/test_saved_players.py tests/test_live_name_refresh.py tests/test_live_party_detection.py tests/test_live_match_cache.py -q
 ```
 
 `backend/tests/backend_test.py` is a read-only integration suite against a

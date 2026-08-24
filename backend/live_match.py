@@ -34,6 +34,7 @@ BEFORE_ASCENDANT = {
 }
 
 _CACHE: dict[str, dict] = {}
+_CACHE_MAX = 300
 
 _MATCH_META: dict[str, dict] = {}
 
@@ -895,7 +896,7 @@ class LiveMatch:
                 if not rk.get("ok"):
 
                     cached["rank_at"] = time.time()
-                _CACHE[cache_key] = cached
+                _cache_put(_CACHE, _CACHE_MAX, cache_key, cached)
                 if include_stats:
                     uncached_kd.append(puuid)
             else:
