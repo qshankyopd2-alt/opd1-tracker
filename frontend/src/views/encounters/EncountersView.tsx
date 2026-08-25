@@ -150,6 +150,7 @@ export function EncountersView() {
                               disabled={busy === player.puuid}
                               onClick={() => void mutate(player, true, draft)}
                               title="Save note"
+                              aria-label="Save note"
                               className="rounded-sm border border-edge p-1.5 text-amber-300 hover:bg-zinc-800 disabled:opacity-50"
                             >
                               <Save size={12} />
@@ -159,6 +160,7 @@ export function EncountersView() {
                               type="button"
                               onClick={() => { setEditing(player.puuid); setDraft(player.note); }}
                               title="Edit note"
+                              aria-label="Edit note"
                               className="rounded-sm border border-edge p-1.5 text-zinc-400 hover:bg-zinc-800 hover:text-zinc-100"
                             >
                               <Pencil size={12} />
@@ -168,6 +170,7 @@ export function EncountersView() {
                             type="button"
                             onClick={() => setExpanded(isExpanded ? null : player.puuid)}
                             title="Encounter games"
+                            aria-label={isExpanded ? "Collapse encounter games" : "Expand encounter games"}
                             className="rounded-sm border border-edge p-1.5 text-zinc-400 hover:bg-zinc-800 hover:text-zinc-100"
                           >
                             {isExpanded ? <ChevronUp size={12} /> : <ChevronDown size={12} />}
@@ -177,6 +180,7 @@ export function EncountersView() {
                             disabled={busy === player.puuid}
                             onClick={() => void mutate(player, false, "")}
                             title="Remove saved player"
+                            aria-label="Remove saved player"
                             className="rounded-sm border border-edge p-1.5 text-zinc-500 hover:bg-defeat/10 hover:text-defeat disabled:opacity-50"
                           >
                             <Trash2 size={12} />
