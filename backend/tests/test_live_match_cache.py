@@ -68,3 +68,24 @@ def test_scoreboard_cache_is_bounded(monkeypatch):
     finally:
         live_match._CACHE.clear()
         live_match._MATCH_META.clear()
+
+
+def test_cache_put_lru_refresh():
+    cache = {}
+    cap = 3
+
+    # Add three items (cache is now full: A, B, C)
+    live_match._cache_put(cache, cap, "A", 1)
+    live_match._cache_put(cache, cap, "B", 2)
+    live_match._cache_put(cache, cap, "C", 3)
+
+    assert list(cache.keys()) == ["A", "B", "C"]
+
+    # Refresh "A" (should move to the end: B, C, A)
+    live_match._cache_put(cache, cap, "A", 10)
+    assert list(cache.keys()) == ["B", "C", "A"]
+
+    # Add a new item "D". "B" is now the oldest and should be evicted.
+    # Cache should be: C, A, D
+    live_match._cache_put(cache, cap, "D", 4)
+    assert list(cache.keys()) == ["C", "A", "D"]

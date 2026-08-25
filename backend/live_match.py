@@ -72,6 +72,8 @@ _CACHE_WRITE_LOCK = threading.Lock()
 def _cache_put(cache: dict, cap: int, key, value) -> None:
     pass
     with _CACHE_WRITE_LOCK:
+        if key in cache:
+            del cache[key]
         while len(cache) >= cap:
             cache.pop(next(iter(cache)), None)
         cache[key] = value
@@ -740,7 +742,8 @@ class LiveMatch:
             try:
                 def _fill_one(puuid):
                     cache_key = f"{match_id}:{puuid}"
-                    entry = _CACHE.get(cache_key)
+                    with _CACHE_WRITE_LOCK:
+                        entry = _CACHE.get(cache_key)
                     if entry is None or entry.get("kd_done"):
                         return
                     entry["kd_tries"] = entry.get("kd_tries", 0) + 1
@@ -763,7 +766,8 @@ class LiveMatch:
                         entry["kd_done"] = True
 
                 def _top_up(puuid):
-                    entry = _CACHE.get(f"{match_id}:{puuid}")
+                    with _CACHE_WRITE_LOCK:
+                        entry = _CACHE.get(f"{match_id}:{puuid}")
                     if entry is None or entry.get("kd_full") or entry.get("kd") is None:
                         return
                     entry["kd_full"] = True
@@ -886,7 +890,8 @@ class LiveMatch:
             puuid = p["Subject"]
             ident = p.get("PlayerIdentity", {}) or {}
             cache_key = f"{match_id}:{puuid}"
-            cached = _CACHE.get(cache_key)
+            with _CACHE_WRITE_LOCK:
+                cached = _CACHE.get(cache_key)
             if cached is None:
                 rk = self.rank_info(puuid, season, prev_season)
 
