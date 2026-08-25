@@ -1,6 +1,6 @@
 [package]
 name = "opd1-tracker"
-version = "1.0.1"
+version = "1.0.2"
 description = "OPD1 Tracker — VALORANT desktop tracker"
 edition = "2021"
 
