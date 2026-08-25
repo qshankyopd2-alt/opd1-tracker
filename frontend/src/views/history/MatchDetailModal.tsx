@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { Bookmark, X } from "lucide-react";
 import { ApiError, backend } from "../../api/client";
 import type { DetailPlayer, MatchDetail, MatchMeta } from "../../api/types";
@@ -169,6 +169,52 @@ export function MatchDetailModal({
   const { health } = useApp();
   const clientOffline = health != null && health.clientStatus !== "ok";
 
+  const dialogRef = useRef<HTMLDivElement>(null);
+  const previousFocusRef = useRef<HTMLElement | null>(null);
+
+  useEffect(() => {
+    previousFocusRef.current = document.activeElement as HTMLElement;
+    if (dialogRef.current) {
+      dialogRef.current.focus();
+    }
+    return () => {
+      if (previousFocusRef.current) {
+        previousFocusRef.current.focus();
+      }
+    };
+  }, []);
+
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        onClose();
+        return;
+      }
+      if (e.key === "Tab") {
+        if (!dialogRef.current) return;
+        const focusableElements = dialogRef.current.querySelectorAll<HTMLElement>(
+          'a[href], button, textarea, input[type="text"], input[type="radio"], input[type="checkbox"], select, [tabindex]:not([tabindex="-1"])'
+        );
+        const firstElement = focusableElements[0];
+        const lastElement = focusableElements[focusableElements.length - 1];
+
+        if (e.shiftKey) {
+          if (document.activeElement === firstElement || document.activeElement === dialogRef.current) {
+            lastElement?.focus();
+            e.preventDefault();
+          }
+        } else {
+          if (document.activeElement === lastElement) {
+            firstElement?.focus();
+            e.preventDefault();
+          }
+        }
+      }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [onClose]);
+
   useEffect(() => {
     if (clientOffline) {
       setDetail(null);
@@ -201,18 +247,20 @@ export function MatchDetailModal({
     };
   }, [matchId, subject, expected, clientOffline]);
 
-  useEffect(() => {
-    const onKey = (e: KeyboardEvent) => e.key === "Escape" && onClose();
-    window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
-  }, [onClose]);
-
   const subjectTeam = detail?.players.find((p) => p.isSubject)?.team ?? null;
   const teams = detail ? Array.from(new Set(detail.players.map((p) => p.team))) : [];
   const orderedTeams = subjectTeam ? [subjectTeam, ...teams.filter((t) => t !== subjectTeam)] : teams;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-6" data-testid="match-detail-modal">
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center p-6"
+      data-testid="match-detail-modal"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="match-detail-title"
+      ref={dialogRef}
+      tabIndex={-1}
+    >
       <div className="absolute inset-0 bg-black/70" onClick={onClose} data-testid="match-detail-backdrop" />
       <div className="relative bg-panel border border-edge rounded-md w-full max-w-3xl max-h-[88vh] overflow-y-auto rise">
         {/* header */}
@@ -224,7 +272,7 @@ export function MatchDetailModal({
           <div className="relative flex items-center gap-4 p-4">
             <div>
               <div className="text-[11px] uppercase tracking-wider text-zinc-400">{detail?.mode ?? "Match"}</div>
-              <h2 className="font-display font-black italic uppercase text-2xl leading-tight">{detail?.map ?? "…"}</h2>
+              <h2 id="match-detail-title" className="font-display font-black italic uppercase text-2xl leading-tight">{detail?.map ?? "…"}</h2>
             </div>
             {detail && (
               <div className="font-display font-black text-2xl num" style={{ color: resultColor(detail.result) }}>

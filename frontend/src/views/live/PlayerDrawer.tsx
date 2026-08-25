@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { Bookmark, Save, Trash2, X } from "lucide-react";
 import { ApiError, backend } from "../../api/client";
 import type { Career, CareerMatch, LivePlayer, MatchMeta } from "../../api/types";
@@ -140,6 +140,51 @@ export function PlayerDrawer({
   onClose: () => void;
 }) {
   const [career, setCareer] = useState<Career | null>(null);
+  const dialogRef = useRef<HTMLElement>(null);
+  const previousFocusRef = useRef<HTMLElement | null>(null);
+
+  useEffect(() => {
+    previousFocusRef.current = document.activeElement as HTMLElement;
+    if (dialogRef.current) {
+      dialogRef.current.focus();
+    }
+    return () => {
+      if (previousFocusRef.current) {
+        previousFocusRef.current.focus();
+      }
+    };
+  }, []);
+
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        onClose();
+        return;
+      }
+      if (e.key === "Tab") {
+        if (!dialogRef.current) return;
+        const focusableElements = dialogRef.current.querySelectorAll<HTMLElement>(
+          'a[href], button, textarea, input[type="text"], input[type="radio"], input[type="checkbox"], select, [tabindex]:not([tabindex="-1"])'
+        );
+        const firstElement = focusableElements[0];
+        const lastElement = focusableElements[focusableElements.length - 1];
+
+        if (e.shiftKey) {
+          if (document.activeElement === firstElement || document.activeElement === dialogRef.current) {
+            lastElement?.focus();
+            e.preventDefault();
+          }
+        } else {
+          if (document.activeElement === lastElement) {
+            firstElement?.focus();
+            e.preventDefault();
+          }
+        }
+      }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [onClose]);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [openMatch, setOpenMatch] = useState<string | null>(null);
@@ -169,12 +214,6 @@ export function PlayerDrawer({
     setNote(player.savedNote ?? "");
     setSavedMessage(null);
   }, [player.puuid, player.saved, player.savedNote]);
-
-  useEffect(() => {
-    const onKey = (e: KeyboardEvent) => e.key === "Escape" && onClose();
-    window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
-  }, [onClose]);
 
   const enc = player.encounter;
   const careerUsable = career && career.source === "local";
@@ -225,7 +264,14 @@ export function PlayerDrawer({
   return (
     <div className="fixed inset-0 z-40" data-testid="player-drawer">
       <div className="absolute inset-0 bg-black/60" onClick={onClose} data-testid="player-drawer-backdrop" />
-      <aside className="absolute right-0 top-0 h-full w-[640px] max-w-full bg-panel border-l border-edge overflow-y-auto rise">
+      <aside
+        className="absolute right-0 top-0 h-full w-[640px] max-w-full bg-panel border-l border-edge overflow-y-auto rise"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="player-drawer-title"
+        ref={dialogRef}
+        tabIndex={-1}
+      >
         {/* header */}
         <div className="relative border-b border-edge overflow-hidden">
           {profileBackdrop && (
@@ -245,7 +291,7 @@ export function PlayerDrawer({
             )}
             <div className="min-w-0 flex-1 self-center">
               <div className="flex items-center gap-2">
-                <h2 dir="auto" className="truncate font-display text-[24px] font-black leading-tight">{player.name}</h2>
+                <h2 id="player-drawer-title" dir="auto" className="truncate font-display text-[24px] font-black leading-tight">{player.name}</h2>
                 {player.party && (
                   <span
                     className="shrink-0 rounded-sm border px-1.5 py-0.5 text-[9px] font-black num"
