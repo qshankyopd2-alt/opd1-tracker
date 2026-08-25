@@ -158,6 +158,7 @@ class LocalAuth:
         try:
             local = {"Authorization": "Basic " + base64.b64encode(
                 ("riot:" + self.lockfile["password"]).encode()).decode()}
+            # Local Riot client uses a self-signed certificate, so we must disable verification
             data = requests.get(
                 f"https://127.0.0.1:{self.lockfile['port']}/chat/v4/presences",
                 headers=local, verify=False, timeout=5).json()
@@ -201,6 +202,7 @@ class LocalAuth:
             return self._headers
         local = {"Authorization": "Basic " + base64.b64encode(
             ("riot:" + self.lockfile["password"]).encode()).decode()}
+        # Local Riot client uses a self-signed certificate, so we must disable verification
         resp = requests.get(
             f"https://127.0.0.1:{self.lockfile['port']}/entitlements/v1/token",
             headers=local, verify=False, timeout=5)
@@ -228,7 +230,7 @@ class LocalAuth:
         _riot_throttle()
         self.req_count += 1
         return requests.post(self.glz_url + endpoint, headers=self.headers(),
-                             json=json, verify=False, timeout=8)
+                             json=json, verify=True, timeout=8)
 
     @staticmethod
     def _json(resp):
@@ -244,7 +246,7 @@ class LocalAuth:
         _riot_throttle()
         self.req_count += 1
         return self._json(requests.get(self.glz_url + endpoint, headers=self.headers(),
-                                       verify=False, timeout=8))
+                                       verify=True, timeout=8))
 
     def pd_get(self, endpoint: str, refresh: bool = False, retries: int = 0) -> dict:
         pass
@@ -253,7 +255,7 @@ class LocalAuth:
             _riot_throttle(endpoint)
             self.req_count += 1
             resp = requests.get(self.pd_url + endpoint, headers=self.headers(refresh),
-                                verify=False, timeout=8)
+                                verify=True, timeout=8)
             if resp.status_code == 429:
 
                 try:
@@ -272,11 +274,12 @@ class LocalAuth:
         _riot_throttle(endpoint)
         self.req_count += 1
         return self._json(requests.put(self.pd_url + endpoint, headers=self.headers(refresh),
-                                       json=payload, verify=False, timeout=8))
+                                       json=payload, verify=True, timeout=8))
 
     def local_get(self, endpoint: str) -> dict:
         local = {"Authorization": "Basic " + base64.b64encode(
             ("riot:" + self.lockfile["password"]).encode()).decode()}
+        # Local Riot client uses a self-signed certificate, so we must disable verification
         return requests.get(
             f"https://127.0.0.1:{self.lockfile['port']}{endpoint}",
             headers=local, verify=False, timeout=5).json()
