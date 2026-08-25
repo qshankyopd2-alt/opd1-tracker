@@ -1,4 +1,0 @@
-## 2024-05-24 - Enable secure TLS verification for Riot remote API calls
-**Vulnerability:** External HTTP requests to Riot's pd, glz, and shared content service APIs were disabling TLS certificate verification (`verify=False`).
-**Learning:** These calls historically shared similar configuration syntax to local client API calls which rely on self-signed certificates, causing secure remote requests to incorrectly inherit `verify=False` due to copy-pasting or uniform client initialization.
-**Prevention:** Ensure explicit configuration distinction between 127.0.0.1 (local, where self-signed certs necessitate `verify=False`) and external APIs (like `*.a.pvp.net`, which must always use `verify=True`). Added explanatory comments to local calls to prevent future developers from blindly enabling verification there and breaking local client auth.
