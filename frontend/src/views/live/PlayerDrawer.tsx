@@ -223,7 +223,7 @@ export function PlayerDrawer({
   };
 
   return (
-    <div className="fixed inset-0 z-40" data-testid="player-drawer">
+    <div role="dialog" aria-modal="true" aria-labelledby="player-drawer-title" className="fixed inset-0 z-40" data-testid="player-drawer">
       <div className="absolute inset-0 bg-black/60" onClick={onClose} data-testid="player-drawer-backdrop" />
       <aside className="absolute right-0 top-0 h-full w-[640px] max-w-full bg-panel border-l border-edge overflow-y-auto rise">
         {/* header */}
@@ -245,7 +245,7 @@ export function PlayerDrawer({
             )}
             <div className="min-w-0 flex-1 self-center">
               <div className="flex items-center gap-2">
-                <h2 dir="auto" className="truncate font-display text-[24px] font-black leading-tight">{player.name}</h2>
+                <h2 id="player-drawer-title" dir="auto" className="truncate font-display text-[24px] font-black leading-tight">{player.name}</h2>
                 {player.party && (
                   <span
                     className="shrink-0 rounded-sm border px-1.5 py-0.5 text-[9px] font-black num"

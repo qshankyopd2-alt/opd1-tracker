@@ -27,7 +27,7 @@ export function Sidebar() {
         <div className="text-[10px] uppercase tracking-[0.35em] text-zinc-500 mt-1 ml-5">Tracker</div>
       </div>
 
-      <nav className="flex-1 py-3">
+      <nav aria-label="Main navigation" className="flex-1 py-3">
         {NAV.map(({ id, label, icon: Icon }) => {
           const active = view === id;
           return (
@@ -35,6 +35,7 @@ export function Sidebar() {
               key={id}
               data-testid={`nav-${id}`}
               onClick={() => setView(id)}
+              aria-current={active ? "page" : undefined}
               className={`w-full flex items-center gap-3 px-4 py-2.5 text-[13px] font-medium border-l-2 transition-colors ${
                 active
                   ? "border-brand bg-zinc-800/60 text-zinc-100"

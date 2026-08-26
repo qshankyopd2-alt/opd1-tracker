@@ -212,7 +212,7 @@ export function MatchDetailModal({
   const orderedTeams = subjectTeam ? [subjectTeam, ...teams.filter((t) => t !== subjectTeam)] : teams;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-6" data-testid="match-detail-modal">
+    <div role="dialog" aria-modal="true" aria-labelledby="match-detail-title" className="fixed inset-0 z-50 flex items-center justify-center p-6" data-testid="match-detail-modal">
       <div className="absolute inset-0 bg-black/70" onClick={onClose} data-testid="match-detail-backdrop" />
       <div className="relative bg-panel border border-edge rounded-md w-full max-w-3xl max-h-[88vh] overflow-y-auto rise">
         {/* header */}
@@ -224,7 +224,7 @@ export function MatchDetailModal({
           <div className="relative flex items-center gap-4 p-4">
             <div>
               <div className="text-[11px] uppercase tracking-wider text-zinc-400">{detail?.mode ?? "Match"}</div>
-              <h2 className="font-display font-black italic uppercase text-2xl leading-tight">{detail?.map ?? "…"}</h2>
+              <h2 id="match-detail-title" className="font-display font-black italic uppercase text-2xl leading-tight">{detail?.map ?? "…"}</h2>
             </div>
             {detail && (
               <div className="font-display font-black text-2xl num" style={{ color: resultColor(detail.result) }}>
