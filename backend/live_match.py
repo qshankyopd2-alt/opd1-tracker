@@ -69,6 +69,14 @@ _MATCH_DETAIL_MAX = 200
 
 _CACHE_WRITE_LOCK = threading.Lock()
 
+def _cache_get(cache: dict, key, default=None):
+    with _CACHE_WRITE_LOCK:
+        if key in cache:
+            val = cache.pop(key)
+            cache[key] = val
+            return val
+        return default
+
 def _cache_put(cache: dict, cap: int, key, value) -> None:
     pass
     with _CACHE_WRITE_LOCK:
@@ -524,7 +532,7 @@ class LiveMatch:
         return None
 
     def _fresh_mids(self, puuid):
-        hit = _MIDS_CACHE.get(puuid)
+        hit = _cache_get(_MIDS_CACHE, puuid)
         if hit and time.time() - hit[2] < _MIDS_TTL:
             return hit[0], hit[1], False
         mids: list[str] = []
@@ -549,7 +557,7 @@ class LiveMatch:
         out = {"tier": 0, "rr": 0, "lb": 0, "peak": 0, "wr": 0, "games": 0,
                "prev": 0, "peak_season": season, "ok": False}
         try:
-            hit = _RANK_CACHE.get(puuid)
+            hit = _cache_get(_RANK_CACHE, puuid)
             if hit:
                 mids, is_comp, _ = self._fresh_mids(puuid)
                 rank_key = mids[0] if (mids and is_comp) else "nocomp"
@@ -559,7 +567,7 @@ class LiveMatch:
                 if hit[1] == rank_key:
                     return hit[0]
             else:
-                mhit = _MIDS_CACHE.get(puuid)
+                mhit = _cache_get(_MIDS_CACHE, puuid)
                 if mhit and time.time() - mhit[2] < _MIDS_TTL:
                     rank_key = mhit[0][0] if (mhit[0] and mhit[1]) else "nocomp"
                 else:
@@ -654,13 +662,13 @@ class LiveMatch:
             mids = mids_all[:count]
             if not mids:
                 return None, None, rr_earned, ("throttled" if throttled else "empty"), None
-            cached = _KD_CACHE.get(puuid)
+            cached = _cache_get(_KD_CACHE, puuid)
             if (cached and cached[2] >= count
                     and list(cached[1])[:count] == mids):
                 return cached[0]
 
             def fetch_detail(mid):
-                hit = _MATCH_DETAIL_CACHE.get(mid)
+                hit = _cache_get(_MATCH_DETAIL_CACHE, mid)
                 if hit is not None:
                     return hit
                 md = self.auth.pd_get(f"/match-details/v1/matches/{mid}", retries=3)
@@ -742,54 +750,75 @@ class LiveMatch:
             try:
                 def _fill_one(puuid):
                     cache_key = f"{match_id}:{puuid}"
-                    with _CACHE_WRITE_LOCK:
-                        entry = _CACHE.get(cache_key)
+                    entry = _cache_get(_CACHE, cache_key)
                     if entry is None or entry.get("kd_done"):
                         return
-                    entry["kd_tries"] = entry.get("kd_tries", 0) + 1
+
                     kd, hs, _, status, intel = self.kd_hs(puuid, count=5)
+
+                    latest = _cache_get(_CACHE, cache_key)
+                    if not latest:
+                        return
+
+                    new_entry = dict(latest)
+                    new_entry["kd_tries"] = new_entry.get("kd_tries", 0) + 1
                     if kd is None:
                         _log(f"kd-fill {puuid[:8]} status={status} "
-                             f"tries={entry['kd_tries']}")
+                             f"tries={new_entry['kd_tries']}")
+
                     if kd is not None:
-                        entry["kd"], entry["hs"] = kd, hs
-                        entry["intel"] = intel
-                        entry["kd_done"] = True
+                        new_entry["kd"], new_entry["hs"] = kd, hs
+                        new_entry["intel"] = intel
+                        new_entry["kd_done"] = True
                     elif status == "empty":
-
-                        entry["kd_done"] = True
+                        new_entry["kd_done"] = True
                     elif status == "throttled":
-
                         pass
-                    elif entry["kd_tries"] >= 6:
+                    elif new_entry["kd_tries"] >= 6:
+                        new_entry["kd_done"] = True
 
-                        entry["kd_done"] = True
+                    if latest != new_entry:
+                        _cache_put(_CACHE, _CACHE_MAX, cache_key, new_entry)
 
                 def _top_up(puuid):
-                    with _CACHE_WRITE_LOCK:
-                        entry = _CACHE.get(f"{match_id}:{puuid}")
+                    cache_key = f"{match_id}:{puuid}"
+                    entry = _cache_get(_CACHE, cache_key)
                     if entry is None or entry.get("kd_full") or entry.get("kd") is None:
                         return
-                    entry["kd_full"] = True
+
                     mids, is_comp, _ = self._fresh_mids(puuid)
                     rr_key = mids[0] if (mids and is_comp) else "nocomp"
-                    hit = _RR_CACHE.get(puuid)
+                    rr_earned = None
+                    hit = _cache_get(_RR_CACHE, puuid)
                     if hit and hit[1] == rr_key:
-                        entry["rr_earned"] = hit[0]
+                        rr_earned = hit[0]
                     else:
                         cu = self.auth.pd_get(
                             f"/mmr/v1/players/{puuid}/competitiveupdates"
                             f"?startIndex=0&endIndex=1&queue=competitive", retries=1)
                         m = cu.get("Matches", []) if isinstance(cu, dict) else []
                         if m:
-                            entry["rr_earned"] = m[0].get("RankedRatingEarned")
+                            rr_earned = m[0].get("RankedRatingEarned")
                         if isinstance(cu, dict) and not _is_throttled(cu):
                             _cache_put(_RR_CACHE, _KD_CACHE_MAX, puuid,
-                                       (entry.get("rr_earned"), rr_key))
+                                       (rr_earned, rr_key))
+
                     kd, hs, _, status, intel = self.kd_hs(puuid, count=5)
+
+                    latest = _cache_get(_CACHE, cache_key)
+                    if not latest:
+                        return
+
+                    new_entry = dict(latest)
+                    new_entry["kd_full"] = True
+                    if rr_earned is not None:
+                        new_entry["rr_earned"] = rr_earned
                     if kd is not None:
-                        entry["kd"], entry["hs"] = kd, hs
-                        entry["intel"] = intel
+                        new_entry["kd"], new_entry["hs"] = kd, hs
+                        new_entry["intel"] = intel
+
+                    if latest != new_entry:
+                        _cache_put(_CACHE, _CACHE_MAX, cache_key, new_entry)
 
                 with ThreadPoolExecutor(max_workers=8) as ex:
                     list(ex.map(_fill_one, puuids))
@@ -890,8 +919,7 @@ class LiveMatch:
             puuid = p["Subject"]
             ident = p.get("PlayerIdentity", {}) or {}
             cache_key = f"{match_id}:{puuid}"
-            with _CACHE_WRITE_LOCK:
-                cached = _CACHE.get(cache_key)
+            cached = _cache_get(_CACHE, cache_key)
             if cached is None:
                 rk = self.rank_info(puuid, season, prev_season)
 
@@ -909,10 +937,18 @@ class LiveMatch:
                         and time.time() - cached.get("rank_at", 0.0) > 20.0):
 
                     rk = self.rank_info(puuid, season, prev_season)
-                    if rk.get("ok"):
-                        cached["rk"], cached["prev"] = rk, rk.get("prev", 0)
-                    else:
-                        cached["rank_at"] = time.time()
+
+                    latest = _cache_get(_CACHE, cache_key)
+                    if latest:
+                        new_cached = dict(latest)
+                        if rk.get("ok"):
+                            new_cached["rk"], new_cached["prev"] = rk, rk.get("prev", 0)
+                        else:
+                            new_cached["rank_at"] = time.time()
+                        if latest != new_cached:
+                            _cache_put(_CACHE, _CACHE_MAX, cache_key, new_cached)
+                        cached = new_cached
+
                 if include_stats and not cached.get("kd_done"):
                     uncached_kd.append(puuid)
             name, level, level_hidden = self.resolve_identity(puuid, names, ident)

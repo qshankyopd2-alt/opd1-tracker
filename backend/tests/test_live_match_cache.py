@@ -89,3 +89,46 @@ def test_cache_put_lru_refresh():
     # Cache should be: C, A, D
     live_match._cache_put(cache, cap, "D", 4)
     assert list(cache.keys()) == ["C", "A", "D"]
+
+def test_cache_get_lru_refresh():
+    cache = {}
+    cap = 3
+
+    live_match._cache_put(cache, cap, "A", 1)
+    live_match._cache_put(cache, cap, "B", 2)
+    live_match._cache_put(cache, cap, "C", 3)
+
+    # Read A to refresh it
+    val = live_match._cache_get(cache, "A")
+    assert val == 1
+    assert list(cache.keys()) == ["B", "C", "A"]
+
+    # Add D, B should be evicted
+    live_match._cache_put(cache, cap, "D", 4)
+    assert list(cache.keys()) == ["C", "A", "D"]
+
+import threading
+
+def test_cache_concurrent_access():
+    cache = {}
+    cap = 100
+
+    def writer_worker():
+        for i in range(200):
+            live_match._cache_put(cache, cap, f"k{i}", i)
+
+    def reader_worker():
+        for i in range(200):
+            live_match._cache_get(cache, f"k{i}")
+
+    threads = []
+    for _ in range(5):
+        threads.append(threading.Thread(target=writer_worker))
+        threads.append(threading.Thread(target=reader_worker))
+
+    for t in threads:
+        t.start()
+    for t in threads:
+        t.join()
+
+    assert len(cache) <= cap
