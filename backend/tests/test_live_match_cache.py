@@ -68,3 +68,67 @@ def test_scoreboard_cache_is_bounded(monkeypatch):
     finally:
         live_match._CACHE.clear()
         live_match._MATCH_META.clear()
+
+
+def test_cache_put_lru_refresh():
+    cache = {}
+    cap = 3
+
+    # Add three items (cache is now full: A, B, C)
+    live_match._cache_put(cache, cap, "A", 1)
+    live_match._cache_put(cache, cap, "B", 2)
+    live_match._cache_put(cache, cap, "C", 3)
+
+    assert list(cache.keys()) == ["A", "B", "C"]
+
+    # Refresh "A" (should move to the end: B, C, A)
+    live_match._cache_put(cache, cap, "A", 10)
+    assert list(cache.keys()) == ["B", "C", "A"]
+
+    # Add a new item "D". "B" is now the oldest and should be evicted.
+    # Cache should be: C, A, D
+    live_match._cache_put(cache, cap, "D", 4)
+    assert list(cache.keys()) == ["C", "A", "D"]
+
+def test_cache_get_lru_refresh():
+    cache = {}
+    cap = 3
+
+    live_match._cache_put(cache, cap, "A", 1)
+    live_match._cache_put(cache, cap, "B", 2)
+    live_match._cache_put(cache, cap, "C", 3)
+
+    # Read A to refresh it
+    val = live_match._cache_get(cache, "A")
+    assert val == 1
+    assert list(cache.keys()) == ["B", "C", "A"]
+
+    # Add D, B should be evicted
+    live_match._cache_put(cache, cap, "D", 4)
+    assert list(cache.keys()) == ["C", "A", "D"]
+
+import threading
+
+def test_cache_concurrent_access():
+    cache = {}
+    cap = 100
+
+    def writer_worker():
+        for i in range(200):
+            live_match._cache_put(cache, cap, f"k{i}", i)
+
+    def reader_worker():
+        for i in range(200):
+            live_match._cache_get(cache, f"k{i}")
+
+    threads = []
+    for _ in range(5):
+        threads.append(threading.Thread(target=writer_worker))
+        threads.append(threading.Thread(target=reader_worker))
+
+    for t in threads:
+        t.start()
+    for t in threads:
+        t.join()
+
+    assert len(cache) <= cap
