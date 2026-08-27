@@ -202,11 +202,12 @@ export function HistoryView() {
     <div className="p-5 space-y-4" data-testid="history-view">
       <div className="flex items-center gap-3 flex-wrap">
         <h1 className="font-display font-black italic uppercase text-2xl tracking-tight">Match History</h1>
-        <div className="flex border border-edge rounded-sm overflow-hidden" data-testid="history-filter">
+        <div className="flex border border-edge rounded-sm" data-testid="history-filter">
           {(["all", "wins", "losses", "bookmarked"] as Filter[]).map((f) => (
             <button
               key={f}
               data-testid={`history-filter-${f}`}
+              aria-pressed={filter === f}
               onClick={() => setFilter(f)}
               className={`px-2.5 py-1 text-[11px] uppercase tracking-wider font-semibold transition-colors ${
                 filter === f ? "bg-zinc-800 text-zinc-100" : "text-zinc-500 hover:text-zinc-300"
