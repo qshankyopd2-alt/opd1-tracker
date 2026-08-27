@@ -119,6 +119,11 @@ describe('format', () => {
       expect(scoreline(scores, null, 'Defeat')).toBe('11–13'); // sort a - b
     });
 
+    it('formats without ownTeam and result (default sorting)', () => {
+      const scores = { Red: 11, Blue: 13 };
+      expect(scoreline(scores, null, null)).toBe('13–11');
+    });
+
     it('formats missing other team correctly', () => {
       const scores = { Red: 13 };
       expect(scoreline(scores, 'Red')).toBe('13–0');
@@ -131,16 +136,13 @@ describe('format', () => {
       expect(matchDate(undefined)).toBe('—');
     });
 
-    it('formats matchDate correctly', () => {
-      const ts = new Date('2024-05-15T12:00:00Z').getTime(); // Use fixed timestamp
-      const result = matchDate(ts);
-      // Depending on the local timezone where the test runs,
-      // the formatted string might be "May 15" or "May 14" (or "May 16")
-      // Since it uses toLocaleDateString without specifying UTC
-      expect(["May 14", "May 15", "May 16"]).toContain(result);
+    it('formats matchDate correctly using local timezone of host', () => {
+      const ts = new Date('2024-05-15T12:00:00Z').getTime();
+      const expected = new Date(ts).toLocaleDateString(undefined, { month: "short", day: "numeric" });
+      expect(matchDate(ts)).toBe(expected);
 
       const secondsTs = ts / 1000;
-      expect(["May 14", "May 15", "May 16"]).toContain(matchDate(secondsTs));
+      expect(matchDate(secondsTs)).toBe(expected);
     });
   });
 
