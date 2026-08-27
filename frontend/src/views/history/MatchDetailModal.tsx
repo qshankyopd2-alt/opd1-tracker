@@ -184,36 +184,36 @@ export function MatchDetailModal({
     };
   }, []);
 
-  useEffect(() => {
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") {
-        onClose();
-        return;
-      }
-      if (e.key === "Tab") {
-        if (!dialogRef.current) return;
-        const focusableElements = dialogRef.current.querySelectorAll<HTMLElement>(
-          'a[href], button, textarea, input[type="text"], input[type="radio"], input[type="checkbox"], select, [tabindex]:not([tabindex="-1"])'
-        );
-        const firstElement = focusableElements[0];
-        const lastElement = focusableElements[focusableElements.length - 1];
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
+    if (e.key === "Escape") {
+      e.stopPropagation();
+      onClose();
+      return;
+    }
+    if (e.key === "Tab") {
+      if (!dialogRef.current) return;
+      const selectors = 'a[href], button:not([disabled]), textarea:not([disabled]), input:not([type="hidden"]):not([disabled]), select:not([disabled]), [tabindex]:not([tabindex="-1"])';
+      const focusableElements = Array.from(dialogRef.current.querySelectorAll<HTMLElement>(selectors))
+        .filter((el) => el.offsetWidth > 0 || el.offsetHeight > 0);
 
-        if (e.shiftKey) {
-          if (document.activeElement === firstElement || document.activeElement === dialogRef.current) {
-            lastElement?.focus();
-            e.preventDefault();
-          }
-        } else {
-          if (document.activeElement === lastElement) {
-            firstElement?.focus();
-            e.preventDefault();
-          }
+      if (focusableElements.length === 0) return;
+
+      const firstElement = focusableElements[0];
+      const lastElement = focusableElements[focusableElements.length - 1];
+
+      if (e.shiftKey) {
+        if (document.activeElement === firstElement || document.activeElement === dialogRef.current) {
+          lastElement?.focus();
+          e.preventDefault();
+        }
+      } else {
+        if (document.activeElement === lastElement) {
+          firstElement?.focus();
+          e.preventDefault();
         }
       }
-    };
-    window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
-  }, [onClose]);
+    }
+  };
 
   useEffect(() => {
     if (clientOffline) {
@@ -260,6 +260,7 @@ export function MatchDetailModal({
       aria-labelledby="match-detail-title"
       ref={dialogRef}
       tabIndex={-1}
+      onKeyDown={handleKeyDown}
     >
       <div className="absolute inset-0 bg-black/70" onClick={onClose} data-testid="match-detail-backdrop" />
       <div className="relative bg-panel border border-edge rounded-md w-full max-w-3xl max-h-[88vh] overflow-y-auto rise">
@@ -272,7 +273,7 @@ export function MatchDetailModal({
           <div className="relative flex items-center gap-4 p-4">
             <div>
               <div className="text-[11px] uppercase tracking-wider text-zinc-400">{detail?.mode ?? "Match"}</div>
-              <h2 id="match-detail-title" className="font-display font-black italic uppercase text-2xl leading-tight">{detail?.map ?? "…"}</h2>
+              <h2 id="match-detail-title" className="font-display font-black italic uppercase text-2xl leading-tight">{detail?.map ?? "Match Details"}</h2>
             </div>
             {detail && (
               <div className="font-display font-black text-2xl num" style={{ color: resultColor(detail.result) }}>

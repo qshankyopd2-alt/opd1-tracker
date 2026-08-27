@@ -155,36 +155,36 @@ export function PlayerDrawer({
     };
   }, []);
 
-  useEffect(() => {
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") {
-        onClose();
-        return;
-      }
-      if (e.key === "Tab") {
-        if (!dialogRef.current) return;
-        const focusableElements = dialogRef.current.querySelectorAll<HTMLElement>(
-          'a[href], button, textarea, input[type="text"], input[type="radio"], input[type="checkbox"], select, [tabindex]:not([tabindex="-1"])'
-        );
-        const firstElement = focusableElements[0];
-        const lastElement = focusableElements[focusableElements.length - 1];
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
+    if (e.key === "Escape") {
+      e.stopPropagation();
+      onClose();
+      return;
+    }
+    if (e.key === "Tab") {
+      if (!dialogRef.current) return;
+      const selectors = 'a[href], button:not([disabled]), textarea:not([disabled]), input:not([type="hidden"]):not([disabled]), select:not([disabled]), [tabindex]:not([tabindex="-1"])';
+      const focusableElements = Array.from(dialogRef.current.querySelectorAll<HTMLElement>(selectors))
+        .filter((el) => el.offsetWidth > 0 || el.offsetHeight > 0);
 
-        if (e.shiftKey) {
-          if (document.activeElement === firstElement || document.activeElement === dialogRef.current) {
-            lastElement?.focus();
-            e.preventDefault();
-          }
-        } else {
-          if (document.activeElement === lastElement) {
-            firstElement?.focus();
-            e.preventDefault();
-          }
+      if (focusableElements.length === 0) return;
+
+      const firstElement = focusableElements[0];
+      const lastElement = focusableElements[focusableElements.length - 1];
+
+      if (e.shiftKey) {
+        if (document.activeElement === firstElement || document.activeElement === dialogRef.current) {
+          lastElement?.focus();
+          e.preventDefault();
+        }
+      } else {
+        if (document.activeElement === lastElement) {
+          firstElement?.focus();
+          e.preventDefault();
         }
       }
-    };
-    window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
-  }, [onClose]);
+    }
+  };
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [openMatch, setOpenMatch] = useState<string | null>(null);
@@ -264,13 +264,14 @@ export function PlayerDrawer({
   return (
     <div className="fixed inset-0 z-40" data-testid="player-drawer">
       <div className="absolute inset-0 bg-black/60" onClick={onClose} data-testid="player-drawer-backdrop" />
-      <aside
+      <div
         className="absolute right-0 top-0 h-full w-[640px] max-w-full bg-panel border-l border-edge overflow-y-auto rise"
         role="dialog"
         aria-modal="true"
         aria-labelledby="player-drawer-title"
-        ref={dialogRef}
+        ref={dialogRef as any}
         tabIndex={-1}
+        onKeyDown={handleKeyDown}
       >
         {/* header */}
         <div className="relative border-b border-edge overflow-hidden">
@@ -523,7 +524,7 @@ export function PlayerDrawer({
             )}
           </section>
         </div>
-      </aside>
+      </div>
 
       {openMatch && (
         <MatchDetailModal
