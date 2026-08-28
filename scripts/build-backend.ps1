@@ -54,11 +54,7 @@ $spec = Join-Path $root ".build\pyinstaller-spec"
     --workpath $work `
     --specpath $spec `
     --collect-all "tzdata" `
-    --collect-all "ably" `
-    --collect-all "pypresence" `
     --collect-all "valclient" `
-    --collect-submodules "websockets" `
-    --hidden-import "cryptography.hazmat.primitives.serialization.pkcs12" `
     (Join-Path $root "backend\desktop.py")
 Assert-NativeSuccess "Building frozen backend"
 

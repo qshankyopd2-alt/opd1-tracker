@@ -9,7 +9,6 @@ export interface Health {
   appVersion: string;
   dataSourcePreference: string;
   officialKey: boolean;
-  liveInstalockEnabled: boolean;
   clientStatus: "ok" | "not_running";
 }
 

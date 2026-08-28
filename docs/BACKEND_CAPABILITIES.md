@@ -64,8 +64,6 @@ Board caches: 3.5 s build freshness, 90 s hold for INGAME payload gaps, 20 s lob
 | `GET/POST /api/settings` | persisted UI settings (`data/settings.json`): region, agent, mode, delay, dryRun, perMap, autoRefresh |
 | `GET /api/region` | detected shard + region list |
 | `GET /api/agents` | agent roster (uuid, role, color, portraits) |
-| `POST /api/instalock/start\|stop`, `GET /api/instalock/status` | agent auto-lock worker (dry-run by default; live gated by `ALLOW_LIVE_INSTALOCK`) |
-| `POST /api/dodge` | quit pregame (dry-run default) |
 | `GET/POST /api/queue` | party/queue snapshot + select/start/stop (glz parties API) |
 | `GET /api/recap` | last finished match recap (detected on INGAME→MENUS transition) |
 | `GET/POST/DELETE /api/session*` | session tracker (net RR per sitting, archive) |
@@ -84,11 +82,3 @@ Board caches: 3.5 s build freshness, 90 s hold for INGAME payload gaps, 20 s lob
 All imagery via `https://media.valorant-api.com` (+ metadata `https://valorant-api.com/v1/*`,
 module-level cached): agent portraits, rank tier icons, map splashes, weapon/skin renders,
 player cards, titles, seasons. Agent uuid/role/color table lives in `backend/agents.py`.
-
-## Peripheral modules not used by OPD1 Tracker
-
-`ws_server.py`/`scout_commands.py`/`remote_ably.py` (hosted-site bridge + phone mode),
-`discord_presence.py` (Discord RPC for the original product), `sync.py` (telemetry to
-valorantscout.com), `offline_launch.py` (Deceive-style offline masking). They remain
-functional behind the original `python app.py` entry; `desktop.py` deliberately does not
-start them.
