@@ -7,8 +7,10 @@ contract).
 ## What this is
 
 A Windows desktop VALORANT tracker: Tauri 2 shell + React 18 / TypeScript /
-Vite / Tailwind frontend, wrapping a Flask backend that was copied **verbatim**
-from the proven Valorant-Scout reference implementation.
+Vite / Tailwind frontend, wrapping a Flask backend that is derived from the
+proven Valorant-Scout reference implementation (Scout is preserved as the
+technical reference; legacy Scout functionality has since been removed,
+internal modules/identities renamed, and maintained modifications applied).
 
 ## Source of truth
 
