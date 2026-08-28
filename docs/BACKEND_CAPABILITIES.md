@@ -50,7 +50,7 @@ Board caches: 3.5 s build freshness, 90 s hold for INGAME payload gaps, 20 s lob
 
 | Endpoint | Data |
 |---|---|
-| `GET /api/health` | service ok, appVersion, `clientStatus: ok\|not_running`, data-source preference, official key present, live-instalock flag |
+| `GET /api/health` | service ok, appVersion, `clientStatus: ok\|not_running`, data-source preference, official key present |
 | `GET /api/state` | `MENUS\|PREGAME\|INGAME\|OFFLINE` + label |
 | `GET /api/live?seed&state` | full board (above) + `queue`, `session`, `recap` (after a match), `notice`, `encounter`, `saved`, and `savedNote` per player. Falls back to deterministic demo board (`source:"demo"`) when the client isn't running |
 | `GET /api/profile/{puuid}` | career: last 8 matches (`pd match-history` + details), averages, agent pool, map stats, co-players, per-match RR deltas (60 s server cache) |

@@ -148,7 +148,7 @@ fn spawn_backend(app: &AppHandle) -> Result<(Child, BackendConnection), String> 
         .env("OPD1_APP_VERSION", &version)
         .env("OPD1_DATA_DIR", &data_dir)
         .env("OPD1_LOG_DIR", &log_dir)
-        .env("SCOUT_QUIET", "1")
+        .env("OPD1_QUIET", "1")
         .stdin(Stdio::piped())
         .stdout(Stdio::piped())
         .stderr(Stdio::from(stderr));

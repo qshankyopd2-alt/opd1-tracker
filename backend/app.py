@@ -16,7 +16,7 @@ except Exception:
     pass
 
 import encounter_log
-import scoutlog
+import opd1log
 import pick_advisor
 import live_match
 import party_detector
@@ -53,7 +53,7 @@ def _require_desktop_token():
         return jsonify({"ok": False, "message": "Unauthorized local request."}), 401
     return None
 
-for _h in scoutlog.get_logger("backend").handlers:
+for _h in opd1log.get_logger("backend").handlers:
     app.logger.addHandler(_h)
 
 client = RiotClient()

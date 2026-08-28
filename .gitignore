@@ -13,7 +13,7 @@ htmlcov/
 
 # Local runtime data (never commit: personal match history, notes, tokens)
 backend/data/
-.scout/
+.opd1/
 backend/.env.local
 
 node_modules/

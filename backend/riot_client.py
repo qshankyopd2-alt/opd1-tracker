@@ -40,7 +40,7 @@ _QUEUE_NAMES = {
 }
 
 def _log(msg: str) -> None:
-    if os.getenv("SCOUT_QUIET"):
+    if os.getenv("OPD1_QUIET"):
         return
     print(f"[riot_client] {msg}", flush=True)
 

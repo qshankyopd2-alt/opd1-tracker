@@ -11,7 +11,7 @@ import os
 import sys
 import threading
 
-os.environ.setdefault("SCOUT_QUIET", "1")
+os.environ.setdefault("OPD1_QUIET", "1")
 
 from app import app  # noqa: E402  (imports load .env and build the API)
 from werkzeug.serving import make_server  # noqa: E402

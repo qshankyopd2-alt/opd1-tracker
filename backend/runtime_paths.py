@@ -14,4 +14,4 @@ def data_dir() -> Path:
 
 def log_dir() -> Path:
     configured = os.getenv("OPD1_LOG_DIR", "").strip()
-    return Path(configured) if configured else _BACKEND_DIR.parent / ".scout"
+    return Path(configured) if configured else _BACKEND_DIR.parent / ".opd1"

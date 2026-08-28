@@ -7,7 +7,7 @@ from logging.handlers import RotatingFileHandler
 
 from runtime_paths import log_dir
 
-SCOUT_DIR = log_dir()
+OPD1_LOG_DIR = log_dir()
 
 MAX_BYTES = 2 * 1024 * 1024
 BACKUP_COUNT = 5
@@ -21,7 +21,7 @@ _REDACTIONS: list[tuple[re.Pattern, str]] = [
     (re.compile(r"\b(password|token|secret|api_key|apikey|authorization)\s*[=:]\s*\S+",
                 re.IGNORECASE), r"\1=[REDACTED]"),
     (re.compile(r"\b[A-Za-z0-9_\-]{6,}\.[A-Za-z0-9_\-]{6,}:[A-Za-z0-9_\-]{16,}\b"),
-     "[REDACTED-ABLY-KEY]"),
+     "[REDACTED-KEY]"),
     (re.compile(r"\b([0-9a-fA-F]{8})[0-9a-fA-F\-]{24,}\b"), r"\1…[REDACTED]"),
     (re.compile(r"\b(\d{6})\d{11,}\b"), r"\1…[REDACTED]"),
 ]
@@ -38,16 +38,16 @@ class _UtcFormatter(logging.Formatter):
         return redact(super().format(record))
 
 def get_logger(component: str, filename: str | None = None) -> logging.Logger:
-    name = f"scout.{component}"
+    name = f"opd1.{component}"
     logger = logging.getLogger(name)
     if logger.handlers:
         return logger
     logger.setLevel(logging.INFO)
     logger.propagate = False
     try:
-        SCOUT_DIR.mkdir(exist_ok=True)
+        OPD1_LOG_DIR.mkdir(exist_ok=True)
         handler = RotatingFileHandler(
-            SCOUT_DIR / f"{filename or component}.log",
+            OPD1_LOG_DIR / f"{filename or component}.log",
             maxBytes=MAX_BYTES, backupCount=BACKUP_COUNT, encoding="utf-8")
         handler.setFormatter(_UtcFormatter(
             fmt=f"%(asctime)s.%(msecs)03dZ [{component}] %(levelname)s %(message)s",
