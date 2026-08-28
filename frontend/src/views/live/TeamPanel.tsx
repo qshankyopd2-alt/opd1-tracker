@@ -97,8 +97,8 @@ export function TeamPanel({
         )}
       </div>
       <div
-        className="stagger grid min-h-0 flex-1 gap-1.5 p-1.5"
-        style={{ gridTemplateRows: `repeat(${Math.max(players.length, 1)}, minmax(0, 1fr))` }}
+        className="stagger grid min-h-0 flex-1 gap-1.5 p-1.5 overflow-y-auto"
+        style={{ gridTemplateRows: `repeat(${Math.max(players.length, 1)}, minmax(min-content, 1fr))` }}
       >
         {orderedPlayers.map((p) => (
           <PlayerRow

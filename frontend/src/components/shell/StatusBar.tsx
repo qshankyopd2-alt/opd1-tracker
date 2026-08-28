@@ -32,7 +32,7 @@ export function StatusBar() {
         <span data-testid="status-match">
           {board.map} · {board.mode}
           {board.score && board.score.ally !== undefined && (
-            <span className="text-zinc-300"> · {board.score.ally}–{board.score.enemy}</span>
+            <span className="text-zinc-300 num"> · {board.score.ally}–{board.score.enemy}</span>
           )}
         </span>
       )}

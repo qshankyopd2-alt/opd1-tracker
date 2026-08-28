@@ -1,4 +1,5 @@
 import { ArrowDown, ArrowUp, LineChart, Lightbulb, RotateCw } from "lucide-react";
+import { Badge } from "../../components/ui/Badge";
 import { ErrorBanner } from "../../components/ui/ErrorBanner";
 import { EmptyState } from "../../components/ui/EmptyState";
 import { Section } from "../../components/ui/Section";
@@ -13,7 +14,7 @@ import { SessionPanel } from "./SessionPanel";
 import { SplitTable } from "./SplitTable";
 
 export function CompetitiveView() {
-  const { data, error, loading, refresh } = usePerformance();
+  const { data, error, loading, stale, refresh } = usePerformance();
   const { isLive } = useLiveData();
 
   if (loading) {
@@ -65,6 +66,11 @@ export function CompetitiveView() {
       <div className="flex items-center gap-3">
         <h1 className="font-display font-black italic uppercase text-2xl tracking-tight">Competitive</h1>
         {account.riotId && <span className="text-[12px] text-zinc-500">{account.riotId}</span>}
+        {stale && (
+          <Badge color="#F59E0B" testId="competitive-stale-badge">
+            saved data · VALORANT offline
+          </Badge>
+        )}
         <button
           data-testid="competitive-refresh-button"
           onClick={refresh}
