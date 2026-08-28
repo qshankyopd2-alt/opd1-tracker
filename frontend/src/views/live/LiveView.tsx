@@ -8,6 +8,7 @@ import { OfflineHero } from "./OfflineHero";
 import { PlayerDrawer } from "./PlayerDrawer";
 import { RecapCard } from "./RecapCard";
 import { TeamPanel } from "./TeamPanel";
+import { splitTeams } from "./teamSplit";
 
 export function LiveView() {
   const { board, error, loading, showBoard, refresh } = useLiveData();
@@ -63,11 +64,7 @@ export function LiveView() {
 
   const pregame = board.state === "PREGAME";
   const menus = board.state === "MENUS";
-  const teamIds = Object.keys(board.teams ?? {});
-  const allyId = teamIds.includes(board.selfTeam) ? board.selfTeam : teamIds[0];
-  const enemyId = teamIds.find((t) => t !== allyId);
-  const ally = allyId ? board.teams[allyId] : [];
-  const enemy = enemyId ? board.teams[enemyId] : [];
+  const { allyId, enemyId, ally, enemy } = splitTeams(board);
 
   return (
     <div

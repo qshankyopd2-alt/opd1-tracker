@@ -11,15 +11,7 @@ import os
 import sys
 import threading
 
-os.environ.setdefault("SCOUT_QUIET", "1")
-
-if getattr(sys, "frozen", False) and "--offline-helper-broker" in sys.argv:
-    import offline_launch  # noqa: E402
-    raise SystemExit(offline_launch._broker_main())
-
-if getattr(sys, "frozen", False) and "--offline-helper" in sys.argv:
-    import offline_launch  # noqa: E402
-    raise SystemExit(offline_launch._helper_main())
+os.environ.setdefault("OPD1_QUIET", "1")
 
 from app import app  # noqa: E402  (imports load .env and build the API)
 from werkzeug.serving import make_server  # noqa: E402

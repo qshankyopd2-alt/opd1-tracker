@@ -1,7 +1,7 @@
 """Read-only regression tests for a locally running OPD1 backend.
 
 Set OPD1_TEST_BASE_URL to override the default http://127.0.0.1:5000.
-These tests never change settings, queue state, sessions, or instalock state.
+These tests never change settings, queue state, or sessions.
 """
 
 from __future__ import annotations

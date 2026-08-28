@@ -11,7 +11,7 @@ import requests
 import urllib3
 
 import sample_data
-from agents import UUID_TO_NAME, resolve_agent
+from agents import UUID_TO_NAME
 from vconstants import GAMEMODES, map_name_from_path, rank_from_tier
 
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
@@ -40,7 +40,7 @@ _QUEUE_NAMES = {
 }
 
 def _log(msg: str) -> None:
-    if os.getenv("SCOUT_QUIET"):
+    if os.getenv("OPD1_QUIET"):
         return
     print(f"[riot_client] {msg}", flush=True)
 
@@ -286,11 +286,7 @@ class LocalAuth:
 
 
 def _offline_presence_private() -> dict | None:
-    try:
-        import offline_launch
-        return offline_launch.captured_presence_private()
-    except Exception:
-        return None
+    return None
 
 
 def chat_presences(auth: LocalAuth) -> list[dict]:
@@ -432,7 +428,6 @@ class RiotClient:
         self.api_key = os.getenv("RIOT_API_KEY", "").strip()
         self.region = os.getenv("RIOT_REGION", "na").strip().lower()
         self.source_pref = os.getenv("DATA_SOURCE", "auto").strip().lower()
-        self.allow_live_instalock = os.getenv("ALLOW_LIVE_INSTALOCK", "true").lower() == "true"
         self._valclient = None
 
     def get_player_overview(self, puuid: str) -> dict:
@@ -665,64 +660,6 @@ class RiotClient:
             if t:
                 return t
         return 0
-
-    def instalock(self, agent_identifier: str, mode: str = "lock",
-                  dry_run: bool = True, region: str | None = None) -> dict:
-        pass
-        agent = resolve_agent(agent_identifier)
-        if not agent:
-            return {"ok": False, "status": "error",
-                    "message": f"Unknown agent '{agent_identifier}'."}
-
-        if dry_run:
-            print(f"[INSTALOCK:DRY-RUN] would {mode} {agent['name']}", flush=True)
-            return {
-                "ok": True, "status": "dry-run", "agent": agent["name"],
-                "agentId": agent["uuid"], "mode": mode,
-                "message": f"DRY-RUN: would {mode} {agent['name']}. "
-                           f"Turn dry-run OFF to actually {mode}.",
-            }
-        return self._live_instalock(agent, mode, region)
-
-    def _live_instalock(self, agent: dict, mode: str, region=None) -> dict:
-        agent_uuid = agent["uuid"]
-        try:
-            auth = LocalAuth(region)
-            auth.headers()
-            pre = auth.glz_get(f"/pregame/v1/players/{auth.puuid}")
-            match_id = pre.get("MatchID") if isinstance(pre, dict) else None
-            if not match_id:
-                return {"ok": False, "status": "error",
-                        "message": "Not in agent select (no pregame match)."}
-            auth.glz_post(f"/pregame/v1/matches/{match_id}/select/{agent_uuid}")
-            if mode == "lock":
-                auth.glz_post(f"/pregame/v1/matches/{match_id}/lock/{agent_uuid}")
-            return {"ok": True, "status": "locked", "agent": agent["name"],
-                    "message": f"{mode.title()}ed {agent['name']}."}
-        except Exception as e:
-            return {"ok": False, "status": "error",
-                    "message": f"Instalock failed: {e}"}
-
-    def dodge(self, dry_run: bool = True, region: str | None = None) -> dict:
-        pass
-        if dry_run:
-            print("[DODGE:DRY-RUN] would quit agent select", flush=True)
-            return {"ok": True, "status": "dry-run",
-                    "message": "DRY-RUN: would dodge agent select. "
-                               "Turn dry-run OFF to actually dodge."}
-        try:
-            auth = LocalAuth(region)
-            auth.headers()
-            pre = auth.glz_get(f"/pregame/v1/players/{auth.puuid}")
-            match_id = pre.get("MatchID") if isinstance(pre, dict) else None
-            if not match_id:
-                return {"ok": False, "status": "error",
-                        "message": "Not in agent select (nothing to dodge)."}
-            auth.glz_post(f"/pregame/v1/matches/{match_id}/quit")
-            return {"ok": True, "status": "dodged",
-                    "message": "Dodged agent select."}
-        except Exception as e:
-            return {"ok": False, "status": "error", "message": f"Dodge failed: {e}"}
 
     def _party_live(self) -> bool:
         pass

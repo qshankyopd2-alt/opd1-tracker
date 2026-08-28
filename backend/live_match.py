@@ -89,7 +89,7 @@ def _cache_put(cache: dict, cap: int, key, value) -> None:
 _QUEUE_CACHE: dict = {"at": 0.0, "data": None}
 
 def _log(msg: str) -> None:
-    if os.getenv("SCOUT_QUIET"):
+    if os.getenv("OPD1_QUIET"):
         return
     print(f"[reveal] {msg}", flush=True)
 

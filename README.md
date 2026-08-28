@@ -113,7 +113,6 @@ Windows SmartScreen may therefore show an unknown-publisher warning when sharing
 | `BACKEND_PORT` | `5000` | standalone development port; Tauri passes `0` to choose an available port |
 | `LIVE_INCLUDE_STATS` | `true` | set `false` to skip live K/D + HS enrichment |
 | `PLAYER_CACHE_TTL` | `60` | profile/player cache TTL in seconds |
-| `ALLOW_LIVE_INSTALOCK` | `true` | backend hard gate for auto-lock; its desktop UI is currently deferred |
 
 Frontend-only (browser dev): `VITE_BACKEND_URL` / `VITE_BACKEND_TOKEN` — see
 `.env.example`. The Tauri shell sets `OPD1_API_TOKEN`, `OPD1_DATA_DIR`,
@@ -126,8 +125,7 @@ in the installer, so every Windows user starts clean and builds their own cache/
 ## Notes
 
 - `backend/server.py` is an ASGI shim used only by the cloud preview environment.
-- `backend/app.py` remains runnable standalone (original entry with the hosted-site
-  WebSocket bridge); the desktop app uses `backend/desktop.py`, which skips the bridge,
-  telemetry and Discord RPC.
+- `backend/app.py` remains runnable standalone; the desktop app uses `backend/desktop.py`,
+  which serves the same Flask API on a loopback port for the Tauri shell.
 - OPD1 Tracker isn't endorsed by Riot Games. The desktop UI intentionally does not expose
   instalock, dodge, appear-offline, remote/phone mode, or queue mutation controls.

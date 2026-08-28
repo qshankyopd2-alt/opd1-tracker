@@ -60,7 +60,7 @@ from the proven Valorant-Scout reference implementation.
 `frontend/node_modules/`, `frontend/dist/`, `frontend/src-tauri/target/`,
 `frontend/src-tauri/gen/`, `frontend/src-tauri/binaries/` (PyInstaller output),
 `frontend/src-tauri/resources/`, `.build/` (build venv), `backend/data/`
-(user data), `.scout/` (local runtime state), `__pycache__/`, `.pytest_cache/`.
+(user data), `.opd1/` (local runtime state), `__pycache__/`, `.pytest_cache/`.
 
 ## Commands
 
