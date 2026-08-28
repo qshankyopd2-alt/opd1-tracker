@@ -202,7 +202,7 @@ export function PlayerDrawer({
 
         <div className="p-4 space-y-4">
           {player.smurf && player.smurfReasons.length > 0 && (
-            <div className="border border-amber-500/40 bg-amber-500/10 rounded-sm px-3 py-2 text-[12px] text-amber-200" data-testid="drawer-smurf-reasons">
+            <div className="border border-amber-500 bg-amber-500/20 rounded-sm px-3 py-2 text-[12px] text-amber-100 font-semibold" data-testid="drawer-smurf-reasons">
               {player.smurfReasons.join(" · ")}
             </div>
           )}
