@@ -20,7 +20,7 @@ function kdColor(kd: number | null): string {
 
 function Metric({ label, children, color }: { label: string; children: React.ReactNode; color?: string }) {
   return (
-    <span className="min-w-0 px-1.5 py-0.5 first:pl-0">
+    <span className="min-w-0 px-1.5 py-0.5">
       <span className="block truncate text-[8px] font-semibold uppercase tracking-[0.12em] text-zinc-500">
         {label}
       </span>
@@ -142,7 +142,7 @@ export function PlayerRow({
         <span className="min-w-[126px] shrink-0 text-right">
           <span className="flex items-center justify-end gap-2">
             {player.rankIcon && <img src={player.rankIcon} alt="" className="h-9 w-9 shrink-0" loading="lazy" />}
-            <span className="min-w-0">
+            <span className="w-[72px] min-w-0 text-right">
               <span className="block truncate text-[14px] font-bold leading-tight" style={{ color: player.rankColor }}>{player.rank}</span>
               {player.rankTier > 2 && <span className="block text-[10px] font-semibold leading-tight text-zinc-300 num">{player.rr} RR</span>}
             </span>

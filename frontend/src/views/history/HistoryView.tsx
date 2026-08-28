@@ -3,6 +3,7 @@ import { Bookmark, History, RotateCw, StickyNote } from "lucide-react";
 import { backend } from "../../api/client";
 import type { HistoryPoint, MatchMeta } from "../../api/types";
 import { AgentAvatar } from "../../components/domain/AgentAvatar";
+import { Badge } from "../../components/ui/Badge";
 import { EmptyState } from "../../components/ui/EmptyState";
 import { ErrorBanner } from "../../components/ui/ErrorBanner";
 import { TableSkeleton } from "../../components/ui/Skeleton";
@@ -38,7 +39,7 @@ function MatchRow({
         </span>
       )}
       <div className="absolute inset-y-0 left-0 w-1" style={{ backgroundColor: resultColor(point.result) }} />
-      <div className="relative grid grid-cols-[minmax(150px,1.25fr)_70px_minmax(125px,1fr)_78px_58px_58px_52px_82px_48px] items-center gap-3 px-4 py-2.5">
+      <div className="relative grid grid-cols-[minmax(150px,1.25fr)_70px_minmax(125px,1fr)_112px_92px_82px_48px] items-center gap-3 px-4 py-2.5">
         <span className="min-w-0">
           <span className="font-display font-bold text-[15px] truncate block">{point.map ?? "Unknown"}</span>
           <span className="text-[10px] text-zinc-500">
@@ -63,22 +64,16 @@ function MatchRow({
         </span>
 
         <span className="text-right text-zinc-300">
-          <span className="block text-[8px] font-semibold uppercase tracking-wider text-zinc-600">K / D / A</span>
+          <span className="block text-[8px] font-semibold uppercase tracking-wider text-zinc-600">K/D/A · K/D</span>
           <span className="text-[12px] num">
-          {point.kills !== undefined ? `${point.kills}/${point.deaths}/${point.assists}` : "—"}
+            {point.kills !== undefined
+              ? `${point.kills}/${point.deaths}/${point.assists}${point.kd !== undefined ? ` · ${fmtNum(point.kd, 2)}` : ""}`
+              : "—"}
           </span>
         </span>
         <span className="text-right text-zinc-300">
-          <span className="block text-[8px] font-semibold uppercase tracking-wider text-zinc-600">K/D</span>
-          <span className="text-[12px] num">{point.kd !== undefined ? fmtNum(point.kd, 2) : "—"}</span>
-        </span>
-        <span className="text-right font-semibold text-zinc-200">
-          <span className="block text-[8px] font-semibold uppercase tracking-wider text-zinc-600">ACS</span>
-          <span className="text-[12px] num">{point.acs ?? "—"}</span>
-        </span>
-        <span className="text-right text-zinc-400">
-          <span className="block text-[8px] font-semibold uppercase tracking-wider text-zinc-600">HS%</span>
-          <span className="text-[11px] num">{fmtPct(point.hsPct)}</span>
+          <span className="block text-[8px] font-semibold uppercase tracking-wider text-zinc-600">ACS · HS%</span>
+          <span className="text-[12px] num">{point.acs ?? "—"}{point.hsPct !== null && point.hsPct !== undefined ? ` · ${fmtPct(point.hsPct)}` : ""}</span>
         </span>
 
         <span className="text-right">
@@ -218,12 +213,9 @@ export function HistoryView() {
           ))}
         </div>
         {stale && (
-          <span
-            className="border border-amber-500/40 bg-amber-500/10 text-amber-200 rounded-sm px-2 py-1 text-[10px] uppercase tracking-wider"
-            data-testid="history-stale-badge"
-          >
+          <Badge color="#F59E0B" testId="history-stale-badge">
             saved data · VALORANT offline
-          </span>
+          </Badge>
         )}
         <button
           data-testid="history-refresh-button"

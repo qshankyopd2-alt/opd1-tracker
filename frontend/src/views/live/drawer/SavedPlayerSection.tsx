@@ -18,7 +18,7 @@ export function SavedPlayerSection({
   onRemove: () => void;
 }) {
   return (
-    <section className="rounded-sm border border-amber-400/25 bg-amber-400/5 p-3" data-testid="drawer-saved-player">
+    <section className="rounded-sm border border-amber-400/40 bg-amber-400/10 p-3" data-testid="drawer-saved-player">
       <div className="mb-2 flex items-center gap-2">
         <Bookmark size={13} className="text-amber-300" fill={saved ? "currentColor" : "none"} />
         <h3 className="text-[10px] font-semibold uppercase tracking-[0.2em] text-amber-200">
@@ -30,7 +30,7 @@ export function SavedPlayerSection({
         maxLength={500}
         onChange={(event) => onNoteChange(event.target.value)}
         placeholder="Add a note you want to see next time this player appears…"
-        className="min-h-16 w-full resize-y rounded-sm border border-edge bg-ink px-2.5 py-2 text-[12px] text-zinc-200 placeholder:text-zinc-600 focus:border-amber-400/60 focus:outline-none"
+        className="min-h-16 w-full resize-y rounded-sm border border-edge bg-ink px-2.5 py-2 text-[12px] text-zinc-200 placeholder:text-zinc-600 focus:border-amber-400/60 focus-visible:ring-1 focus-visible:ring-amber-400/60"
       />
       <div className="mt-2 flex items-center gap-2">
         <button

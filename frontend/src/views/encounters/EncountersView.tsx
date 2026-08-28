@@ -1,5 +1,5 @@
 import { Fragment, useMemo, useState } from "react";
-import { Bookmark, ChevronDown, ChevronUp, Pencil, Save, Search, Trash2 } from "lucide-react";
+import { Bookmark, ChevronDown, ChevronUp, Pencil, RotateCw, Save, Search, Trash2 } from "lucide-react";
 import { ApiError, backend } from "../../api/client";
 import type { SavedPlayer } from "../../api/types";
 import { AgentAvatar } from "../../components/domain/AgentAvatar";
@@ -66,6 +66,13 @@ export function EncountersView() {
             className="w-56 rounded-sm border border-edge bg-panel py-1.5 pl-7 pr-2 text-[12px] text-zinc-200 placeholder:text-zinc-600"
           />
         </label>
+        <button
+          data-testid="saved-players-refresh-button"
+          onClick={refresh}
+          className="inline-flex items-center gap-1.5 border border-edge rounded-sm px-2.5 py-1.5 text-[11px] uppercase tracking-wider font-semibold text-zinc-400 hover:bg-zinc-800 transition-colors"
+        >
+          <RotateCw size={12} /> Refresh
+        </button>
       </div>
 
       {(error || mutationError) && (
@@ -125,7 +132,7 @@ export function EncountersView() {
                             value={draft}
                             maxLength={500}
                             onChange={(event) => setDraft(event.target.value)}
-                            className="min-h-14 w-full resize-y rounded-sm border border-amber-400/40 bg-ink px-2 py-1.5 text-[11px] text-zinc-200 focus:outline-none"
+                            className="min-h-14 w-full resize-y rounded-sm border border-amber-400/40 bg-ink px-2 py-1.5 text-[11px] text-zinc-200 focus-visible:ring-1 focus-visible:ring-amber-400/60"
                           />
                         ) : (
                           <span className="block truncate text-zinc-400" title={player.note}>
