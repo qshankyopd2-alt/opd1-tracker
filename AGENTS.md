@@ -10,6 +10,25 @@ A Windows desktop VALORANT tracker: Tauri 2 shell + React 18 / TypeScript /
 Vite / Tailwind frontend, wrapping a Flask backend that was copied **verbatim**
 from the proven Valorant-Scout reference implementation.
 
+## Source of truth
+
+When instructions appear to conflict, resolve them in this order:
+
+1. The actual current source code (frontend `package.json`, `tsconfig.json`,
+   source tree, backend modules).
+2. This file (`AGENTS.md`) and `docs/BACKEND_CAPABILITIES.md` for architecture,
+   contracts, and conventions.
+3. `design_guidelines.json` for **visual / UI design only** (colors,
+   typography, spacing, layout direction, density, borders, radius, motion,
+   accessibility, OPD1 aesthetic).
+
+`design_guidelines.json` is a visual reference. It must never override the
+current stack, dependencies, API contracts, or repository architecture. It
+must not be used as a reason to introduce new UI libraries, icon packs, or
+charting libraries, to switch the frontend language, or to rewrite working
+components. If a guideline conflicts with the code, the code wins and the
+guideline is updated to match reality.
+
 ## Non-negotiable rules
 
 1. **Treat Riot communication as sensitive, tiered code.**

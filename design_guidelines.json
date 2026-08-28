@@ -1,5 +1,6 @@
 {
   "theme": "dark",
+  "purpose": "Visual and UX design reference for OPD1 Tracker. Describes how the UI should look and feel. Does NOT prescribe the technical stack, dependencies, or architecture of the application — those are governed by AGENTS.md, package.json, and the actual source code. This file must never override the project's established stack, dependencies, API contracts, or repository architecture.",
   "typography": {
     "headings": {
       "fontFamily": "Barlow Condensed, sans-serif",
@@ -58,17 +59,17 @@
   "layouts": {
     "app_shell": "Flex layout: Left Sidebar Navigation (w-64 or w-16 collapsed) + Main Content (flex-1). Fixed Bottom Status Bar (h-10).",
     "live_match": "High-density Grid. Two-column split (grid-cols-1 xl:grid-cols-2) for Ally vs Enemy teams. Highly compressed table rows for players.",
-    "competitive": "Bento Grid Pattern. Top span for RR line chart (Recharts) and Current Rank card. Bottom for dense stat split tables.",
+    "competitive": "Bento Grid Pattern. Top span for the RR line chart and Current Rank card. Bottom for dense stat split tables.",
     "spacing": "Tight spacing (gap-2 to gap-4) within data tables. Generous padding (p-6) around major container edges.",
     "alignment": "Left-align text columns, right-align numeric metrics (KD, Win %, RR). Never center-align tabular data."
   },
-  "component_instructions": {
+  "component_guidance": {
     "navigation": "Persistent left sidebar. Highlight active route with brand accent left-border and lighter background. Include clear labels.",
     "status_bar": "Fixed at window bottom. Display client states (Offline, Lobby, Agent Select, In Game). Use bright badging (Red/Green/Yellow) to indicate status.",
     "tables": "Zebra striping (subtle bg-zinc-900/50) or border-b for row separation. Use explicit width for metric columns to maintain alignment.",
     "player_row": "Complex component: Agent avatar (left), Stacked Name/Rank, K/D, Headshot %, Win Rate, Smurf warning flag, Party color vertical bar indicator on the left edge.",
-    "badges": "Sharp edges, uppercase (tracking-wider), distinct high-contrast colors. CRITICAL for 'SIMULATION', 'Stale Data', 'Smurf'.",
-    "charts": "Use Shadcn charts / Recharts. Minimal axes lines, vibrant stroke for the primary line chart (RR progression), detailed custom tooltip."
+    "badges": "Sharp edges, uppercase (tracking-wider), distinct high-contrast colors. Prominently highlight 'Stale Data' and 'Smurf' indicators.",
+    "charts": "Minimal axes lines, vibrant stroke for the primary line chart (RR progression), detailed custom tooltip. OPD1 currently renders charts as inline SVG (see `frontend/src/views/competitive/RRChart.tsx`); keep the visual language consistent if a new chart surface is added."
   },
   "motion": {
     "hover": "Instant background shift (bg-zinc-800), subtle border highlight.",
@@ -80,19 +81,21 @@
     "interactive": "Clear focus rings (ring-brand) on all inputs, tabs, and buttons."
   },
   "media": {
-    "offline_hero": "https://images.unsplash.com/photo-1626958390943-a70309376444?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjA1ODh8MHwxfHNlYXJjaHwxfHxkYXJrJTIwdGFjdGljYWwlMjBzZXR1cCUyMGtleWJvYXJkJTIwbmVvbnxlbnwwfHx8fDE3ODc0MTM0ODB8MA&ixlib=rb-4.1.0&q=85",
+    "offline_hero": "OPD1 ships a custom in-app OfflineHero component (`frontend/src/views/live/OfflineHero.tsx`). The previous external Unsplash hero image is not used.",
     "valorant_assets": "Fetch all external imagery (agents, ranks, maps, skins, cards) strictly from media.valorant-api.com."
   },
-  "UNIVERSAL_GUIDELINES_FOR_MAIN_AGENT": [
-    "CRITICAL: You MUST use JavaScript (.js/.jsx) ONLY. Do NOT use TypeScript (.ts/.tsx) anywhere in the frontend.",
-    "Implement the layout strictly with Tailwind CSS and Shadcn UI components. Rely on Grid and Flexbox for the high-density tracker layouts.",
+  "design_notes_for_agents": [
+    "This file describes how OPD1 should look and feel. It is not a license to change the stack.",
+    "Do NOT switch the frontend language, UI library, icon set, or chart library just to satisfy this file. Match what is already in `frontend/package.json` and the source tree.",
+    "Do NOT introduce new UI dependencies (Shadcn, Phosphor, Recharts, charting libraries, icon packs, etc.) unless the project has explicitly adopted them. The current OPD1 stack uses React + TypeScript, Tailwind CSS, custom UI primitives in `frontend/src/components/ui/`, and `lucide-react` for icons.",
+    "Use TypeScript (.ts/.tsx) and React 18 patterns consistent with the rest of the codebase. Do NOT introduce JavaScript (.js/.jsx) source files into the frontend.",
+    "Implement layout strictly with Tailwind CSS using Grid and Flexbox for the high-density tracker layouts.",
     "DO NOT use generic centered text alignments. Left-align data/labels, right-align numbers.",
     "Every interactive element and key informational wrapper MUST have a `data-testid` attribute (e.g., `data-testid=\"live-match-ally-table\"`).",
     "DO NOT use completely transparent backgrounds where text overlays images/content. Always use a solid background or a heavy backdrop filter.",
-    "Use `@phosphor-icons/react` for sharp, technical UI icons.",
-    "Use `recharts` for the RR history graph.",
-    "Ensure 'Smurf' flags and 'SIMULATION' mode badges are extremely visible and visually alarming.",
+    "Ensure 'Smurf' flags and 'Stale Data' badges are highly visible and visually alarming.",
     "Do NOT use glassmorphism, cyberpunk, or retro terminal styles. Stick to a solid, flat, tactical 'Performance Pro' aesthetic designed for pure usability and readability.",
-    "Handle all 'Loading' and 'Empty/Offline' states elegantly. If VALORANT is not running, show a full-page 'Offline' hero state using the offline_hero image with an overlay, rather than just empty tables."
+    "Handle all 'Loading' and 'Empty/Offline' states elegantly. When VALORANT is not running, surface the in-app OfflineHero rather than rendering empty tables.",
+    "Real data only. The UI must never present demo/generated data as real. Backend demo payloads are marked `source:\"demo\"` / `demo:true`; gate live rendering on `source === \"local\"`."
   ]
 }
