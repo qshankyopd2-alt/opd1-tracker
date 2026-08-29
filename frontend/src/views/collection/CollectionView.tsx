@@ -16,12 +16,12 @@ const TIER_COLORS: Record<string, string> = {
   Other: "#A1A1AA",
 };
 
-function ValueCard({ label, value, sub, testId }: { label: string; value: string; sub?: string; testId: string }) {
+function ValueCard({ label, value, sub, testId, highlight }: { label: string; value: string; sub?: string; testId: string; highlight?: boolean }) {
   return (
-    <div className="bg-card border border-edge rounded-md p-3.5" data-testid={testId}>
-      <div className="text-[10px] uppercase tracking-[0.25em] text-zinc-500">{label}</div>
-      <div className="font-display font-black text-[26px] leading-tight num text-zinc-100">{value}</div>
-      {sub && <div className="text-[11px] text-zinc-500">{sub}</div>}
+    <div className={`border rounded-md p-3.5 ${highlight ? 'bg-brand/5 border-brand/50 shadow-[inset_0_0_12px_rgba(249,115,22,0.05)]' : 'bg-card border-edge'}`} data-testid={testId}>
+      <div className={`text-[10px] uppercase tracking-[0.25em] ${highlight ? 'text-brand/80' : 'text-zinc-500'}`}>{label}</div>
+      <div className={`font-display font-black text-[26px] leading-tight num ${highlight ? 'text-brand' : 'text-zinc-100'}`}>{value}</div>
+      {sub && <div className={`text-[11px] ${highlight ? 'text-brand/60' : 'text-zinc-500'}`}>{sub}</div>}
     </div>
   );
 }
@@ -48,33 +48,34 @@ export function CollectionView() {
   if (!data?.available) {
     return (
       <div className="p-5" data-testid="collection-view">
-        <EmptyState
-          icon={Package}
-          title="Collection unavailable"
-          message={
-            data?.retryable
-              ? "Your collection is read from the local Riot client. Start VALORANT and sign in, then try again."
-              : "Collection data needs the live VALORANT client — it isn't available in demo mode."
-          }
-          testId="collection-unavailable"
-        >
-          {data?.retryable && (
-            <button
-              data-testid="collection-retry-button"
-              onClick={refresh}
-              className="inline-flex items-center gap-1.5 border border-edge rounded-sm px-3 py-1.5 text-[11px] uppercase tracking-wider font-semibold text-zinc-300 hover:bg-zinc-800 transition-colors"
-            >
-              <RotateCw size={12} /> Try again
-            </button>
-          )}
-        </EmptyState>
+        <div className="flex h-[400px] items-center justify-center rounded-md border border-edge bg-card/30">
+          <EmptyState
+            icon={Package}
+            title="Collection unavailable"
+            message={
+              data?.retryable
+                ? "Your collection is read from the local Riot client. Start VALORANT and sign in, then try again."
+                : "Collection data needs the live VALORANT client — it isn't available in demo mode."
+            }
+            testId="collection-unavailable"
+          >
+            {data?.retryable && (
+              <button
+                data-testid="collection-retry-button"
+                onClick={refresh}
+                className="mt-2 inline-flex items-center gap-1.5 border border-edge rounded-sm bg-panel px-4 py-2 text-[11px] uppercase tracking-wider font-semibold text-zinc-300 hover:bg-zinc-800 hover:text-zinc-100 transition-colors shadow-sm"
+              >
+                <RotateCw size={12} /> Try again
+              </button>
+            )}
+          </EmptyState>
+        </div>
       </div>
     );
   }
 
   const counts = data.counts;
   const tiers = Object.entries(data.tiers ?? {}).sort((a, b) => b[1].vp - a[1].vp);
-  const maxTierVp = Math.max(1, ...tiers.map(([, t]) => t.vp));
 
   return (
     <div className="p-5 space-y-4" data-testid="collection-view">
@@ -100,6 +101,7 @@ export function CollectionView() {
           value={`${(data.totalVp ?? 0).toLocaleString()} VP`}
           sub={`≈ $${(data.usdApprox ?? 0).toLocaleString()} USD · ${counts?.skins ?? 0} paid skins`}
           testId="collection-value-card"
+          highlight={true}
         />
         <ValueCard label="Valorant Points" value={(data.wallet?.vp ?? 0).toLocaleString()} sub="wallet balance" testId="wallet-vp-card" />
         <ValueCard label="Radianite" value={(data.wallet?.rad ?? 0).toLocaleString()} sub="upgrade currency" testId="wallet-rad-card" />
@@ -108,25 +110,29 @@ export function CollectionView() {
 
       <div className="grid grid-cols-1 xl:grid-cols-[340px_1fr] gap-4">
         <Section title="Breakdown" testId="collection-breakdown">
-          <div className="space-y-2" data-testid="tier-breakdown">
-            {tiers.map(([name, t]) => (
-              <div key={name}>
-                <div className="flex justify-between text-[11px] mb-0.5">
-                  <span style={{ color: TIER_COLORS[name] ?? "#A1A1AA" }} className="font-semibold">
-                    {name}
-                  </span>
-                  <span className="text-zinc-500 num">
-                    {t.skins} skins · {t.vp.toLocaleString()} VP
-                  </span>
+          <div className="space-y-4" data-testid="tier-breakdown">
+            <div className="flex h-3 w-full overflow-hidden rounded-full bg-zinc-800 ring-1 ring-inset ring-white/5">
+              {tiers.map(([name, t]) => (
+                <div
+                  key={name}
+                  className="h-full transition-all duration-500 first:rounded-l-full last:rounded-r-full hover:brightness-125 cursor-default"
+                  style={{ width: `${(t.vp / (data.totalVp || 1)) * 100}%`, backgroundColor: TIER_COLORS[name] ?? "#A1A1AA" }}
+                  title={`${name}: ${t.skins} skins, ${t.vp.toLocaleString()} VP`}
+                />
+              ))}
+            </div>
+
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-y-2 gap-x-4">
+              {tiers.map(([name, t]) => (
+                <div key={name} className="flex items-center justify-between text-[11px]">
+                  <div className="flex items-center gap-1.5">
+                    <span className="h-2.5 w-2.5 rounded-sm shadow-sm" style={{ backgroundColor: TIER_COLORS[name] ?? "#A1A1AA" }} />
+                    <span style={{ color: TIER_COLORS[name] ?? "#A1A1AA" }} className="font-semibold">{name}</span>
+                  </div>
+                  <span className="text-zinc-500 num">{t.skins} skins</span>
                 </div>
-                <div className="h-1.5 bg-zinc-800 rounded-full overflow-hidden">
-                  <div
-                    className="h-full rounded-full"
-                    style={{ width: `${(t.vp / maxTierVp) * 100}%`, backgroundColor: TIER_COLORS[name] ?? "#A1A1AA" }}
-                  />
-                </div>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
           <div className="mt-4 grid grid-cols-2 gap-2 text-[11px] text-zinc-400">
             <div className="border border-edge rounded-sm px-2 py-1.5">Earned skins <span className="text-zinc-200 num float-right">{counts?.earned ?? 0}</span></div>
@@ -141,20 +147,20 @@ export function CollectionView() {
           {(data.top ?? []).length === 0 ? (
             <p className="text-[12px] text-zinc-500">No priced skins found in this collection.</p>
           ) : (
-            <div className="grid grid-cols-2 lg:grid-cols-3 gap-2 stagger" data-testid="top-skins-grid">
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 stagger" data-testid="top-skins-grid">
               {(data.top ?? []).map((s) => (
-                <div key={s.name} className="border border-edge rounded-sm p-2.5 bg-panel flex flex-col">
+                <div key={s.name} className="rounded-sm p-3 bg-panel flex flex-col shadow-sm border-b border-l border-r border-edge" style={{ borderTop: `2px solid ${TIER_COLORS[s.tier] ?? '#A1A1AA'}` }}>
                   {s.icon ? (
-                    <img src={s.icon} alt={s.name} className="h-9 object-contain self-start" loading="lazy" draggable={false} />
+                    <img src={s.icon} alt={s.name} className="h-10 object-contain self-center hover:scale-105 transition-transform duration-300" loading="lazy" draggable={false} />
                   ) : (
-                    <div className="h-9" />
+                    <div className="h-10" />
                   )}
-                  <div className="text-[11px] font-semibold mt-2 truncate">{s.name}</div>
-                  <div className="flex items-center justify-between mt-0.5">
-                    <span className="text-[10px]" style={{ color: TIER_COLORS[s.tier] ?? "#A1A1AA" }}>
+                  <div className="text-[11px] font-semibold mt-3 truncate text-zinc-200" title={s.name}>{s.name}</div>
+                  <div className="flex items-center justify-between mt-1">
+                    <span className="text-[9px] uppercase tracking-wider font-semibold" style={{ color: TIER_COLORS[s.tier] ?? "#A1A1AA" }}>
                       {s.tier}
                     </span>
-                    <span className="text-[10px] text-zinc-500 num">{s.vp.toLocaleString()} VP</span>
+                    <span className="text-[11px] font-bold text-zinc-200 num tracking-tight">{s.vp.toLocaleString()}</span>
                   </div>
                 </div>
               ))}
@@ -162,13 +168,14 @@ export function CollectionView() {
           )}
 
           {(data.recent ?? []).length > 0 && (
-            <div className="mt-4 border-t border-edge pt-3" data-testid="recent-skins">
-              <h4 className="text-[10px] uppercase tracking-[0.25em] text-zinc-500 mb-2">Recently added</h4>
-              <div className="flex flex-wrap gap-1.5">
+            <div className="mt-6 pt-4 border-t border-edge" data-testid="recent-skins">
+              <h4 className="text-[10px] font-bold uppercase tracking-[0.25em] text-zinc-500 mb-3">Recently added</h4>
+              <div className="flex flex-wrap gap-2">
                 {(data.recent ?? []).map((s) => (
-                  <span key={s.name} className="text-[11px] border border-edge rounded-sm px-2 py-1 bg-panel">
-                    {s.name} <span className="text-zinc-500 num">{s.vp.toLocaleString()} VP</span>
-                  </span>
+                  <div key={s.name} className="flex items-center gap-2 text-[11px] border border-edge rounded-sm py-1.5 px-2.5 bg-card" style={{ borderLeft: `3px solid ${TIER_COLORS[s.tier] ?? '#A1A1AA'}` }}>
+                    <span className="text-zinc-200 font-medium truncate max-w-[120px]">{s.name}</span>
+                    <span className="text-zinc-500 num">{s.vp.toLocaleString()}</span>
+                  </div>
                 ))}
               </div>
             </div>
