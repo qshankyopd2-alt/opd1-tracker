@@ -86,7 +86,7 @@ function MatchRow({
           ) : (
             <span className="text-zinc-600 text-[11px]">—</span>
           )}
-          {rankIcon && <img src={rankIcon} alt="" className="ml-1.5 inline-block h-5 w-5 align-middle" loading="lazy" />}
+          {rankIcon && <img src={rankIcon} alt="" className="ml-1.5 inline-block h-5 w-5 align-middle" loading="lazy" onError={(event) => { event.currentTarget.style.display = "none"; }} />}
         </span>
 
         <span className="flex items-center justify-end gap-1.5 text-zinc-500">

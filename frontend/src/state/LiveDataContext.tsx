@@ -1,7 +1,9 @@
-import { createContext, useContext, useMemo, useRef, type ReactNode } from "react";
+import { createContext, useContext, useEffect, useMemo, useRef, type ReactNode } from "react";
 import { backend } from "../api/client";
 import type { LiveBoard } from "../api/types";
 import { usePoll } from "../hooks/usePoll";
+
+const designModeEnabled = import.meta.env.DEV && import.meta.env.VITE_DESIGN_MODE === "true";
 
 interface LiveData {
   board: LiveBoard | null;
@@ -35,6 +37,13 @@ export function LiveDataProvider({ children }: { children: ReactNode }) {
     },
     pollInterval(boardRef.current),
   );
+
+  useEffect(() => {
+    if (!designModeEnabled) return;
+    const refreshPreview = () => poll.refresh();
+    window.addEventListener("opd1:design-view", refreshPreview);
+    return () => window.removeEventListener("opd1:design-view", refreshPreview);
+  }, [poll.refresh]);
 
   const value = useMemo<LiveData>(() => {
     const isLive = poll.data?.source === "local";

@@ -11,10 +11,13 @@ import { RecapCard } from "./RecapCard";
 import { TeamPanel } from "./TeamPanel";
 import { splitTeams } from "./teamSplit";
 
+const designModeEnabled = import.meta.env.DEV && import.meta.env.VITE_DESIGN_MODE === "true";
+
 export function LiveView() {
   const { board, error, loading, showBoard, refresh } = useLiveData();
   const [selected, setSelected] = useState<{ player: LivePlayer; accountPuuid: string | null } | null>(null);
   const [savedOverrides, setSavedOverrides] = useState<Record<string, { saved: boolean; note: string }>>({});
+  const [previewDrawerRequested, setPreviewDrawerRequested] = useState(false);
   const accountPuuid = board?.selfPuuid ?? null;
 
   useEffect(() => {
@@ -35,6 +38,21 @@ export function LiveView() {
       };
     });
   }, [board, savedOverrides]);
+
+  useEffect(() => {
+    if (!designModeEnabled) return;
+    const onPreviewView = (event: Event) => {
+      setPreviewDrawerRequested((event as CustomEvent<string>).detail === "live-drawer");
+    };
+    window.addEventListener("opd1:design-view", onPreviewView);
+    return () => window.removeEventListener("opd1:design-view", onPreviewView);
+  }, []);
+
+  useEffect(() => {
+    if (!previewDrawerRequested || !board) return;
+    const player = board.players.find((candidate) => candidate.smurf) ?? board.players[0];
+    if (player) setSelected({ player, accountPuuid: board.selfPuuid ?? null });
+  }, [board, previewDrawerRequested]);
 
   if (loading && !board) {
     return (

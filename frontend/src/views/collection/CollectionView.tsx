@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { Package, RotateCw } from "lucide-react";
 import { backend } from "../../api/client";
 import { Badge } from "../../components/ui/Badge";
@@ -7,6 +8,8 @@ import { Section } from "../../components/ui/Section";
 import { PageHeader } from "../../components/shell/PageHeader";
 import { TableSkeleton } from "../../components/ui/Skeleton";
 import { usePoll } from "../../hooks/usePoll";
+
+const designModeEnabled = import.meta.env.DEV && import.meta.env.VITE_DESIGN_MODE === "true";
 
 const TIER_COLORS: Record<string, string> = {
   Select: "#5CA3E4",
@@ -19,7 +22,7 @@ const TIER_COLORS: Record<string, string> = {
 
 function ValueCard({ label, value, sub, testId, highlight }: { label: string; value: string; sub?: string; testId: string; highlight?: boolean }) {
   return (
-    <div className={`border rounded-md p-3.5 ${highlight ? 'bg-brand/5 border-brand/50 shadow-[inset_0_0_12px_rgba(249,115,22,0.05)]' : 'bg-card border-edge'}`} data-testid={testId}>
+    <div className={`rounded-md border p-3.5 ${highlight ? "border-brand/50 bg-brand/5" : "border-edge bg-card"}`} data-testid={testId}>
       <div className={`text-[10px] uppercase tracking-[0.25em] ${highlight ? 'text-brand/80' : 'text-zinc-500'}`}>{label}</div>
       <div className={`font-display font-black text-[26px] leading-tight num ${highlight ? 'text-brand' : 'text-zinc-100'}`}>{value}</div>
       {sub && <div className={`text-[11px] ${highlight ? 'text-brand/60' : 'text-zinc-500'}`}>{sub}</div>}
@@ -29,6 +32,13 @@ function ValueCard({ label, value, sub, testId, highlight }: { label: string; va
 
 export function CollectionView() {
   const { data, error, loading, refresh } = usePoll(() => backend.inventory(), null);
+
+  useEffect(() => {
+    if (!designModeEnabled) return;
+    const refreshPreview = () => refresh();
+    window.addEventListener("opd1:design-view", refreshPreview);
+    return () => window.removeEventListener("opd1:design-view", refreshPreview);
+  }, [refresh]);
 
   if (loading) {
     return (
@@ -64,7 +74,7 @@ export function CollectionView() {
               <button
                 data-testid="collection-retry-button"
                 onClick={refresh}
-                className="mt-2 inline-flex items-center gap-1.5 border border-edge rounded-sm bg-panel px-4 py-2 text-[11px] uppercase tracking-wider font-semibold text-zinc-300 hover:bg-zinc-800 hover:text-zinc-100 transition-colors shadow-sm"
+                className="mt-2 inline-flex items-center gap-1.5 rounded-sm border border-edge bg-panel px-4 py-2 text-[11px] font-semibold uppercase tracking-wider text-zinc-300 transition-colors hover:bg-zinc-800 hover:text-zinc-100"
               >
                 <RotateCw size={12} /> Try again
               </button>
@@ -115,7 +125,7 @@ export function CollectionView() {
               {tiers.map(([name, t]) => (
                 <div
                   key={name}
-                  className="h-full transition-all duration-500 first:rounded-l-full last:rounded-r-full hover:brightness-125 cursor-default"
+                  className="h-full cursor-default transition-colors duration-200 first:rounded-l-full last:rounded-r-full hover:brightness-125"
                   style={{ width: `${(t.vp / (data.totalVp || 1)) * 100}%`, backgroundColor: TIER_COLORS[name] ?? "#A1A1AA" }}
                   title={`${name}: ${t.skins} skins, ${t.vp.toLocaleString()} VP`}
                 />
@@ -126,7 +136,7 @@ export function CollectionView() {
               {tiers.map(([name, t]) => (
                 <div key={name} className="flex items-center justify-between text-[11px]">
                   <div className="flex items-center gap-1.5">
-                    <span className="h-2.5 w-2.5 rounded-sm shadow-sm" style={{ backgroundColor: TIER_COLORS[name] ?? "#A1A1AA" }} />
+                    <span className="h-2.5 w-2.5 rounded-sm" style={{ backgroundColor: TIER_COLORS[name] ?? "#A1A1AA" }} />
                     <span style={{ color: TIER_COLORS[name] ?? "#A1A1AA" }} className="font-semibold">{name}</span>
                   </div>
                   <span className="text-zinc-500 num">{t.skins} skins</span>
@@ -149,7 +159,7 @@ export function CollectionView() {
           ) : (
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 stagger" data-testid="top-skins-grid">
               {(data.top ?? []).map((s) => (
-                <div key={s.name} className="rounded-sm p-3 bg-panel flex flex-col shadow-sm border-b border-l border-r border-edge" style={{ borderTop: `2px solid ${TIER_COLORS[s.tier] ?? '#A1A1AA'}` }}>
+                <div key={s.name} className="flex flex-col rounded-sm border-b border-l border-r border-edge bg-panel p-3" style={{ borderTop: `2px solid ${TIER_COLORS[s.tier] ?? "#A1A1AA"}` }}>
                   {s.icon ? (
                     <img src={s.icon} alt={s.name} className="h-10 object-contain self-center hover:scale-105 transition-transform duration-300" loading="lazy" draggable={false} />
                   ) : (

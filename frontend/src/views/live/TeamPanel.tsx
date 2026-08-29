@@ -40,32 +40,32 @@ export function TeamPanel({
   }
 
   return (
-    <section data-testid={testId} className="flex h-full min-w-0 flex-col overflow-hidden rounded-md border border-edge bg-card shadow-sm">
-      <header className="flex min-h-[38px] items-center gap-3 border-b border-edge bg-panel px-3 py-1">
-        <span className="w-1.5 h-4 rounded-[2px] shadow-sm" style={{ backgroundColor: accent }} />
-        <h3 className="font-display font-black uppercase tracking-wider text-[16px]" style={{ color: accent }}>
+    <section data-testid={testId} className="flex h-full min-w-0 flex-col overflow-hidden rounded-md border border-edge bg-card">
+      <header className="flex min-h-[38px] items-center gap-2 border-b border-edge bg-panel px-3 py-1">
+        <span className="h-4 w-1.5 rounded-[2px]" style={{ backgroundColor: accent }} />
+        <h3 className="shrink-0 whitespace-nowrap font-display text-[14px] font-black uppercase tracking-wider xl:text-[16px]" style={{ color: accent }}>
           {label}
         </h3>
         {stats && players.length > 1 && (
           <div
-            className="ml-auto flex items-center gap-3 text-[11px] text-zinc-400 num"
+            className="ml-auto flex items-center gap-1.5 text-[11px] text-zinc-400 num"
             title="Team averages: current rank, Act win rate, and the recent-match K/D available for each player."
           >
-            <div className="flex items-center gap-1.5 rounded-sm bg-zinc-900/50 px-2 py-0.5 border border-edge">
-              <span className="text-[9px] font-bold uppercase tracking-widest text-zinc-500 mr-1">Avg</span>
-              {stats.rankIcon && <img src={stats.rankIcon} alt="" className="w-4 h-4 drop-shadow-sm" loading="lazy" />}
+            <div className="flex items-center gap-1 rounded-sm border border-edge bg-zinc-900/50 px-1.5 py-0.5">
+              <span className="mr-0.5 text-[8px] font-bold uppercase tracking-widest text-zinc-500">Avg</span>
+              {stats.rankIcon && <img src={stats.rankIcon} alt="" className="h-4 w-4" loading="lazy" onError={(event) => { event.currentTarget.style.display = "none"; }} />}
               <span className="font-bold" style={{ color: stats.rankColor }}>{stats.avgRank}</span>
             </div>
-            <div className="flex items-center gap-1.5 rounded-sm bg-zinc-900/50 px-2 py-0.5 border border-edge">
-              <span className="text-[9px] font-bold uppercase tracking-widest text-zinc-500">KD</span>
+            <div className="flex items-center gap-1 rounded-sm border border-edge bg-zinc-900/50 px-1.5 py-0.5">
+              <span className="text-[8px] font-bold uppercase tracking-widest text-zinc-500">KD</span>
               <span className="text-zinc-100 font-bold">{stats.avgKd !== null ? fmtNum(stats.avgKd, 2) : "—"}</span>
             </div>
-            <div className="flex items-center gap-1.5 rounded-sm bg-zinc-900/50 px-2 py-0.5 border border-edge">
-              <span className="text-[9px] font-bold uppercase tracking-widest text-zinc-500">WR</span>
+            <div className="flex items-center gap-1 rounded-sm border border-edge bg-zinc-900/50 px-1.5 py-0.5">
+              <span className="text-[8px] font-bold uppercase tracking-widest text-zinc-500">WR</span>
               <span className="text-zinc-100 font-bold">{fmtPct(stats.avgWinRate)}</span>
             </div>
             {stats.smurfCount > 0 && (
-              <div className="flex items-center gap-1 rounded-sm bg-amber-500/10 px-2 py-0.5 border border-amber-500/20 text-amber-400 font-bold" data-testid={`${testId}-smurf-count`}>
+              <div className="flex items-center gap-1 rounded-sm border border-amber-500/20 bg-amber-500/10 px-1.5 py-0.5 font-bold text-amber-400" data-testid={`${testId}-smurf-count`}>
                 {stats.smurfCount} smurf{stats.smurfCount > 1 ? "s" : ""}
               </div>
             )}
@@ -81,7 +81,7 @@ export function TeamPanel({
           <span
             key={party.id}
             title={`${party.size} players share this Riot party`}
-            className="inline-flex items-center gap-1.5 rounded-sm border border-edge bg-panel px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-zinc-300 shadow-sm"
+            className="inline-flex items-center gap-1.5 rounded-sm border border-edge bg-panel px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-zinc-300"
           >
             <span className="h-2 w-2 rounded-[2px]" style={{ backgroundColor: party.color }} />
             Party {party.number} <span className="text-zinc-500 mx-0.5">·</span> {party.declaredSize && party.declaredSize > party.size

@@ -13,7 +13,8 @@ import type {
   SessionView,
   StateInfo,
 } from "./types";
-import { designApi, designConnection, isDesignMode } from "../dev/designMode";
+
+const designModeEnabled = import.meta.env.DEV && import.meta.env.VITE_DESIGN_MODE === "true";
 
 export class ApiError extends Error {
   constructor(message: string, readonly status?: number) {
@@ -31,7 +32,8 @@ interface BackendConnection {
 let connectionPromise: Promise<BackendConnection> | null = null;
 
 async function resolveConnection(): Promise<BackendConnection> {
-  if (isDesignMode()) {
+  if (designModeEnabled) {
+    const { designConnection } = await import("../dev/designMode");
     return designConnection();
   }
   if ("__TAURI_INTERNALS__" in window) {
@@ -59,10 +61,13 @@ async function api<T>(path: string, init?: RequestInit & { timeoutMs?: number })
   if (pending) return pending as Promise<T>;
 
   const run = (async () => {
-    if (isDesignMode()) {
+    if (designModeEnabled) {
       try {
         const kind = pathToKind(path);
-        if (kind) return await designApi<T>(kind);
+        if (kind) {
+          const { designApi } = await import("../dev/designMode");
+          return await designApi<T>(kind);
+        }
         throw new ApiError(`Design harness has no mapping for ${path}.`);
       } catch (err) {
         if (err instanceof ApiError) throw err;

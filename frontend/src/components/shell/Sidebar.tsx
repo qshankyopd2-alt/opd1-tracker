@@ -19,7 +19,7 @@ export function Sidebar() {
     <aside data-testid="sidebar" className="w-52 shrink-0 border-r border-edge bg-panel flex flex-col">
       <div className="px-4 pt-5 pb-4 border-b border-edge bg-zinc-900/50">
         <div className="flex items-center gap-2.5">
-          <span className="flex items-center justify-center w-7 h-7 bg-brand border border-brand_hover rounded-[2px] shadow-[0_0_8px_rgba(249,115,22,0.3)]">
+          <span className="flex h-7 w-7 items-center justify-center rounded-[2px] border border-brand-hover bg-brand">
             <Crosshair size={15} className="text-white" />
           </span>
           <span className="font-display italic font-black text-[22px] leading-none tracking-tight text-zinc-100">
@@ -37,10 +37,10 @@ export function Sidebar() {
               key={id}
               data-testid={`nav-${id}`}
               onClick={() => setView(id)}
-              className={`w-full flex items-center gap-3 px-3 py-2.5 text-[13px] font-semibold rounded-sm transition-colors duration-200 ${
+              className={`flex w-full items-center gap-3 border-l-2 px-3 py-2.5 text-[13px] font-semibold transition-colors duration-200 ${
                 active
-                  ? "bg-zinc-800 text-zinc-100 border border-zinc-700 shadow-sm"
-                  : "border border-transparent text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800/50 hover:border-zinc-800/50"
+                  ? "border-brand bg-zinc-800/70 text-zinc-100"
+                  : "border-transparent text-zinc-400 hover:bg-zinc-800/50 hover:text-zinc-200"
               }`}
             >
               <Icon size={16} className={active ? "text-brand" : "text-zinc-500"} />

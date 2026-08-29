@@ -42,7 +42,7 @@ export function DesignModeBar() {
       {open && (
         <div
           data-testid="design-mode-panel"
-          className="w-[420px] max-h-[70vh] overflow-y-auto rounded-md border border-brand/60 bg-panel/95 p-3 shadow-2xl backdrop-blur"
+          className="max-h-[70vh] w-[420px] overflow-y-auto rounded-md border border-brand/60 bg-panel p-3"
         >
           <div className="mb-2 flex items-center justify-between">
             <div className="text-[10px] uppercase tracking-[0.2em] text-brand font-bold">Design Harness</div>

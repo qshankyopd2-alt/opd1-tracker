@@ -77,6 +77,7 @@ export function setDesignError(next: { error: string } | null): void {
 }
 
 export function applyDesignView(view: PreviewViewId): void {
+  setDesignError(null);
   switch (view) {
     case "live-pregame":
       setDesignSnapshot(makeSnapshot("PREGAME", 1));
@@ -88,7 +89,10 @@ export function applyDesignView(view: PreviewViewId): void {
       setDesignSnapshot(makeSnapshot("MENUS", 1));
       break;
     case "live-offline":
-      setDesignSnapshot(makeSnapshot("OFFLINE", 1));
+      {
+        const offline = makeSnapshot("OFFLINE", 1);
+        setDesignSnapshot({ ...offline, board: { ...offline.board, source: "demo" } });
+      }
       break;
     case "live-drawer": {
       const ingame = makeSnapshot("INGAME", 1);
@@ -127,7 +131,6 @@ export function applyDesignView(view: PreviewViewId): void {
     case "ascii":
     case "settings":
       setDesignSnapshot(makeSnapshot("INGAME", 1));
-      setDesignError(null);
       break;
   }
 }

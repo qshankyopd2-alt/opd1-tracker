@@ -1,4 +1,4 @@
-import { Fragment, useMemo, useState } from "react";
+import { Fragment, useEffect, useMemo, useState } from "react";
 import { Bookmark, ChevronDown, ChevronUp, Pencil, RotateCw, Save, Search, Trash2 } from "lucide-react";
 import { ApiError, backend } from "../../api/client";
 import type { SavedPlayer } from "../../api/types";
@@ -10,6 +10,8 @@ import { PageHeader } from "../../components/shell/PageHeader";
 import { usePoll } from "../../hooks/usePoll";
 import { timeAgo } from "../../lib/format";
 
+const designModeEnabled = import.meta.env.DEV && import.meta.env.VITE_DESIGN_MODE === "true";
+
 export function EncountersView() {
   const [query, setQuery] = useState("");
   const [editing, setEditing] = useState<string | null>(null);
@@ -18,6 +20,13 @@ export function EncountersView() {
   const [busy, setBusy] = useState<string | null>(null);
   const [mutationError, setMutationError] = useState<string | null>(null);
   const { data, error, loading, refresh } = usePoll(() => backend.savedPlayers(), null);
+
+  useEffect(() => {
+    if (!designModeEnabled) return;
+    const refreshPreview = () => refresh();
+    window.addEventListener("opd1:design-view", refreshPreview);
+    return () => window.removeEventListener("opd1:design-view", refreshPreview);
+  }, [refresh]);
 
   const rows = useMemo(() => {
     const q = query.trim().toLowerCase();

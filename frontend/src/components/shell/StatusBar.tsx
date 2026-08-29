@@ -21,7 +21,7 @@ export function StatusBar() {
   return (
     <footer
       data-testid="status-bar"
-      className="h-10 shrink-0 border-t border-edge bg-panel flex items-center px-4 text-[11px] text-zinc-500 font-mono shadow-[0_-1px_2px_rgba(0,0,0,0.5)] z-10 relative"
+      className="relative z-10 flex h-10 shrink-0 items-center border-t border-edge bg-panel px-4 font-mono text-[11px] text-zinc-500"
     >
       <div className="flex items-center gap-4 flex-1">
         <span

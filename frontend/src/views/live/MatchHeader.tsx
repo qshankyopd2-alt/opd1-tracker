@@ -89,6 +89,7 @@ export function MatchHeader({ board }: { board: LiveBoard }) {
               </div>
             </div>
           )}
+        </div>
       </div>
     </div>
   );

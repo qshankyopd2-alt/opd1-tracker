@@ -78,7 +78,7 @@ export function PlayerRow({
       type="button"
       data-testid={`player-row-${player.puuid}`}
       onClick={() => onSelect(player)}
-      className={`group relative flex w-full flex-col overflow-hidden rounded-md border border-edge bg-card/95 px-2.5 py-1.5 text-left transition-colors hover:border-zinc-500 hover:bg-zinc-800/90 shadow-sm ${
+      className={`group relative flex w-full flex-col overflow-hidden rounded-md border border-edge bg-card/95 px-2.5 py-1.5 text-left transition-colors hover:border-zinc-500 hover:bg-zinc-800/90 ${
         player.isSelf ? "border-brand/50 bg-brand/5" : ""
       }`}
     >
@@ -86,7 +86,7 @@ export function PlayerRow({
         <img
           src={player.playerCard}
           alt=""
-          className="pointer-events-none absolute inset-0 h-full w-full object-cover object-center opacity-[0.25] saturate-50 transition-all duration-300 group-hover:opacity-[0.35] group-hover:saturate-100"
+          className="pointer-events-none absolute inset-0 h-full w-full object-cover object-center opacity-[0.25] saturate-50 transition-opacity duration-200 group-hover:opacity-[0.35]"
           draggable={false}
         />
       )}
@@ -96,14 +96,14 @@ export function PlayerRow({
       <span className="relative flex min-w-0 items-start justify-between gap-3 mb-1.5">
         <span className="flex min-w-0 items-start gap-2.5">
           <span
-            className="mt-0.5 h-10 w-[3px] shrink-0 rounded-full shadow-sm"
+            className="mt-0.5 h-10 w-[3px] shrink-0 rounded-full"
             title={player.party ? `Party ${player.party.number}` : undefined}
             style={{ backgroundColor: player.party?.color ?? "transparent" }}
           />
 
           <span className="relative shrink-0 mt-0.5">
             <AgentAvatar portrait={player.agentPortrait} name={player.agent ?? player.name} color={player.agentColor} size={40} />
-            {locked && <span className="absolute -bottom-1 -right-1 h-3 w-3 rounded-full border-2 border-ink bg-victory shadow-sm" />}
+            {locked && <span className="absolute -bottom-1 -right-1 h-3 w-3 rounded-full border-2 border-ink bg-victory" />}
           </span>
 
           <span className="min-w-0 flex-1 flex flex-col justify-center">
@@ -114,20 +114,20 @@ export function PlayerRow({
               {player.party && (
                 <span
                   title={`Party ${player.party.number}`}
-                  className="inline-flex shrink-0 items-center gap-1 rounded-sm border px-1.5 py-0.5 text-[9px] font-black uppercase tracking-widest shadow-sm"
+                  className="inline-flex shrink-0 items-center gap-1 rounded-sm border px-1.5 py-0.5 text-[9px] font-black uppercase tracking-widest"
                   style={{ borderColor: player.party.color, color: player.party.color, backgroundColor: `${player.party.color}15` }}
                 >
                   <span className="h-1.5 w-1.5 rounded-sm" style={{ backgroundColor: player.party.color }} />
                   P{player.party.number}
                 </span>
               )}
-              {player.saved && <Bookmark size={14} className="shrink-0 text-amber-300 drop-shadow-sm" fill="currentColor" aria-label="Saved player" />}
+              {player.saved && <Bookmark size={14} className="shrink-0 text-amber-300" fill="currentColor" aria-label="Saved player" />}
               {player.nameHidden && <EyeOff size={13} className="shrink-0 text-zinc-500" aria-label="streamer mode name" />}
               {player.smurf && (
                 <span
                   data-testid={`smurf-flag-${player.puuid}`}
                   title={player.smurfReasons.join(" · ")}
-                  className="inline-flex shrink-0 items-center gap-1 rounded-sm bg-red-600 px-1.5 py-0.5 text-[10px] font-black uppercase tracking-widest text-white shadow-md border border-red-500 animate-pulse-slow"
+                  className="inline-flex shrink-0 items-center gap-1 rounded-sm border border-defeat bg-defeat px-1.5 py-0.5 text-[10px] font-black uppercase tracking-widest text-white"
                 >
                   <AlertTriangle size={10} strokeWidth={3} /> SMURF
                 </span>
@@ -138,28 +138,28 @@ export function PlayerRow({
               {player.levelHidden ? " · Lvl hidden" : ` · Lvl ${player.level || "?"}`}
               {encTotal > 0 ? ` · seen ${encTotal}x` : ""}
             </span>
-            {player.savedNote && <span className="mt-1 block truncate text-[11px] font-medium leading-none text-amber-300 drop-shadow-sm" title={player.savedNote}>{player.savedNote}</span>}
+            {player.savedNote && <span className="mt-1 block truncate text-[11px] font-medium leading-none text-amber-300" title={player.savedNote}>{player.savedNote}</span>}
           </span>
         </span>
 
         <span className="min-w-[130px] shrink-0 text-right flex flex-col items-end justify-center">
           <span className="flex items-center justify-end gap-2.5">
             <span className="flex flex-col items-end justify-center">
-              <span className="block text-[15px] font-black leading-none tracking-wide drop-shadow-sm" style={{ color: player.rankColor }}>{player.rank}</span>
+              <span className="block text-[15px] font-black leading-none tracking-wide" style={{ color: player.rankColor }}>{player.rank}</span>
               {player.rankTier > 2 && <span className="block mt-1 text-[11px] font-bold leading-none text-zinc-400 num">{player.rr} RR</span>}
             </span>
-            {player.rankIcon && <img src={player.rankIcon} alt="" className="h-10 w-10 shrink-0 drop-shadow-md" loading="lazy" />}
+            {player.rankIcon && <img src={player.rankIcon} alt="" className="h-10 w-10 shrink-0" loading="lazy" onError={(event) => { event.currentTarget.style.display = "none"; }} />}
           </span>
           <span className="mt-1.5 flex items-center justify-end gap-1.5 text-[10px] font-bold leading-none text-zinc-500">
             <span className="text-[9px] uppercase tracking-widest">Peak</span>
-            {player.peakIcon && <img src={player.peakIcon} alt="" className="h-4 w-4 shrink-0 opacity-80" loading="lazy" />}
+            {player.peakIcon && <img src={player.peakIcon} alt="" className="h-4 w-4 shrink-0 opacity-80" loading="lazy" onError={(event) => { event.currentTarget.style.display = "none"; }} />}
             <span className="truncate" style={{ color: player.peakColor }}>{player.peakRank}</span>
           </span>
         </span>
       </span>
 
       {/* Middle Row: Metrics Grid */}
-      <span className="relative grid grid-cols-4 gap-px bg-edge/40 border border-edge/60 rounded-sm overflow-hidden shadow-inner mb-1.5">
+      <span className="relative mb-1.5 grid grid-cols-4 gap-px overflow-hidden rounded-sm border border-edge/60 bg-edge/40">
         <span className="bg-ink/80 px-2 py-1.5 flex flex-col justify-center">
           <Metric label="Act games">{player.games || "—"}</Metric>
         </span>
@@ -181,12 +181,12 @@ export function PlayerRow({
         <FeaturedLoadout weapons={player.weapons} />
         <span className="flex shrink-0 items-center justify-end gap-3">
           {player.streak && player.streak.count >= 3 && (
-            <span className={`text-[11px] font-black num px-1.5 py-0.5 rounded-sm shadow-sm ${player.streak.type === "W" ? "bg-victory/20 text-victory border border-victory/30" : "bg-defeat/20 text-defeat border border-defeat/30"}`}>
+            <span className={`rounded-sm border px-1.5 py-0.5 text-[11px] font-black num ${player.streak.type === "W" ? "border-victory/30 bg-victory/20 text-victory" : "border-defeat/30 bg-defeat/20 text-defeat"}`}>
               {player.streak.count}{player.streak.type}
             </span>
           )}
           {player.rrEarned !== null && player.rrEarned !== undefined && (
-            <span className={`text-[11px] font-black uppercase tracking-wider num ${player.rrEarned >= 0 ? "text-victory drop-shadow-sm" : "text-defeat drop-shadow-sm"}`}>
+            <span className={`text-[11px] font-black uppercase tracking-wider num ${player.rrEarned >= 0 ? "text-victory" : "text-defeat"}`}>
               {player.rrEarned >= 0 ? `+${player.rrEarned}` : player.rrEarned} RR
             </span>
           )}

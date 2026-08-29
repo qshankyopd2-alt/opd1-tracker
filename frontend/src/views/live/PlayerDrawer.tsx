@@ -76,6 +76,7 @@ export function PlayerDrawer({
   const [note, setNote] = useState(player.savedNote ?? "");
   const [savedBusy, setSavedBusy] = useState(false);
   const [savedMessage, setSavedMessage] = useState<string | null>(null);
+  const [cardFailed, setCardFailed] = useState(false);
 
   useEffect(() => {
     let alive = true;
@@ -96,6 +97,7 @@ export function PlayerDrawer({
     setSaved(Boolean(player.saved));
     setNote(player.savedNote ?? "");
     setSavedMessage(null);
+    setCardFailed(false);
   }, [player.puuid, player.saved, player.savedNote]);
 
   const enc = player.encounter;
@@ -154,14 +156,15 @@ export function PlayerDrawer({
           {profileBackdrop && (
             <img src={profileBackdrop} alt="" className="absolute inset-0 h-full w-full object-cover object-center opacity-30" draggable={false} />
           )}
-          <div className="absolute inset-0 bg-gradient-to-r from-panel via-panel/80 to-transparent" />
+          <div className="absolute inset-0 bg-gradient-to-r from-panel via-panel/95 to-panel/75" />
           <div className="relative flex min-h-[132px] items-center gap-4 p-4">
-            {largePlayerCard ? (
+            {largePlayerCard && !cardFailed ? (
               <img
                 src={largePlayerCard}
                 alt={`${player.name} player card`}
-                className="h-24 w-16 shrink-0 rounded-sm border border-zinc-700/50 object-cover shadow-2xl"
+                className="h-24 w-16 shrink-0 rounded-sm border border-edge object-cover"
                 draggable={false}
+                onError={() => setCardFailed(true)}
               />
             ) : (
               <AgentAvatar portrait={player.agentPortrait} name={player.agent ?? player.name} color={player.agentColor} size={64} />
