@@ -17,17 +17,19 @@ export function Sidebar() {
 
   return (
     <aside data-testid="sidebar" className="w-52 shrink-0 border-r border-edge bg-panel flex flex-col">
-      <div className="px-4 pt-5 pb-4 border-b border-edge">
-        <div className="flex items-center gap-2">
-          <span className="w-3 h-6 bg-brand rounded-[2px]" />
-          <span className="font-display italic font-black text-[26px] leading-none tracking-tight">
+      <div className="px-4 pt-5 pb-4 border-b border-edge bg-zinc-900/50">
+        <div className="flex items-center gap-2.5">
+          <span className="flex items-center justify-center w-7 h-7 bg-brand border border-brand_hover rounded-[2px] shadow-[0_0_8px_rgba(249,115,22,0.3)]">
+            <Crosshair size={15} className="text-white" />
+          </span>
+          <span className="font-display italic font-black text-[22px] leading-none tracking-tight text-zinc-100">
             OPD<span className="text-brand">1</span>
           </span>
         </div>
-        <div className="text-[10px] uppercase tracking-[0.35em] text-zinc-500 mt-1 ml-5">Tracker</div>
+        <div className="text-[10px] uppercase tracking-[0.35em] text-zinc-500 mt-1.5 ml-[38px] font-bold">Tracker</div>
       </div>
 
-      <nav className="flex-1 py-3">
+      <nav className="flex-1 py-3 px-2 space-y-0.5">
         {NAV.map(({ id, label, icon: Icon }) => {
           const active = view === id;
           return (
@@ -35,25 +37,32 @@ export function Sidebar() {
               key={id}
               data-testid={`nav-${id}`}
               onClick={() => setView(id)}
-              className={`w-full flex items-center gap-3 px-4 py-2.5 text-[13px] font-medium border-l-2 transition-colors ${
+              className={`w-full flex items-center gap-3 px-3 py-2.5 text-[13px] font-semibold rounded-sm transition-colors duration-200 ${
                 active
-                  ? "border-brand bg-zinc-800/60 text-zinc-100"
-                  : "border-transparent text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800/30"
+                  ? "bg-zinc-800 text-zinc-100 border border-zinc-700 shadow-sm"
+                  : "border border-transparent text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800/50 hover:border-zinc-800/50"
               }`}
             >
-              <Icon size={16} className={active ? "text-brand" : ""} />
+              <Icon size={16} className={active ? "text-brand" : "text-zinc-500"} />
               {label}
             </button>
           );
         })}
       </nav>
 
-      <div className="px-4 py-3 border-t border-edge space-y-1.5">
-        <div data-testid="sidebar-client-status" className="flex items-center gap-2 text-[11px] text-zinc-500">
+      <div className="p-3 border-t border-edge">
+        <div
+          data-testid="sidebar-client-status"
+          className={`flex items-center gap-2 text-[10px] font-bold uppercase tracking-wider px-2 py-1.5 rounded-sm border ${
+            clientOk
+              ? "bg-victory/10 text-victory border-victory/20"
+              : "bg-defeat/10 text-defeat border-defeat/20"
+          }`}
+        >
           <span
-            className={`w-2 h-2 rounded-full ${clientOk ? "bg-victory pulse-dot" : "bg-zinc-600"}`}
+            className={`w-1.5 h-1.5 rounded-full ${clientOk ? "bg-victory pulse-dot" : "bg-defeat"}`}
           />
-          {clientOk ? "VALORANT client detected" : "VALORANT not running"}
+          {clientOk ? "CLIENT DETECTED" : "CLIENT OFFLINE"}
         </div>
       </div>
     </aside>

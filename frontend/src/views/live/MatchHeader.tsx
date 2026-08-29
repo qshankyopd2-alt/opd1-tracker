@@ -1,5 +1,6 @@
 import type { LiveBoard } from "../../api/types";
 import { Badge } from "../../components/ui/Badge";
+import { PageHeader } from "../../components/shell/PageHeader";
 
 const STATE_COLOR: Record<string, string> = {
   INGAME: "#10B981",
@@ -19,26 +20,12 @@ export function MatchHeader({ board }: { board: LiveBoard }) {
       )}
       <div className="absolute inset-0 bg-gradient-to-r from-ink via-ink/80 to-ink/40" />
 
-      <div className="relative flex items-center gap-6 px-4 py-3 min-h-[86px]">
-        <div className="min-w-0">
-          <div className="flex items-center gap-2">
-            <Badge color={STATE_COLOR[board.state] ?? "#71717A"} filled testId="match-state-badge">
-              {board.stateLabel}
-            </Badge>
-            {board.state !== "MENUS" && (
-              <span className="text-[11px] uppercase tracking-wider text-zinc-400">{board.mode}</span>
-            )}
-            {board.side && (
-              <span className="text-[11px] uppercase tracking-wider text-zinc-500">· {board.side} side</span>
-            )}
-          </div>
-          <h1 className="font-display font-black italic text-[30px] leading-tight uppercase tracking-tight text-zinc-100">
-            {board.state === "MENUS" ? "Party Lobby" : board.map ?? "Unknown"}
-          </h1>
-          {board.sourceDetail && <p className="text-[11px] text-zinc-500">{board.sourceDetail}</p>}
-        </div>
-
-        <div className="ml-auto flex items-center gap-8">
+      <div className="relative p-5">
+        <PageHeader
+          title={board.state === "MENUS" ? "Party Lobby" : board.map ?? "Unknown"}
+          testId="match-page-header"
+        >
+          <div className="flex items-center gap-8">
           {score && (
             <div className="text-center" data-testid="match-score">
               <div className="font-display font-black text-[34px] leading-none num">
@@ -87,6 +74,19 @@ export function MatchHeader({ board }: { board: LiveBoard }) {
               </div>
             </div>
           )}
+          </div>
+        </PageHeader>
+        <div className="flex items-center gap-2 -mt-4">
+          <Badge color={STATE_COLOR[board.state] ?? "#71717A"} filled testId="match-state-badge">
+            {board.stateLabel}
+          </Badge>
+          {board.state !== "MENUS" && (
+            <span className="text-[11px] uppercase tracking-wider text-zinc-400">{board.mode}</span>
+          )}
+          {board.side && (
+            <span className="text-[11px] uppercase tracking-wider text-zinc-500">· {board.side} side</span>
+          )}
+          {board.sourceDetail && <span className="text-[11px] text-zinc-500 ml-2">{board.sourceDetail}</span>}
         </div>
       </div>
     </div>

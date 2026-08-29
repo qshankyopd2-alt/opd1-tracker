@@ -6,6 +6,7 @@ import { AgentAvatar } from "../../components/domain/AgentAvatar";
 import { EmptyState } from "../../components/ui/EmptyState";
 import { ErrorBanner } from "../../components/ui/ErrorBanner";
 import { TableSkeleton } from "../../components/ui/Skeleton";
+import { PageHeader } from "../../components/shell/PageHeader";
 import { usePoll } from "../../hooks/usePoll";
 import { timeAgo } from "../../lib/format";
 
@@ -50,13 +51,7 @@ export function EncountersView() {
 
   return (
     <div className="space-y-4 p-5" data-testid="saved-players-view">
-      <div className="flex flex-wrap items-end gap-3">
-        <div>
-          <h1 className="font-display text-2xl font-black italic uppercase tracking-tight">Saved Players</h1>
-          <p className="mt-0.5 text-[11px] text-zinc-500">
-            Notes stay on this PC. Encounter history updates whenever you meet a saved player again.
-          </p>
-        </div>
+      <PageHeader title="Saved Players">
         <label className="relative ml-auto">
           <Search size={13} className="absolute left-2 top-1/2 -translate-y-1/2 text-zinc-500" />
           <input
@@ -73,6 +68,11 @@ export function EncountersView() {
         >
           <RotateCw size={12} /> Refresh
         </button>
+      </PageHeader>
+      <div className="flex flex-wrap items-end gap-3 -mt-6 mb-4">
+        <p className="text-[11px] text-zinc-500">
+          Notes stay on this PC. Encounter history updates whenever you meet a saved player again.
+        </p>
       </div>
 
       {(error || mutationError) && (

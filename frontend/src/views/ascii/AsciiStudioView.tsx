@@ -3,6 +3,7 @@ import { Grid3X3, PenTool, Type } from "lucide-react";
 import { DrawStudioPanel } from "./DrawStudioPanel";
 import { GalleryPanel } from "./GalleryPanel";
 import { TextGeneratorPanel } from "./TextGeneratorPanel";
+import { PageHeader } from "../../components/shell/PageHeader";
 
 type AsciiTab = "gallery" | "text" | "draw";
 
@@ -17,9 +18,7 @@ export function AsciiStudioView() {
 
   return (
     <div className="p-5 space-y-4" data-testid="ascii-studio-view">
-      <div className="flex items-center gap-3">
-        <h1 className="font-display font-black italic uppercase text-2xl tracking-tight">ASCII Studio</h1>
-      </div>
+      <PageHeader title="ASCII Studio" />
 
       <nav
         aria-label="ASCII Studio mode"

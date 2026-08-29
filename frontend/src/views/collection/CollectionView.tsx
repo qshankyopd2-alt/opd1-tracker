@@ -4,6 +4,7 @@ import { Badge } from "../../components/ui/Badge";
 import { EmptyState } from "../../components/ui/EmptyState";
 import { ErrorBanner } from "../../components/ui/ErrorBanner";
 import { Section } from "../../components/ui/Section";
+import { PageHeader } from "../../components/shell/PageHeader";
 import { TableSkeleton } from "../../components/ui/Skeleton";
 import { usePoll } from "../../hooks/usePoll";
 
@@ -78,8 +79,7 @@ export function CollectionView() {
 
   return (
     <div className="p-5 space-y-4" data-testid="collection-view">
-      <div className="flex items-center gap-3">
-        <h1 className="font-display font-black italic uppercase text-2xl tracking-tight">Collection</h1>
+      <PageHeader title="Collection">
         {data.stale && (
           <Badge color="#F59E0B" testId="collection-stale-badge">
             Stale data
@@ -92,7 +92,7 @@ export function CollectionView() {
         >
           <RotateCw size={12} /> Refresh
         </button>
-      </div>
+      </PageHeader>
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 stagger">
         <ValueCard
