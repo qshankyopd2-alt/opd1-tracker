@@ -154,13 +154,13 @@ export function PlayerDrawer({
           {profileBackdrop && (
             <img src={profileBackdrop} alt="" className="absolute inset-0 h-full w-full object-cover object-center opacity-30" draggable={false} />
           )}
-          <div className="absolute inset-0 bg-gradient-to-r from-panel via-panel/90 to-panel/55" />
+          <div className="absolute inset-0 bg-gradient-to-r from-panel via-panel/80 to-transparent" />
           <div className="relative flex min-h-[132px] items-center gap-4 p-4">
             {largePlayerCard ? (
               <img
                 src={largePlayerCard}
                 alt={`${player.name} player card`}
-                className="h-24 w-16 shrink-0 rounded-sm border border-edge object-cover shadow-lg"
+                className="h-24 w-16 shrink-0 rounded-sm border border-zinc-700/50 object-cover shadow-2xl"
                 draggable={false}
               />
             ) : (
@@ -168,7 +168,7 @@ export function PlayerDrawer({
             )}
             <div className="min-w-0 flex-1 self-center">
               <div className="flex items-center gap-2">
-                <h2 id="player-drawer-title" dir="auto" className="truncate font-display text-[24px] font-black leading-tight">{player.name}</h2>
+                <h2 id="player-drawer-title" dir="auto" className="truncate font-display text-[26px] font-black leading-tight">{player.name}</h2>
                 {player.party && (
                   <span
                     className="shrink-0 rounded-sm border px-1.5 py-0.5 text-[9px] font-black num"
@@ -183,8 +183,8 @@ export function PlayerDrawer({
                   </Badge>
                 )}
               </div>
-              {player.title && <div className="mt-1 text-[11px] italic text-zinc-400">{player.title}</div>}
-              <div className="mt-1 text-[11px] text-zinc-400">
+              {player.title && <div className="mt-1 text-[12px] italic text-zinc-400">{player.title}</div>}
+              <div className="mt-1 text-[12px] text-zinc-400">
                 {player.agent ? `${player.agent} · ` : ""}
                 {player.role ?? ""} {player.levelHidden ? "· Lvl hidden" : `· Lvl ${player.level || "?"}`}
               </div>
@@ -202,7 +202,7 @@ export function PlayerDrawer({
 
         <div className="p-4 space-y-4">
           {player.smurf && player.smurfReasons.length > 0 && (
-            <div className="border border-amber-500 bg-amber-500/20 rounded-sm px-3 py-2 text-[12px] text-amber-100 font-semibold" data-testid="drawer-smurf-reasons">
+            <div className="border border-amber-500/30 bg-amber-500/10 rounded-sm px-3 py-2.5 text-[12px] text-amber-200 font-semibold" data-testid="drawer-smurf-reasons">
               {player.smurfReasons.join(" · ")}
             </div>
           )}
@@ -220,27 +220,30 @@ export function PlayerDrawer({
           )}
 
           {/* Act rank information comes from the current competitive MMR payload. */}
-          <div className="grid grid-cols-3 gap-2" data-testid="drawer-rank-chips">
+          <div className="space-y-2" data-testid="drawer-rank-chips">
             <RankCard
               label="Current rank"
               name={player.rank}
               icon={player.rankIcon}
               color={player.rankColor}
               rr={player.rankTier > 2 ? player.rr : null}
+              hero
             />
-            <RankCard
-              label="Peak rank"
-              name={player.peakRank}
-              icon={player.peakIcon}
-              color={player.peakColor}
-              detail={player.peakAct ?? undefined}
-            />
-            <RankCard
-              label="Previous rank"
-              name={player.previousRank || "Unknown"}
-              icon={previousRankIcon}
-              color={previousRank?.color ?? "#A1A1AA"}
-            />
+            <div className="grid grid-cols-2 gap-2">
+              <RankCard
+                label="Peak rank"
+                name={player.peakRank}
+                icon={player.peakIcon}
+                color={player.peakColor}
+                detail={player.peakAct ?? undefined}
+              />
+              <RankCard
+                label="Previous rank"
+                name={player.previousRank || "Unknown"}
+                icon={previousRankIcon}
+                color={previousRank?.color ?? "#A1A1AA"}
+              />
+            </div>
           </div>
 
           {/* encounter history */}
@@ -249,12 +252,12 @@ export function PlayerDrawer({
               <Chip
                 label="Played with you"
                 value={`${enc.withCount}× · ${enc.winsWith}W–${enc.lossesWith}L`}
-                color="#10B981"
+                variant="ally"
               />
               <Chip
                 label="Played against you"
                 value={`${enc.againstCount}× · ${enc.winsAgainst}W–${enc.lossesAgainst}L`}
-                color="#EF4444"
+                variant="enemy"
               />
             </div>
           )}
@@ -262,14 +265,14 @@ export function PlayerDrawer({
           {/* loadout */}
           {featuredWeapons.length > 0 && (
             <section data-testid="drawer-loadout">
-              <h3 className="text-[10px] uppercase tracking-[0.25em] text-zinc-500 mb-2">Featured loadout</h3>
+              <h3 className="mb-3 text-[11px] font-bold uppercase tracking-[0.2em] text-zinc-400">Featured loadout</h3>
               <div className="grid grid-cols-2 gap-1.5">
                 {featuredWeapons.map((w) => (
                   <div key={w.weapon} className="flex items-center gap-2 border border-edge rounded-sm px-2 py-1.5 bg-card">
                     {w.skin?.icon && <img src={w.skin.icon} alt="" className="h-5 max-w-[64px] object-contain" loading="lazy" />}
                     <div className="min-w-0">
-                      <div className="text-[11px] font-semibold truncate">{w.skin?.name ?? "Standard"}</div>
-                      <div className="text-[10px] text-zinc-500">{w.weapon === "Melee" ? "Knife" : w.weapon}</div>
+                      <div className="text-[12px] font-semibold text-zinc-100 truncate">{w.skin?.name ?? "Standard"}</div>
+                      <div className="text-[10px] uppercase tracking-widest text-zinc-500">{w.weapon === "Melee" ? "Knife" : w.weapon}</div>
                     </div>
                   </div>
                 ))}

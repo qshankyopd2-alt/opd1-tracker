@@ -33,7 +33,7 @@ export function CareerSection({
 
   return (
     <section data-testid="drawer-career">
-      <h3 className="text-[10px] uppercase tracking-[0.25em] text-zinc-500 mb-2">
+      <h3 className="mb-3 text-[11px] font-bold uppercase tracking-[0.2em] text-zinc-400">
         {career ? `Last ${recentMatches.length} matches` : "Last matches"}
       </h3>
       {loading && (
@@ -48,7 +48,7 @@ export function CareerSection({
         </p>
       )}
       {!loading && careerUsable && career && (
-        <div className="space-y-3">
+        <div className="space-y-4">
           <div className="grid grid-cols-3 gap-2">
             <Chip label="Record" value={recentRecord} />
             <Chip label="Win rate" value={fmtPct(career.averages.winRate)} />
@@ -58,7 +58,7 @@ export function CareerSection({
           </div>
 
           <div>
-            <h4 className="text-[10px] uppercase tracking-[0.25em] text-zinc-500 mb-1.5">Current Act</h4>
+            <h4 className="mb-3 text-[11px] font-bold uppercase tracking-[0.2em] text-zinc-400">Current Act</h4>
             <div className="grid grid-cols-2 gap-2">
               <Chip label="Games" value={`${player.games}`} />
               <Chip label="Win rate" value={fmtPct(player.winRate)} />
@@ -67,7 +67,7 @@ export function CareerSection({
 
           {career.agentPool.length > 0 && (
             <div>
-              <h4 className="text-[10px] uppercase tracking-[0.25em] text-zinc-500 mb-1.5">Agent pool</h4>
+              <h4 className="mb-3 text-[11px] font-bold uppercase tracking-[0.2em] text-zinc-400">Agent pool</h4>
               <div className="flex gap-1.5 flex-wrap">
                 {career.agentPool.map((a) => (
                   <div key={a.agent} className="flex items-center gap-1.5 border border-edge rounded-sm pl-1 pr-2 py-1 bg-card">
@@ -84,7 +84,7 @@ export function CareerSection({
 
           {career.mapStats.length > 0 && (
             <div>
-              <h4 className="text-[10px] uppercase tracking-[0.25em] text-zinc-500 mb-1.5">Maps</h4>
+              <h4 className="mb-3 text-[11px] font-bold uppercase tracking-[0.2em] text-zinc-400">Maps</h4>
               <div className="grid grid-cols-1 gap-1.5 sm:grid-cols-2">
                 {career.mapStats.map((m) => (
                   <MapStatCard
@@ -100,7 +100,7 @@ export function CareerSection({
           )}
 
           <div>
-            <h4 className="text-[10px] uppercase tracking-[0.25em] text-zinc-500 mb-1.5">Last matches</h4>
+            <h4 className="mb-3 text-[11px] font-bold uppercase tracking-[0.2em] text-zinc-400">Last matches</h4>
             <div className="space-y-1">
               {recentMatches.map((match) => (
                 <RecentMatchCard key={match.matchId} match={match} onOpen={() => onOpenMatch(match.matchId)} />
@@ -110,7 +110,7 @@ export function CareerSection({
 
           {career.coPlayers.length > 0 && (
             <div>
-              <h4 className="text-[10px] uppercase tracking-[0.25em] text-zinc-500 mb-1.5">Frequent teammates</h4>
+              <h4 className="mb-3 text-[11px] font-bold uppercase tracking-[0.2em] text-zinc-400">Frequent teammates</h4>
               <div className="flex flex-wrap gap-1.5">
                 {career.coPlayers.map((c) => (
                   <span key={c.puuid} className="text-[11px] border border-edge rounded-sm px-2 py-1 bg-card">
