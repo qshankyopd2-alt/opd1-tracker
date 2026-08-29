@@ -40,64 +40,66 @@ export function TeamPanel({
   }
 
   return (
-    <section data-testid={testId} className="flex h-full min-w-0 flex-col overflow-hidden rounded-md border border-edge bg-card">
-      <header className="flex min-h-[42px] items-center gap-3 border-b border-edge bg-panel px-3 py-1.5">
-        <span className="w-1.5 h-4 rounded-[2px]" style={{ backgroundColor: accent }} />
-        <h3 className="font-display font-bold uppercase tracking-wide text-[15px]" style={{ color: accent }}>
+    <section data-testid={testId} className="flex h-full min-w-0 flex-col overflow-hidden rounded-md border border-edge bg-card shadow-sm">
+      <header className="flex min-h-[38px] items-center gap-3 border-b border-edge bg-panel px-3 py-1">
+        <span className="w-1.5 h-4 rounded-[2px] shadow-sm" style={{ backgroundColor: accent }} />
+        <h3 className="font-display font-black uppercase tracking-wider text-[16px]" style={{ color: accent }}>
           {label}
         </h3>
         {stats && players.length > 1 && (
           <div
-            className="ml-auto flex items-center gap-4 text-[11px] text-zinc-400 num"
+            className="ml-auto flex items-center gap-3 text-[11px] text-zinc-400 num"
             title="Team averages: current rank, Act win rate, and the recent-match K/D available for each player."
           >
-            <span className="text-[8px] font-semibold uppercase tracking-wider text-zinc-600">Team avg</span>
-            <span className="inline-flex items-center gap-1">
-              {stats.rankIcon && <img src={stats.rankIcon} alt="" className="w-4 h-4" loading="lazy" />}
-              <span style={{ color: stats.rankColor }}>{stats.avgRank}</span>
-            </span>
-            <span>
-              KD <span className="text-zinc-200 font-semibold">{stats.avgKd !== null ? fmtNum(stats.avgKd, 2) : "—"}</span>
-            </span>
-            <span>
-              WR <span className="text-zinc-200 font-semibold">{fmtPct(stats.avgWinRate)}</span>
-            </span>
+            <div className="flex items-center gap-1.5 rounded-sm bg-zinc-900/50 px-2 py-0.5 border border-edge">
+              <span className="text-[9px] font-bold uppercase tracking-widest text-zinc-500 mr-1">Avg</span>
+              {stats.rankIcon && <img src={stats.rankIcon} alt="" className="w-4 h-4 drop-shadow-sm" loading="lazy" />}
+              <span className="font-bold" style={{ color: stats.rankColor }}>{stats.avgRank}</span>
+            </div>
+            <div className="flex items-center gap-1.5 rounded-sm bg-zinc-900/50 px-2 py-0.5 border border-edge">
+              <span className="text-[9px] font-bold uppercase tracking-widest text-zinc-500">KD</span>
+              <span className="text-zinc-100 font-bold">{stats.avgKd !== null ? fmtNum(stats.avgKd, 2) : "—"}</span>
+            </div>
+            <div className="flex items-center gap-1.5 rounded-sm bg-zinc-900/50 px-2 py-0.5 border border-edge">
+              <span className="text-[9px] font-bold uppercase tracking-widest text-zinc-500">WR</span>
+              <span className="text-zinc-100 font-bold">{fmtPct(stats.avgWinRate)}</span>
+            </div>
             {stats.smurfCount > 0 && (
-              <span className="text-amber-300 font-semibold" data-testid={`${testId}-smurf-count`}>
+              <div className="flex items-center gap-1 rounded-sm bg-amber-500/10 px-2 py-0.5 border border-amber-500/20 text-amber-400 font-bold" data-testid={`${testId}-smurf-count`}>
                 {stats.smurfCount} smurf{stats.smurfCount > 1 ? "s" : ""}
-              </span>
+              </div>
             )}
           </div>
         )}
       </header>
       <div
-        className="flex min-h-[32px] flex-wrap items-center gap-2 border-b border-edge bg-ink/30 px-3 py-1"
+        className="flex min-h-[28px] flex-wrap items-center gap-2.5 border-b border-edge bg-ink/60 px-3 py-1"
         data-testid={`${testId}-parties`}
       >
-        <span className="text-[8px] font-semibold uppercase tracking-[0.16em] text-zinc-600">Detected parties</span>
+        <span className="text-[9px] font-bold uppercase tracking-[0.2em] text-zinc-500">Parties</span>
         {visibleParties.length > 0 ? visibleParties.map((party) => (
           <span
             key={party.id}
             title={`${party.size} players share this Riot party`}
-            className="inline-flex items-center gap-1.5 rounded-sm border border-edge bg-panel px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider text-zinc-300"
+            className="inline-flex items-center gap-1.5 rounded-sm border border-edge bg-panel px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-zinc-300 shadow-sm"
           >
             <span className="h-2 w-2 rounded-[2px]" style={{ backgroundColor: party.color }} />
-            Party {party.number} · {party.declaredSize && party.declaredSize > party.size
-              ? `${party.size}/${party.declaredSize} detected`
-              : `${party.size} players`}
+            Party {party.number} <span className="text-zinc-500 mx-0.5">·</span> {party.declaredSize && party.declaredSize > party.size
+              ? `${party.size}/${party.declaredSize} det.`
+              : `${party.size} pl.`}
           </span>
         )) : (
-          <span className="text-[9px] text-zinc-600">
+          <span className="text-[10px] font-medium text-zinc-500">
             {partyDetection?.status === "complete"
-              ? "No party detected"
+              ? "None detected"
               : partyDetection
-                ? `Party data incomplete · ${partyDetection.partyDataPlayers}/${partyDetection.expectedPlayers} checked`
-                : "Party data unavailable"}
+                ? `Incomplete · ${partyDetection.partyDataPlayers}/${partyDetection.expectedPlayers} checked`
+                : "Unavailable"}
           </span>
         )}
       </div>
       <div
-        className="stagger grid min-h-0 flex-1 gap-1.5 p-1.5 overflow-y-auto"
+        className="stagger grid min-h-0 flex-1 gap-2 p-2 overflow-y-auto"
         style={{ gridTemplateRows: `repeat(${Math.max(players.length, 1)}, minmax(min-content, 1fr))` }}
       >
         {orderedPlayers.map((p) => (
