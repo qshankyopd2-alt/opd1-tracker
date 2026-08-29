@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import type { LivePlayer } from "../../api/types";
+import { EyeOff } from "lucide-react";
 import { ErrorBanner } from "../../components/ui/ErrorBanner";
 import { TableSkeleton } from "../../components/ui/Skeleton";
 import { useLiveData } from "../../state/LiveDataContext";
@@ -105,9 +106,11 @@ export function LiveView() {
           pregame && (
             <div
               data-testid="enemy-hidden-panel"
-              className="border border-dashed border-edge rounded-md flex items-center justify-center text-[12px] text-zinc-500 min-h-[120px]"
+              className="flex min-h-[120px] flex-col items-center justify-center gap-2 rounded-md border border-dashed border-edge bg-panel/30 text-zinc-500"
             >
-              Enemy team is revealed once the match starts.
+              <EyeOff size={24} className="text-zinc-600 mb-1" />
+              <div className="text-[13px] font-semibold uppercase tracking-wider text-zinc-400">Enemy Team Hidden</div>
+              <div className="text-[11px]">Revealed once the match starts</div>
             </div>
           )
         )}
