@@ -1,4 +1,5 @@
 import type { Recap } from "../../api/types";
+import { MetaLabel } from "../../components/ui/MetaLabel";
 import { fmtDelta, scoreline } from "../../lib/format";
 import { resultColor } from "../../lib/format";
 
@@ -15,7 +16,7 @@ export function RecapCard({ recap }: { recap: Recap }) {
       <div className="absolute inset-0 bg-gradient-to-r from-ink via-ink/85 to-ink/60" />
       <div className="relative flex items-center gap-5 px-4 py-3 flex-wrap">
         <div>
-          <div className="text-[10px] uppercase tracking-[0.25em] text-zinc-500">Last match</div>
+          <MetaLabel>Last match</MetaLabel>
           <div className="font-display font-black text-xl uppercase" style={{ color: resultColor(recap.result) }}>
             {recap.result ?? "Finished"}
           </div>

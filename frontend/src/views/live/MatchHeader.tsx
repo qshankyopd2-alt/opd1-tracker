@@ -1,5 +1,6 @@
 import type { LiveBoard } from "../../api/types";
 import { Badge } from "../../components/ui/Badge";
+import { MetaLabel } from "../../components/ui/MetaLabel";
 
 const STATE_COLOR: Record<string, string> = {
   INGAME: "#10B981",
@@ -46,7 +47,7 @@ export function MatchHeader({ board }: { board: LiveBoard }) {
                 <span className="text-zinc-600 mx-2">–</span>
                 <span className="text-defeat">{score.enemy}</span>
               </div>
-              {score.round && <div className="text-[10px] uppercase tracking-[0.25em] text-zinc-500 mt-1">Round {score.round}</div>}
+              {score.round && <MetaLabel className="mt-1">Round {score.round}</MetaLabel>}
             </div>
           )}
 
@@ -55,7 +56,7 @@ export function MatchHeader({ board }: { board: LiveBoard }) {
               <div className="font-display font-black text-[30px] leading-none num text-amber-300">
                 {lock.locked}<span className="text-zinc-500 text-xl">/{lock.total}</span>
               </div>
-              <div className="text-[10px] uppercase tracking-[0.25em] text-zinc-500 mt-1">Locked in</div>
+              <MetaLabel className="mt-1">Locked in</MetaLabel>
             </div>
           )}
 
