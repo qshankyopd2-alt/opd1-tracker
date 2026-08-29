@@ -50,91 +50,98 @@ const RANK = (tier: number) => {
   return { tier: 27, name: "Radiant", color: "#FFFDCD", group: "Radiant" };
 };
 
-const AGENT_ROSTER: { name: string; role: string; color: string; portrait: string }[] = [
-  { name: "Jett", role: "Duelist", color: "#9DDDE6", portrait: "https://media.valorant-api.com/agents/add6443a-41bd-e414-f6ad-e58d267f4e95/displayicon.png" },
-  { name: "Reyna", role: "Duelist", color: "#8B5CF6", portrait: "https://media.valorant-api.com/agents/a3bfb853-43b2-7238-a4f1-ad90e9e46bcc/displayicon.png" },
-  { name: "Phoenix", role: "Duelist", color: "#F97316", portrait: "https://media.valorant-api.com/agents/eb93336a-449b-9c1b-0a54-a891f02e33d6/displayicon.png" },
-  { name: "Raze", role: "Duelist", color: "#F59E0B", portrait: "https://media.valorant-api.com/agents/cee12a40-4c1d-03a9-6f1c-8c89c54a6d16/displayicon.png" },
-  { name: "Yoru", role: "Duelist", color: "#3B82F6", portrait: "https://media.valorant-api.com/agents/7fafd45c-41b2-ed84-fb06-233fe76e7a0a/displayicon.png" },
-  { name: "Neon", role: "Duelist", color: "#22D3EE", portrait: "https://media.valorant-api.com/agents/bb2a4822-4eb5-c1ea-4687-4f7f9c0c1c3a/displayicon.png" },
-  { name: "Iso", role: "Duelist", color: "#FDE68A", portrait: "https://media.valorant-api.com/agents/0e38ee55-3d2c-72b3-1c5b-7a1e6c0b3f11/displayicon.png" },
-  { name: "Omen", role: "Controller", color: "#A78BFA", portrait: "https://media.valorant-api.com/agents/8e253930-4c05-31dd-1b6c-7185256d61c5/displayicon.png" },
-  { name: "Brimstone", role: "Controller", color: "#FB923C", portrait: "https://media.valorant-api.com/agents/9f0d8ba9-4af1-5cd2-8e2c-7b9a7b3b0c1c/displayicon.png" },
-  { name: "Viper", role: "Controller", color: "#10B981", portrait: "https://media.valorant-api.com/agents/707eab51-4c30-7d0a-9f1c-7a3c0b2c1a4d/displayicon.png" },
-  { name: "Cypher", role: "Sentinel", color: "#F4D35E", portrait: "https://media.valorant-api.com/agents/117ed9e3-49f3-6512-3ccf-0cada7e3823b/displayicon.png" },
-  { name: "Killjoy", role: "Sentinel", color: "#FACC15", portrait: "https://media.valorant-api.com/agents/1e58de9c-4950-5125-93f9-0dba99f4bbf7/displayicon.png" },
-  { name: "Sage", role: "Sentinel", color: "#22D3EE", portrait: "https://media.valorant-api.com/agents/569fdd95-4d10-43ab-ca0a-22f7b9b2c8b6/displayicon.png" },
-  { name: "Sova", role: "Initiator", color: "#60A5FA", portrait: "https://media.valorant-api.com/agents/ded3520f-4264-bfed-162d-3b6c1e9b3a3e/displayicon.png" },
-  { name: "Skye", role: "Initiator", color: "#84CC16", portrait: "https://media.valorant-api.com/agents/6f2a04ca-43e0-be17-0c36-b1d9d7b1d2a3/displayicon.png" },
+type PreviewAgent = { id: string; name: string; role: string; color: string; portrait: string; art: string };
+
+// Canonical records verified against valorant-api.com. Fixture data stays synthetic;
+// only public VALORANT imagery is shared with the production asset catalog.
+const AGENT_ROSTER: PreviewAgent[] = [
+  { id: "add6443a-41bd-e414-f6ad-e58d267f4e95", name: "Jett", role: "Duelist", color: "#9ADEFF", portrait: "https://media.valorant-api.com/agents/add6443a-41bd-e414-f6ad-e58d267f4e95/displayicon.png", art: "https://media.valorant-api.com/agents/add6443a-41bd-e414-f6ad-e58d267f4e95/fullportrait.png" },
+  { id: "a3bfb853-43b2-7238-a4f1-ad90e9e46bcc", name: "Reyna", role: "Duelist", color: "#B565B5", portrait: "https://media.valorant-api.com/agents/a3bfb853-43b2-7238-a4f1-ad90e9e46bcc/displayicon.png", art: "https://media.valorant-api.com/agents/a3bfb853-43b2-7238-a4f1-ad90e9e46bcc/fullportrait.png" },
+  { id: "eb93336a-449b-9c1b-0a54-a891f7921d69", name: "Phoenix", role: "Duelist", color: "#FE8266", portrait: "https://media.valorant-api.com/agents/eb93336a-449b-9c1b-0a54-a891f7921d69/displayicon.png", art: "https://media.valorant-api.com/agents/eb93336a-449b-9c1b-0a54-a891f7921d69/fullportrait.png" },
+  { id: "f94c3b30-42be-e959-889c-5aa313dba261", name: "Raze", role: "Duelist", color: "#FFA400", portrait: "https://media.valorant-api.com/agents/f94c3b30-42be-e959-889c-5aa313dba261/displayicon.png", art: "https://media.valorant-api.com/agents/f94c3b30-42be-e959-889c-5aa313dba261/fullportrait.png" },
+  { id: "7f94d92c-4234-0a36-9646-3a87eb8b5c89", name: "Yoru", role: "Duelist", color: "#2846C8", portrait: "https://media.valorant-api.com/agents/7f94d92c-4234-0a36-9646-3a87eb8b5c89/displayicon.png", art: "https://media.valorant-api.com/agents/7f94d92c-4234-0a36-9646-3a87eb8b5c89/fullportrait.png" },
+  { id: "bb2a4828-46eb-8cd1-e765-15848195d751", name: "Neon", role: "Duelist", color: "#00CFFF", portrait: "https://media.valorant-api.com/agents/bb2a4828-46eb-8cd1-e765-15848195d751/displayicon.png", art: "https://media.valorant-api.com/agents/bb2a4828-46eb-8cd1-e765-15848195d751/fullportrait.png" },
+  { id: "0e38b510-41a8-5780-5e8f-568b2a4f2d6c", name: "Iso", role: "Duelist", color: "#574AC2", portrait: "https://media.valorant-api.com/agents/0e38b510-41a8-5780-5e8f-568b2a4f2d6c/displayicon.png", art: "https://media.valorant-api.com/agents/0e38b510-41a8-5780-5e8f-568b2a4f2d6c/fullportrait.png" },
+  { id: "8e253930-4c05-31dd-1b6c-968525494517", name: "Omen", role: "Controller", color: "#47508F", portrait: "https://media.valorant-api.com/agents/8e253930-4c05-31dd-1b6c-968525494517/displayicon.png", art: "https://media.valorant-api.com/agents/8e253930-4c05-31dd-1b6c-968525494517/fullportrait.png" },
+  { id: "9f0d8ba9-4140-b941-57d3-a7ad57c6b417", name: "Brimstone", role: "Controller", color: "#D1691F", portrait: "https://media.valorant-api.com/agents/9f0d8ba9-4140-b941-57d3-a7ad57c6b417/displayicon.png", art: "https://media.valorant-api.com/agents/9f0d8ba9-4140-b941-57d3-a7ad57c6b417/fullportrait.png" },
+  { id: "707eab51-4836-f488-046a-cda6bf494859", name: "Viper", role: "Controller", color: "#38C659", portrait: "https://media.valorant-api.com/agents/707eab51-4836-f488-046a-cda6bf494859/displayicon.png", art: "https://media.valorant-api.com/agents/707eab51-4836-f488-046a-cda6bf494859/fullportrait.png" },
+  { id: "117ed9e3-49f3-6512-3ccf-0cada7e3823b", name: "Cypher", role: "Sentinel", color: "#E6D9C5", portrait: "https://media.valorant-api.com/agents/117ed9e3-49f3-6512-3ccf-0cada7e3823b/displayicon.png", art: "https://media.valorant-api.com/agents/117ed9e3-49f3-6512-3ccf-0cada7e3823b/fullportrait.png" },
+  { id: "1e58de9c-4950-5125-93e9-a0aee9f98746", name: "Killjoy", role: "Sentinel", color: "#FFD91F", portrait: "https://media.valorant-api.com/agents/1e58de9c-4950-5125-93e9-a0aee9f98746/displayicon.png", art: "https://media.valorant-api.com/agents/1e58de9c-4950-5125-93e9-a0aee9f98746/fullportrait.png" },
+  { id: "569fdd95-4d10-43ab-ca70-79becc718b46", name: "Sage", role: "Sentinel", color: "#26C8AF", portrait: "https://media.valorant-api.com/agents/569fdd95-4d10-43ab-ca70-79becc718b46/displayicon.png", art: "https://media.valorant-api.com/agents/569fdd95-4d10-43ab-ca70-79becc718b46/fullportrait.png" },
+  { id: "320b2a48-4d9b-a075-30f1-1f93a9b638fa", name: "Sova", role: "Initiator", color: "#3BA0E5", portrait: "https://media.valorant-api.com/agents/320b2a48-4d9b-a075-30f1-1f93a9b638fa/displayicon.png", art: "https://media.valorant-api.com/agents/320b2a48-4d9b-a075-30f1-1f93a9b638fa/fullportrait.png" },
+  { id: "6f2a04ca-43e0-be17-7f36-b3908627744d", name: "Skye", role: "Initiator", color: "#C0E69E", portrait: "https://media.valorant-api.com/agents/6f2a04ca-43e0-be17-7f36-b3908627744d/displayicon.png", art: "https://media.valorant-api.com/agents/6f2a04ca-43e0-be17-7f36-b3908627744d/fullportrait.png" },
 ];
 
 const MAPS: { name: string; splash: string }[] = [
-  { name: "Haven", splash: "https://media.valorant-api.com/maps/2bee0dc9-4ffe-519b-1cbd-7fbe763a6043/splash.png" },
-  { name: "Bind", splash: "https://media.valorant-api.com/maps/2c9d57ec-4431-9c5e-2931-8c9c4a06b15f/splash.png" },
+  { name: "Haven", splash: "https://media.valorant-api.com/maps/2bee0dc9-4ffe-519b-1cbd-7fbe763a6047/splash.png" },
+  { name: "Bind", splash: "https://media.valorant-api.com/maps/2c9d57ec-4431-9c5e-2939-8f9ef6dd5cba/splash.png" },
   { name: "Split", splash: "https://media.valorant-api.com/maps/d960549e-485c-e861-8d71-aa9d1aed12a2/splash.png" },
-  { name: "Ascent", splash: "https://media.valorant-api.com/maps/7eaecc1b-4337-bbf6-6ab9-04b8f06bf31a/splash.png" },
-  { name: "Icebox", splash: "https://media.valorant-api.com/maps/e2ad5c54-4d3a-bb81-5ff6-2c1b1a7c0a5a/splash.png" },
-  { name: "Breeze", splash: "https://media.valorant-api.com/maps/2fb9a4fd-47b8-1a7b-3b3a-0c1c2d3e4f50/splash.png" },
-  { name: "Fracture", splash: "https://media.valorant-api.com/maps/b529448c-4c60-e1c7-4b3a-9c3a4c1b1d2e/splash.png" },
-  { name: "Pearl", splash: "https://media.valorant-api.com/maps/fd267378-4d2d-bb1c-1b6c-7a8c5b3a0c4e/splash.png" },
-  { name: "Lotus", splash: "https://media.valorant-api.com/maps/2c3a8a9c-4d7e-1b2a-8b1c-0a1b2c3d4e5f/splash.png" },
-  { name: "Sunset", splash: "https://media.valorant-api.com/maps/2c4d5e6f-7a8b-9c0d-1e2f-3a4b5c6d7e8f/splash.png" },
-  { name: "Abyss", splash: "https://media.valorant-api.com/maps/2c5e6f7a-8b9c-0d1e-2f3a-4b5c6d7e8f9a/splash.png" },
+  { name: "Ascent", splash: "https://media.valorant-api.com/maps/7eaecc1b-4337-bbf6-6ab9-04b8f06b3319/splash.png" },
+  { name: "Icebox", splash: "https://media.valorant-api.com/maps/e2ad5c54-4114-a870-9641-8ea21279579a/splash.png" },
+  { name: "Breeze", splash: "https://media.valorant-api.com/maps/2fb9a4fd-47b8-4e7d-a969-74b4046ebd53/splash.png" },
+  { name: "Fracture", splash: "https://media.valorant-api.com/maps/b529448b-4d60-346e-e89e-00a4c527a405/splash.png" },
+  { name: "Pearl", splash: "https://media.valorant-api.com/maps/fd267378-4d1d-484f-ff52-77821ed10dc2/splash.png" },
+  { name: "Lotus", splash: "https://media.valorant-api.com/maps/2fe4ed3a-450a-948b-6d6b-e89a78e680a9/splash.png" },
+  { name: "Sunset", splash: "https://media.valorant-api.com/maps/92584fbe-486a-b1b2-9faa-39b0f486b498/splash.png" },
+  { name: "Abyss", splash: "https://media.valorant-api.com/maps/224b0a95-48b9-f703-1bd8-67aca101a61f/splash.png" },
 ];
 
 const SAMPLE_NAMES = [
-  "TenZ", "SicK", "Zekken", "Suygetsu", "Marved", "Asuna", "yay", "Leaf", "Boostio", "Derke",
-  "cNed", "Alfajer", "kaajak", "cambzz", "keznit", "Boaster", "Mixwell", "SUYGETSU",
-  "Trent", "Tarik", "ShahZaM", "SicK", "Vanquish", "Wardell", "Subroza", "Dazed",
+  "NovaFlux", "MakoLine", "VexOrbit", "PixelRift", "KiteSignal", "EchoVector", "RookArc", "IrisFold", "SlateViper", "QuantaDash",
+  "AxiomWave", "CinderByte", "LumenShift", "MossCircuit", "NexusBloom", "RiftMason", "SolaceGrid", "TalonFrame",
+  "UmbraPulse", "VectorMoth", "WardenKite", "XenoScope", "YonderFox", "ZenithMako", "ArclightVex", "BastionRue",
 ];
 
 const SAMPLE_PLAYER_CARDS = [
-  "https://media.valorant-api.com/playercards/9fb348bc-4a0c-c0d1-9b3e-3a2b1c0d4e5f/wideart.png",
-  "https://media.valorant-api.com/playercards/1a2b3c4d-5e6f-7a8b-9c0d-1e2f3a4b5c6d/wideart.png",
+  "https://media.valorant-api.com/playercards/1711d20d-4b1c-c64a-14be-d4ae58a457c6/wideart.png",
+  "https://media.valorant-api.com/playercards/c8b2f5fd-4331-b172-f3b7-c8a26f356a1f/wideart.png",
 ];
 
 const SAMPLE_RANK_ICONS: Record<number, string> = {
-  3: "https://media.valorant-api.com/competitivetiers/0e2ee288-4d12-3b53-9a3b-2e9b8c1d4e5f/3/smallicon.png",
-  6: "https://media.valorant-api.com/competitivetiers/0e2ee288-4d12-3b53-9a3b-2e9b8c1d4e5f/6/smallicon.png",
-  9: "https://media.valorant-api.com/competitivetiers/0e2ee288-4d12-3b53-9a3b-2e9b8c1d4e5f/9/smallicon.png",
-  12: "https://media.valorant-api.com/competitivetiers/0e2ee288-4d12-3b53-9a3b-2e9b8c1d4e5f/12/smallicon.png",
-  15: "https://media.valorant-api.com/competitivetiers/0e2ee288-4d12-3b53-9a3b-2e9b8c1d4e5f/15/smallicon.png",
-  18: "https://media.valorant-api.com/competitivetiers/0e2ee288-4d12-3b53-9a3b-2e9b8c1d4e5f/18/smallicon.png",
-  21: "https://media.valorant-api.com/competitivetiers/0e2ee288-4d12-3b53-9a3b-2e9b8c1d4e5f/21/smallicon.png",
-  24: "https://media.valorant-api.com/competitivetiers/0e2ee288-4d12-3b53-9a3b-2e9b8c1d4e5f/24/smallicon.png",
-  27: "https://media.valorant-api.com/competitivetiers/0e2ee288-4d12-3b53-9a3b-2e9b8c1d4e5f/27/smallicon.png",
+  14: "https://media.valorant-api.com/competitivetiers/03621f52-342b-cf4e-4f86-9350a49c6d04/14/smallicon.png",
+  15: "https://media.valorant-api.com/competitivetiers/03621f52-342b-cf4e-4f86-9350a49c6d04/15/smallicon.png",
+  16: "https://media.valorant-api.com/competitivetiers/03621f52-342b-cf4e-4f86-9350a49c6d04/16/smallicon.png",
+  17: "https://media.valorant-api.com/competitivetiers/03621f52-342b-cf4e-4f86-9350a49c6d04/17/smallicon.png",
+  18: "https://media.valorant-api.com/competitivetiers/03621f52-342b-cf4e-4f86-9350a49c6d04/18/smallicon.png",
+  19: "https://media.valorant-api.com/competitivetiers/03621f52-342b-cf4e-4f86-9350a49c6d04/19/smallicon.png",
+  20: "https://media.valorant-api.com/competitivetiers/03621f52-342b-cf4e-4f86-9350a49c6d04/20/smallicon.png",
+  21: "https://media.valorant-api.com/competitivetiers/03621f52-342b-cf4e-4f86-9350a49c6d04/21/smallicon.png",
+  22: "https://media.valorant-api.com/competitivetiers/03621f52-342b-cf4e-4f86-9350a49c6d04/22/smallicon.png",
+  23: "https://media.valorant-api.com/competitivetiers/03621f52-342b-cf4e-4f86-9350a49c6d04/23/smallicon.png",
+  24: "https://media.valorant-api.com/competitivetiers/03621f52-342b-cf4e-4f86-9350a49c6d04/24/smallicon.png",
+  25: "https://media.valorant-api.com/competitivetiers/03621f52-342b-cf4e-4f86-9350a49c6d04/25/smallicon.png",
+  26: "https://media.valorant-api.com/competitivetiers/03621f52-342b-cf4e-4f86-9350a49c6d04/26/smallicon.png",
+  27: "https://media.valorant-api.com/competitivetiers/03621f52-342b-cf4e-4f86-9350a49c6d04/27/smallicon.png",
 };
 
-const SAMPLE_WEAPON_SKINS: Record<string, string[]> = {
+type PreviewSkin = NonNullable<LivePlayer["weapons"][number]["skin"]>;
+
+const SAMPLE_WEAPON_SKINS: Record<"Vandal" | "Phantom" | "Operator" | "Melee", PreviewSkin[]> = {
   Vandal: [
-    "Araxys Vandal",
-    "Champions 2022 Vandal",
-    "Kuronami Vandal",
-    "Reaver Vandal",
-    "Sovereign Vandal",
-    "Elderflame Vandal",
-    "Oni Vandal",
+    { name: "Araxys Vandal", icon: "https://media.valorant-api.com/weaponskins/4c926aa9-4f26-bc80-c486-9b888333373f/displayicon.png" },
+    { name: "Champions 2023 Vandal", icon: "https://media.valorant-api.com/weaponskins/b0f65660-4c51-13b7-9d01-e29a1e2879b0/displayicon.png" },
+    { name: "Kuronami Vandal", icon: "https://media.valorant-api.com/weaponskins/d8d5d7a1-4d81-8560-54bc-0692ab40f69b/displayicon.png" },
+    { name: "Reaver Vandal", icon: "https://media.valorant-api.com/weaponskins/30388628-42f0-606c-82c0-73ad43de997f/displayicon.png" },
+    { name: "Oni Vandal", icon: "https://media.valorant-api.com/weaponskins/7156c2ee-41fc-f8f4-d457-ebb287965c08/displayicon.png" },
+    { name: "Elderflame Vandal", icon: "https://media.valorant-api.com/weaponskins/18609205-4edb-5966-cff8-0fba0230ba1e/displayicon.png" },
   ],
   Phantom: [
-    "Champions Phantom",
-    "Reaver Phantom",
-    "Kuronami Phantom",
-    "Spectrum Phantom",
-    "Magepunk Phantom",
-    "Ruination Phantom",
+    { name: "Champions 2022 Phantom", icon: "https://media.valorant-api.com/weaponskins/8c72ae0b-4357-1a75-ad62-fbaec7b64f92/displayicon.png" },
+    { name: "Reaver Phantom", icon: "https://media.valorant-api.com/weaponskins/044b28ba-4c3b-d315-140d-d9a249da5567/displayicon.png" },
+    { name: "Oni Phantom", icon: "https://media.valorant-api.com/weaponskins/36791b03-452d-8dad-0091-898cc28d2196/displayicon.png" },
+    { name: "Spectrum Phantom", icon: "https://media.valorant-api.com/weaponskins/980fa063-436e-e51f-c38d-70a5b93a0f1c/displayicon.png" },
   ],
   Operator: [
-    "Araxys Operator",
-    "Kuronami Operator",
-    "Reaver Operator",
-    "Elderflame Operator",
-    "Sovereign Operator",
+    { name: "Araxys Operator", icon: "https://media.valorant-api.com/weaponskins/6db556e4-4255-6c2c-6a80-8a9dfac96aa9/displayicon.png" },
+    { name: "Reaver Operator", icon: "https://media.valorant-api.com/weaponskins/aecab890-43b7-d719-06bc-9295e3d116dc/displayicon.png" },
+    { name: "Elderflame Operator", icon: "https://media.valorant-api.com/weaponskins/d722313d-43cb-b38d-7841-75880a3ed2cb/displayicon.png" },
+    { name: "Origin Operator", icon: "https://media.valorant-api.com/weaponskins/17831113-4ff0-a6c9-0b20-6f9c077d74a2/displayicon.png" },
   ],
   Melee: [
-    "Kuronami No-Weapon",
-    "Champions 2022 Melee",
-    "Reaver Karambit",
-    "Glitchpop Dagger",
+    { name: "Kuronami no Yaiba", icon: "https://media.valorant-api.com/weaponskins/e37229ed-4ddf-5e7e-e744-8fba60fa2c37/displayicon.png" },
+    { name: "Champions 2022 Butterfly Knife", icon: "https://media.valorant-api.com/weaponskins/6946cd0e-4e4a-ec4f-9238-dfb71715722b/displayicon.png" },
+    { name: "Reaver Karambit", icon: "https://media.valorant-api.com/weaponskins/b73d7b16-4652-bc5b-5c4c-068aabb19d0a/displayicon.png" },
+    { name: "Glitchpop Dagger", icon: "https://media.valorant-api.com/weaponskins/ddc025b2-475f-889a-2800-80b4215582bc/displayicon.png" },
   ],
 };
 
@@ -149,7 +156,6 @@ function makePlayer(index: number, opts: {
   isSelf?: boolean;
   party?: number | null;
   smurf?: boolean;
-  kdKnown?: boolean;
   nameHidden?: boolean;
   longName?: boolean;
   radiant?: boolean;
@@ -164,14 +170,14 @@ function makePlayer(index: number, opts: {
   const peakTier = Math.max(0, opts.tier - 1 - (index % 3));
   const peakR = RANK(peakTier);
   const prevR = RANK(Math.max(0, opts.tier - 2));
-  const kd = opts.kdKnown ? 0.78 + (index * 0.13) % 1.4 : null;
+  const kd = +((0.78 + (index * 0.13) % 1.4).toFixed(2));
   const games = 12 + (index * 7) % 80;
   const winRate = 30 + (index * 11) % 60;
   const weapons: LivePlayer["weapons"] = [
-    { weapon: "Vandal", skin: { name: pick(SAMPLE_WEAPON_SKINS.Vandal, index), icon: null } },
-    { weapon: "Phantom", skin: { name: pick(SAMPLE_WEAPON_SKINS.Phantom, index + 1), icon: null } },
-    { weapon: "Operator", skin: { name: pick(SAMPLE_WEAPON_SKINS.Operator, index + 2), icon: null } },
-    { weapon: "Melee", skin: { name: pick(SAMPLE_WEAPON_SKINS.Melee, index + 3), icon: null } },
+    { weapon: "Vandal", skin: pick(SAMPLE_WEAPON_SKINS.Vandal, index) },
+    { weapon: "Phantom", skin: pick(SAMPLE_WEAPON_SKINS.Phantom, index + 1) },
+    { weapon: "Operator", skin: pick(SAMPLE_WEAPON_SKINS.Operator, index + 2) },
+    { weapon: "Melee", skin: pick(SAMPLE_WEAPON_SKINS.Melee, index + 3) },
   ];
   const form: ("W" | "L")[] = [];
   for (let i = 0; i < 5; i++) form.push(((index + i) % 2 === 0 ? "W" : "L"));
@@ -186,22 +192,22 @@ function makePlayer(index: number, opts: {
     nameHidden: Boolean(opts.nameHidden),
     team: opts.team === "ally" ? "Blue" : "Red",
     isSelf,
-    title: pick(["The One Who Waits", "VCT Champion", "Challenger", "Headhunter", null, null], index),
+    title: pick(["The One Who Waits", "Arcane Archivist", "Challenger", "Headhunter", "Night Market Regular", "First Light"], index),
     playerCard: pick(SAMPLE_PLAYER_CARDS, index),
     agent: agent.name,
-    agentId: agent.name.toLowerCase(),
+    agentId: agent.id,
     agentPortrait: agent.portrait,
-    agentArt: agent.portrait,
+    agentArt: agent.art,
     agentColor: agent.color,
     role: agent.role,
-    selection: opts.team === "ally" && !isSelf && (index % 3 === 0) ? "locked" : null,
+    selection: opts.team === "ally" && index < 3 ? "locked" : null,
     rankTier: opts.tier,
     rank: r.name,
     rankColor: r.color,
     rankGroup: r.group,
     rankIcon: SAMPLE_RANK_ICONS[opts.tier] ?? null,
     rr: opts.tier > 2 ? 30 + (index * 13) % 70 : 0,
-    rrEarned: index % 4 === 0 ? null : (index % 2 === 0 ? 24 : -19),
+    rrEarned: index % 2 === 0 ? 24 - (index % 4) : -17 - (index % 4),
     leaderboard: opts.radiant ? index + 5 : 0,
     peakRankTier: peakTier,
     peakRank: peakR.name,
@@ -214,7 +220,7 @@ function makePlayer(index: number, opts: {
     kd,
     hsPct: 18 + (index * 7) % 35,
     recentMatches: 5,
-    skin: null,
+    skin: weapons[0].skin,
     weapons,
     level: opts.lowLevel ? 18 : 150 + (index * 11) % 350,
     levelHidden: false,
@@ -298,19 +304,19 @@ function teamStatsFor(players: LivePlayer[]): LiveBoard["teamStats"][string] {
 function makeBoard(state: "MENUS" | "PREGAME" | "INGAME" | "OFFLINE", seed: number): LiveBoard {
   const map = pick(MAPS, seed);
   const allyPlayers: LivePlayer[] = [
-    makePlayer(0, { team: "ally", tier: 24, isSelf: true, kdKnown: true, winStreak: true }),
+    makePlayer(0, { team: "ally", tier: 24, isSelf: true, winStreak: true }),
     makePlayer(1, { team: "ally", tier: 21, party: 1 }),
     makePlayer(2, { team: "ally", tier: 20, party: 1, longName: true }),
-    makePlayer(3, { team: "ally", tier: 18, party: 2, kdKnown: true }),
+    makePlayer(3, { team: "ally", tier: 18, party: 2 }),
     makePlayer(4, { team: "ally", tier: 16, party: 2, lowLevel: true, smurf: true, saved: true, note: "Insane Jett, possibly boosting" }),
   ];
-  const enemyPlayers: LivePlayer[] = state === "PREGAME"
+  const enemyPlayers: LivePlayer[] = state === "PREGAME" || state === "MENUS"
     ? []
     : [
-        makePlayer(5, { team: "enemy", tier: 25, radiant: true, kdKnown: true, nameHidden: true }),
+        makePlayer(5, { team: "enemy", tier: 25, radiant: true, nameHidden: true }),
         makePlayer(6, { team: "enemy", tier: 22, party: 1 }),
         makePlayer(7, { team: "enemy", tier: 21, party: 1 }),
-        makePlayer(8, { team: "enemy", tier: 19, party: 2, smurf: true, kdKnown: true }),
+        makePlayer(8, { team: "enemy", tier: 19, party: 2, smurf: true }),
         makePlayer(9, { team: "enemy", tier: 17, party: 2, name: "VeryLongEnemyName#9999" }),
       ];
   const allPlayers = [...allyPlayers, ...enemyPlayers];
@@ -354,7 +360,7 @@ function makeBoard(state: "MENUS" | "PREGAME" | "INGAME" | "OFFLINE", seed: numb
     lockProgress: state === "PREGAME" ? { locked: 3, total: 5 } : null,
     queue: state === "MENUS" ? { available: true, queueName: "Competitive", inQueue: false, partySize: 3 } : undefined,
     selfPuuid: "puuid-ally-0",
-    sourceDetail: "Live VALORANT client",
+    sourceDetail: "Synthetic Design Mode fixture",
     appVersion: "1.0.2-preview",
   };
 }
@@ -364,9 +370,9 @@ function makeCareer(): Career {
   const matches: CareerMatch[] = [];
   const maps = MAPS.slice(0, 6);
   const teammates: CareerTeammate[] = [
-    { puuid: "teammate-1", name: "Boostio", agent: "Jett", kills: 18, deaths: 11, assists: 6, acs: 246 },
-    { puuid: "teammate-2", name: "SicK", agent: "Killjoy", kills: 14, deaths: 13, assists: 9, acs: 198 },
-    { puuid: "teammate-3", name: "Marved", agent: "Omen", kills: 12, deaths: 15, assists: 16, acs: 188 },
+    { puuid: "teammate-1", name: "NovaFlux", agent: "Jett", agentPortrait: AGENT_ROSTER[0].portrait, agentColor: AGENT_ROSTER[0].color, kills: 18, deaths: 11, assists: 6, acs: 246 },
+    { puuid: "teammate-2", name: "MakoLine", agent: "Killjoy", agentPortrait: AGENT_ROSTER[11].portrait, agentColor: AGENT_ROSTER[11].color, kills: 14, deaths: 13, assists: 9, acs: 198 },
+    { puuid: "teammate-3", name: "VexOrbit", agent: "Omen", agentPortrait: AGENT_ROSTER[7].portrait, agentColor: AGENT_ROSTER[7].color, kills: 12, deaths: 15, assists: 16, acs: 188 },
   ];
   for (let i = 0; i < 8; i++) {
     const m = maps[i % maps.length];
@@ -403,12 +409,12 @@ function makeCareer(): Career {
   const averages: Career["averages"] = {
     games: matches.length,
     wins: matches.filter((m) => m.result === "Victory").length,
-    winRate: 0.55,
+    winRate: 55,
     kills: 19.4,
     deaths: 13.6,
     assists: 7.5,
     kd: 1.42,
-    hsPct: 0.31,
+    hsPct: 31,
   };
   return {
     source: "local",
@@ -416,9 +422,9 @@ function makeCareer(): Career {
     matches,
     averages,
     coPlayers: [
-      { puuid: "teammate-1", name: "Boostio", sharedMatches: 6, agents: ["Jett", "Raze"], isParty: true },
-      { puuid: "teammate-2", name: "SicK", sharedMatches: 4, agents: ["Killjoy", "Cypher"], isParty: false },
-      { puuid: "teammate-3", name: "Marved", sharedMatches: 3, agents: ["Omen"], isParty: false },
+      { puuid: "teammate-1", name: "NovaFlux", sharedMatches: 6, agents: ["Jett", "Raze"], isParty: true },
+      { puuid: "teammate-2", name: "MakoLine", sharedMatches: 4, agents: ["Killjoy", "Cypher"], isParty: false },
+      { puuid: "teammate-3", name: "VexOrbit", sharedMatches: 3, agents: ["Omen"], isParty: false },
     ],
     agentPool: [
       { agent: "Jett", games: 28, winRate: 64, portrait: AGENT_ROSTER[0].portrait, color: AGENT_ROSTER[0].color },
@@ -474,7 +480,7 @@ function makePerformance(): PerformancePayload {
     matches: points.length,
     wins: points.filter((p) => p.result === "Victory").length,
     losses: points.filter((p) => p.result === "Defeat").length,
-    winRate: 0.55,
+    winRate: 55,
     net: 42,
     avgWin: 23,
     avgLoss: -19,
@@ -536,7 +542,7 @@ function makePerformance(): PerformancePayload {
   };
   return {
     version: 1,
-    account: { puuid: "preview-self", riotId: "TenZ#NA1", timezone: "UTC" },
+    account: { puuid: "preview-self", riotId: "Preview#OPD1", timezone: "UTC" },
     points,
     summary,
     insights: [
@@ -552,7 +558,7 @@ function makePerformance(): PerformancePayload {
     splits,
     actComparison: {
       current: { id: "ep8a1", ...summary, current: { ...current, rr: 78, tier: 23 }, next: { ...next, rrNeeded: 22, progress: 78 } },
-      previous: { id: "ep7a3", matches: 18, wins: 11, losses: 7, winRate: 0.61, net: 36, avgWin: 24, avgLoss: -20, current: { ...RANK(22), rr: 100, tier: 22 }, next: null, exactResults: 18 },
+      previous: { id: "ep7a3", matches: 18, wins: 11, losses: 7, winRate: 61, net: 36, avgWin: 24, avgLoss: -20, current: { ...RANK(22), rr: 100, tier: 22 }, next: null, exactResults: 18 },
     },
     rankChanges,
     personalBests: { bestRrMatch: "preview-match-1", bestRr: 28, bestAcsMatch: "preview-match-2", bestAcs: 312, highestTier: 23, highestRr: 88 },
@@ -575,7 +581,7 @@ function makePerformance(): PerformancePayload {
           kd: p.kd,
           acs: p.acs,
         })),
-        summary: { matches: 4, wins: 3, losses: 1, winRate: 0.75, net: 12, currentTier: 23, currentRr: 78 },
+        summary: { matches: 4, wins: 3, losses: 1, winRate: 75, net: 12, currentTier: 23, currentRr: 78 },
       },
       archive: [],
     },
@@ -589,7 +595,7 @@ function makeEncounters(): SavedPlayersPayload {
   const players: SavedPlayer[] = [
     {
       puuid: "enc-1",
-      name: "Boostio",
+      name: "NovaFlux",
       saved: true,
       note: "Plays Jett / Raze, very aggressive, always duels B main on Haven",
       savedAt: now - 86400 * 6 * 1000,
@@ -606,7 +612,7 @@ function makeEncounters(): SavedPlayersPayload {
       withKd: 1.4, withAcs: 248, withHsPct: 31, withStatGames: 6,
       topAgent: "Jett", topAgentGames: 32,
       topAgentPortrait: AGENT_ROSTER[0].portrait, topAgentColor: AGENT_ROSTER[0].color,
-      accountsSeen: ["boostio#NA1"],
+      accountsSeen: ["novaflux#preview"],
       timeline: [
         { matchId: "preview-match-1", at: now - 86400 * 1000, side: "with", result: "win", agent: "Jett", map: "Haven" },
         { matchId: "preview-match-2", at: now - 86400 * 2 * 1000, side: "with", result: "win", agent: "Raze", map: "Bind" },
@@ -616,9 +622,9 @@ function makeEncounters(): SavedPlayersPayload {
     },
     {
       puuid: "enc-2",
-      name: "SicK",
+      name: "MakoLine",
       saved: true,
-      note: "Solid sentinel. Watches flank consistently. Friends with Boostio.",
+      note: "Solid sentinel. Watches flank consistently. Queues regularly with NovaFlux.",
       savedAt: now - 86400 * 14 * 1000,
       updatedAt: now - 86400 * 3 * 1000,
       withCount: 4, againstCount: 5,
@@ -633,7 +639,7 @@ function makeEncounters(): SavedPlayersPayload {
       withKd: 1.18, withAcs: 198, withHsPct: 24, withStatGames: 4,
       topAgent: "Killjoy", topAgentGames: 21,
       topAgentPortrait: AGENT_ROSTER[11].portrait, topAgentColor: AGENT_ROSTER[11].color,
-      accountsSeen: ["sick#NA1"],
+      accountsSeen: ["makoline#preview"],
       timeline: [
         { matchId: "preview-match-5", at: now - 86400 * 3 * 1000, side: "with", result: "win", agent: "Killjoy", map: "Ascent" },
         { matchId: "preview-match-6", at: now - 86400 * 7 * 1000, side: "against", result: "loss", agent: "Cypher", map: "Bind" },
@@ -641,7 +647,7 @@ function makeEncounters(): SavedPlayersPayload {
     },
     {
       puuid: "enc-3",
-      name: "Vanquish",
+      name: "RiftMason",
       saved: true,
       note: "Toxic, smurfs on new accounts, rage quits when losing. Avoid in voice.",
       savedAt: now - 86400 * 30 * 1000,
@@ -658,7 +664,7 @@ function makeEncounters(): SavedPlayersPayload {
       withKd: 0.62, withAcs: 156, withHsPct: 28, withStatGames: 1,
       topAgent: "Jett", topAgentGames: 28,
       topAgentPortrait: AGENT_ROSTER[0].portrait, topAgentColor: AGENT_ROSTER[0].color,
-      accountsSeen: ["vanquish1#NA1", "vq2#NA1"],
+      accountsSeen: ["riftmason#preview", "masonalt#preview"],
       timeline: [],
     },
   ];
@@ -667,16 +673,16 @@ function makeEncounters(): SavedPlayersPayload {
 
 function makeInventory(): Inventory {
   const top: InventoryItem[] = [
-    { name: "Champions 2022 Vandal", icon: null, vp: 17750, tier: "Ultra" },
-    { name: "Kuronami Vandal", icon: null, vp: 12750, tier: "Exclusive" },
-    { name: "Reaver Phantom", icon: null, vp: 8750, tier: "Premium" },
-    { name: "Araxys Operator", icon: null, vp: 8750, tier: "Premium" },
-    { name: "Elderflame Operator", icon: null, vp: 12750, tier: "Exclusive" },
-    { name: "Glitchpop Dagger", icon: null, vp: 5350, tier: "Premium" },
+    { ...SAMPLE_WEAPON_SKINS.Vandal[1], vp: 5350, tier: "Ultra" },
+    { ...SAMPLE_WEAPON_SKINS.Vandal[2], vp: 5350, tier: "Exclusive" },
+    { ...SAMPLE_WEAPON_SKINS.Phantom[1], vp: 1775, tier: "Premium" },
+    { ...SAMPLE_WEAPON_SKINS.Operator[0], vp: 2175, tier: "Premium" },
+    { ...SAMPLE_WEAPON_SKINS.Operator[2], vp: 2475, tier: "Exclusive" },
+    { ...SAMPLE_WEAPON_SKINS.Melee[3], vp: 5350, tier: "Premium" },
   ];
   const recent: InventoryItem[] = [
-    { name: "Spectrum Phantom", icon: null, vp: 5350, tier: "Deluxe" },
-    { name: "Magepunk Phantom", icon: null, vp: 7100, tier: "Premium" },
+    { ...SAMPLE_WEAPON_SKINS.Phantom[3], vp: 2675, tier: "Deluxe" },
+    { ...SAMPLE_WEAPON_SKINS.Phantom[2], vp: 1775, tier: "Premium" },
   ];
   return {
     available: true,
@@ -700,17 +706,17 @@ function makeInventory(): Inventory {
 function makeMatchDetail(): MatchDetail {
   const teams = {
     Blue: [
-      makePlayer(0, { team: "ally", tier: 23, isSelf: true, kdKnown: true }),
+      makePlayer(0, { team: "ally", tier: 23, isSelf: true }),
       makePlayer(1, { team: "ally", tier: 22, party: 1 }),
       makePlayer(2, { team: "ally", tier: 21, party: 1 }),
       makePlayer(3, { team: "ally", tier: 19, party: 2 }),
       makePlayer(4, { team: "ally", tier: 17, party: 2 }),
     ],
     Red: [
-      makePlayer(5, { team: "enemy", tier: 24, radiant: true, kdKnown: true }),
+      makePlayer(5, { team: "enemy", tier: 24, radiant: true }),
       makePlayer(6, { team: "enemy", tier: 22, party: 1 }),
       makePlayer(7, { team: "enemy", tier: 21, party: 1 }),
-      makePlayer(8, { team: "enemy", tier: 19, smurf: true, kdKnown: true }),
+      makePlayer(8, { team: "enemy", tier: 19, smurf: true }),
       makePlayer(9, { team: "enemy", tier: 18 }),
     ],
   };

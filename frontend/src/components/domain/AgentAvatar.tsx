@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 export function AgentAvatar({
   portrait,
@@ -14,6 +14,7 @@ export function AgentAvatar({
   testId?: string;
 }) {
   const [failed, setFailed] = useState(false);
+  useEffect(() => setFailed(false), [portrait]);
   const border = color ?? "#3f3f46";
   if (!portrait || failed) {
     return (

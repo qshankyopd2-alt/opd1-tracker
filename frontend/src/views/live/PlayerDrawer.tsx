@@ -154,7 +154,7 @@ export function PlayerDrawer({
         {/* header */}
         <div className="relative border-b border-edge overflow-hidden">
           {profileBackdrop && (
-            <img src={profileBackdrop} alt="" className="absolute inset-0 h-full w-full object-cover object-center opacity-30" draggable={false} />
+            <img src={profileBackdrop} alt="" className="absolute inset-0 h-full w-full object-cover object-center opacity-30" draggable={false} onError={(event) => { event.currentTarget.style.display = "none"; }} />
           )}
           <div className="absolute inset-0 bg-gradient-to-r from-panel via-panel/95 to-panel/75" />
           <div className="relative flex min-h-[132px] items-center gap-4 p-4">
@@ -272,7 +272,7 @@ export function PlayerDrawer({
               <div className="grid grid-cols-2 gap-1.5">
                 {featuredWeapons.map((w) => (
                   <div key={w.weapon} className="flex items-center gap-2 border border-edge rounded-sm px-2 py-1.5 bg-card">
-                    {w.skin?.icon && <img src={w.skin.icon} alt="" className="h-5 max-w-[64px] object-contain" loading="lazy" />}
+                    {w.skin?.icon && <img src={w.skin.icon} alt="" className="h-5 max-w-[64px] object-contain" loading="lazy" onError={(event) => { event.currentTarget.style.display = "none"; }} />}
                     <div className="min-w-0">
                       <div className="text-[12px] font-semibold text-zinc-100 truncate">{w.skin?.name ?? "Standard"}</div>
                       <div className="text-[10px] uppercase tracking-widest text-zinc-500">{w.weapon === "Melee" ? "Knife" : w.weapon}</div>

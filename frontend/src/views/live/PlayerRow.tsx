@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react";
 import { AlertTriangle, Bookmark, EyeOff } from "lucide-react";
 import type { LivePlayer, WeaponLoadout } from "../../api/types";
 import { AgentAvatar } from "../../components/domain/AgentAvatar";
@@ -31,6 +32,13 @@ function Metric({ label, children, color }: { label: string; children: React.Rea
   );
 }
 
+function WeaponArtwork({ icon, name, fallback }: { icon: string | null | undefined; name: string; fallback: string }) {
+  const [failed, setFailed] = useState(false);
+  useEffect(() => setFailed(false), [icon]);
+  if (!icon || failed) return <span className="text-[10px] font-bold text-zinc-500">{fallback}</span>;
+  return <img src={icon} alt={name} className="h-7 w-[86%] object-contain" loading="lazy" onError={() => setFailed(true)} />;
+}
+
 function FeaturedLoadout({ weapons }: { weapons: WeaponLoadout[] }) {
   const byWeapon = new Map(weapons.map((item) => [item.weapon, item]));
 
@@ -46,11 +54,7 @@ function FeaturedLoadout({ weapons }: { weapons: WeaponLoadout[] }) {
             title={skinName ? `${weapon === "Melee" ? "Knife" : weapon}: ${skinName}` : `${weapon}: unavailable`}
             className="flex h-10 min-w-0 items-center justify-center overflow-hidden rounded-sm border border-edge bg-panel/90"
           >
-            {item?.skin?.icon ? (
-              <img src={item.skin.icon} alt={skinName ?? weapon} className="h-7 w-[86%] object-contain" loading="lazy" />
-            ) : (
-              <span className="text-[10px] font-bold text-zinc-500">{label}</span>
-            )}
+            <WeaponArtwork icon={item?.skin?.icon} name={skinName ?? weapon} fallback={label} />
           </span>
         );
       })}
@@ -83,12 +87,13 @@ export function PlayerRow({
       }`}
     >
       {player.playerCard && (
-        <img
-          src={player.playerCard}
-          alt=""
-          className="pointer-events-none absolute inset-0 h-full w-full object-cover object-center opacity-[0.25] saturate-50 transition-opacity duration-200 group-hover:opacity-[0.35]"
-          draggable={false}
-        />
+          <img
+            src={player.playerCard}
+            alt=""
+            className="pointer-events-none absolute inset-0 h-full w-full object-cover object-center opacity-[0.25] saturate-50 transition-opacity duration-200 group-hover:opacity-[0.35]"
+            draggable={false}
+            onError={(event) => { event.currentTarget.style.display = "none"; }}
+          />
       )}
       <span className="pointer-events-none absolute inset-0 bg-gradient-to-r from-card/95 via-card/85 to-card/40" />
 

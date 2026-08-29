@@ -161,7 +161,7 @@ export function CollectionView() {
               {(data.top ?? []).map((s) => (
                 <div key={s.name} className="flex flex-col rounded-sm border-b border-l border-r border-edge bg-panel p-3" style={{ borderTop: `2px solid ${TIER_COLORS[s.tier] ?? "#A1A1AA"}` }}>
                   {s.icon ? (
-                    <img src={s.icon} alt={s.name} className="h-10 object-contain self-center hover:scale-105 transition-transform duration-300" loading="lazy" draggable={false} />
+                    <img src={s.icon} alt={s.name} className="h-10 object-contain self-center hover:scale-105 transition-transform duration-300" loading="lazy" draggable={false} onError={(event) => { event.currentTarget.style.display = "none"; }} />
                   ) : (
                     <div className="h-10" />
                   )}
