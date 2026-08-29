@@ -1,4 +1,5 @@
 import { Section } from "../../components/ui/Section";
+import { PageHeader } from "../../components/shell/PageHeader";
 import { useApp } from "../../state/AppContext";
 
 export function SettingsView() {
@@ -6,7 +7,7 @@ export function SettingsView() {
 
   return (
     <div className="p-5 space-y-4 max-w-5xl" data-testid="settings-view">
-      <h1 className="font-display font-black italic uppercase text-2xl tracking-tight">Settings</h1>
+      <PageHeader title="Settings" />
 
       <Section title="About" testId="settings-about-section">
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 text-[12px]">
