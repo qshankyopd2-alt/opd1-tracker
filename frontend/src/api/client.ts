@@ -13,6 +13,7 @@ import type {
   SessionView,
   StateInfo,
 } from "./types";
+import { designApi, designConnection, isDesignMode } from "../dev/designMode";
 
 export class ApiError extends Error {
   constructor(message: string, readonly status?: number) {
@@ -30,6 +31,9 @@ interface BackendConnection {
 let connectionPromise: Promise<BackendConnection> | null = null;
 
 async function resolveConnection(): Promise<BackendConnection> {
+  if (isDesignMode()) {
+    return designConnection();
+  }
   if ("__TAURI_INTERNALS__" in window) {
     const { invoke } = await import("@tauri-apps/api/core");
     return invoke<BackendConnection>("backend_connection");
@@ -55,6 +59,18 @@ async function api<T>(path: string, init?: RequestInit & { timeoutMs?: number })
   if (pending) return pending as Promise<T>;
 
   const run = (async () => {
+    if (isDesignMode()) {
+      try {
+        const kind = pathToKind(path);
+        if (kind) return await designApi<T>(kind);
+        throw new ApiError(`Design harness has no mapping for ${path}.`);
+      } catch (err) {
+        if (err instanceof ApiError) throw err;
+        throw new ApiError(err instanceof Error ? err.message : "Design harness error.");
+      } finally {
+        if (key) inflight.delete(key);
+      }
+    }
     const ctrl = new AbortController();
     const timer = setTimeout(() => ctrl.abort(), init?.timeoutMs ?? 20000);
     try {
@@ -91,6 +107,18 @@ async function api<T>(path: string, init?: RequestInit & { timeoutMs?: number })
 
   if (key) inflight.set(key, run);
   return run;
+}
+
+function pathToKind(path: string): string | null {
+  if (path === "/api/health") return "health";
+  if (path === "/api/state") return "state";
+  if (path.startsWith("/api/live")) return "live";
+  if (path.startsWith("/api/performance") || path.startsWith("/api/insights")) return "performance";
+  if (path.startsWith("/api/saved-players")) return "savedPlayers";
+  if (path.startsWith("/api/inventory")) return "inventory";
+  if (path.startsWith("/api/profile/")) return "profile";
+  if (path.startsWith("/api/match/")) return "match";
+  return null;
 }
 
 const tz = () => {

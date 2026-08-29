@@ -7,6 +7,7 @@ import { EncountersView } from "./views/encounters/EncountersView";
 import { CollectionView } from "./views/collection/CollectionView";
 import { AsciiStudioView } from "./views/ascii/AsciiStudioView";
 import { SettingsView } from "./views/settings/SettingsView";
+import { DesignModeBar } from "./dev/DesignModeBar";
 
 function CurrentView() {
   const { view } = useApp();
@@ -34,6 +35,7 @@ export default function App() {
       <AppShell>
         <CurrentView />
       </AppShell>
+      <DesignModeBar />
     </AppProvider>
   );
 }
