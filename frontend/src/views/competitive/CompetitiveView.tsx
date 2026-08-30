@@ -3,6 +3,7 @@ import { Badge } from "../../components/ui/Badge";
 import { ErrorBanner } from "../../components/ui/ErrorBanner";
 import { EmptyState } from "../../components/ui/EmptyState";
 import { Section } from "../../components/ui/Section";
+import { PageHeader } from "../../components/shell/PageHeader";
 import { TableSkeleton } from "../../components/ui/Skeleton";
 import { usePerformance } from "../../hooks/usePerformance";
 import { fmtDelta, fmtNum, timeAgo } from "../../lib/format";
@@ -63,9 +64,8 @@ export function CompetitiveView() {
 
   return (
     <div className="p-5 space-y-4" data-testid="competitive-view">
-      <div className="flex items-center gap-3">
-        <h1 className="font-display font-black italic uppercase text-2xl tracking-tight">Competitive</h1>
-        {account.riotId && <span className="text-[12px] text-zinc-500">{account.riotId}</span>}
+      <PageHeader title="Competitive">
+        {account.riotId && <span className="text-[12px] text-zinc-500 mr-2">{account.riotId}</span>}
         {stale && (
           <Badge color="#F59E0B" testId="competitive-stale-badge">
             saved data · VALORANT offline
@@ -78,7 +78,7 @@ export function CompetitiveView() {
         >
           <RotateCw size={12} /> Refresh
         </button>
-      </div>
+      </PageHeader>
 
       <div className="grid grid-cols-1 xl:grid-cols-[320px_1fr] gap-4">
         {/* rank card */}

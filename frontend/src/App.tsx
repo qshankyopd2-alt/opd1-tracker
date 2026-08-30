@@ -1,3 +1,4 @@
+import { lazy, Suspense } from "react";
 import { AppProvider, useApp } from "./state/AppContext";
 import { AppShell } from "./components/shell/AppShell";
 import { LiveView } from "./views/live/LiveView";
@@ -7,6 +8,10 @@ import { EncountersView } from "./views/encounters/EncountersView";
 import { CollectionView } from "./views/collection/CollectionView";
 import { AsciiStudioView } from "./views/ascii/AsciiStudioView";
 import { SettingsView } from "./views/settings/SettingsView";
+
+const DesignModeBar = import.meta.env.DEV
+  ? lazy(async () => ({ default: (await import("./dev/DesignModeBar")).DesignModeBar }))
+  : null;
 
 function CurrentView() {
   const { view } = useApp();
@@ -34,6 +39,11 @@ export default function App() {
       <AppShell>
         <CurrentView />
       </AppShell>
+      {DesignModeBar && (
+        <Suspense fallback={null}>
+          <DesignModeBar />
+        </Suspense>
+      )}
     </AppProvider>
   );
 }

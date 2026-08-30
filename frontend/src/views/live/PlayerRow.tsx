@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react";
 import { AlertTriangle, Bookmark, EyeOff } from "lucide-react";
 import type { LivePlayer, WeaponLoadout } from "../../api/types";
 import { AgentAvatar } from "../../components/domain/AgentAvatar";
@@ -31,6 +32,13 @@ function Metric({ label, children, color }: { label: string; children: React.Rea
   );
 }
 
+function WeaponArtwork({ icon, name, fallback }: { icon: string | null | undefined; name: string; fallback: string }) {
+  const [failed, setFailed] = useState(false);
+  useEffect(() => setFailed(false), [icon]);
+  if (!icon || failed) return <span className="text-[10px] font-bold text-zinc-500">{fallback}</span>;
+  return <img src={icon} alt={name} className="h-7 w-[86%] object-contain" loading="lazy" onError={() => setFailed(true)} />;
+}
+
 function FeaturedLoadout({ weapons }: { weapons: WeaponLoadout[] }) {
   const byWeapon = new Map(weapons.map((item) => [item.weapon, item]));
 
@@ -46,11 +54,7 @@ function FeaturedLoadout({ weapons }: { weapons: WeaponLoadout[] }) {
             title={skinName ? `${weapon === "Melee" ? "Knife" : weapon}: ${skinName}` : `${weapon}: unavailable`}
             className="flex h-10 min-w-0 items-center justify-center overflow-hidden rounded-sm border border-edge bg-panel/90"
           >
-            {item?.skin?.icon ? (
-              <img src={item.skin.icon} alt={skinName ?? weapon} className="h-7 w-[86%] object-contain" loading="lazy" />
-            ) : (
-              <span className="text-[10px] font-bold text-zinc-500">{label}</span>
-            )}
+            <WeaponArtwork icon={item?.skin?.icon} name={skinName ?? weapon} fallback={label} />
           </span>
         );
       })}
@@ -78,106 +82,122 @@ export function PlayerRow({
       type="button"
       data-testid={`player-row-${player.puuid}`}
       onClick={() => onSelect(player)}
-      className={`group relative h-full min-h-0 w-full overflow-hidden rounded-sm border border-edge bg-card/95 px-2.5 py-1 text-left transition-colors hover:border-zinc-600 hover:bg-zinc-800/85 ${
-        player.isSelf ? "border-brand/45" : ""
+      className={`group relative flex w-full flex-col overflow-hidden rounded-md border border-edge bg-card/95 px-2.5 py-1.5 text-left transition-colors hover:border-zinc-500 hover:bg-zinc-800/90 ${
+        player.isSelf ? "border-brand/50 bg-brand/5" : ""
       }`}
     >
       {player.playerCard && (
-        <img
-          src={player.playerCard}
-          alt=""
-          className="pointer-events-none absolute inset-0 h-full w-full object-cover object-center opacity-[0.32] saturate-75 transition-opacity duration-200 group-hover:opacity-[0.42]"
-          draggable={false}
-        />
+          <img
+            src={player.playerCard}
+            alt=""
+            className="pointer-events-none absolute inset-0 h-full w-full object-cover object-center opacity-[0.25] saturate-50 transition-opacity duration-200 group-hover:opacity-[0.35]"
+            draggable={false}
+            onError={(event) => { event.currentTarget.style.display = "none"; }}
+          />
       )}
-      <span className="pointer-events-none absolute inset-0 bg-gradient-to-r from-card/90 via-card/75 to-card/35" />
+      <span className="pointer-events-none absolute inset-0 bg-gradient-to-r from-card/95 via-card/85 to-card/40" />
 
-      <span className="relative flex min-w-0 items-start gap-2">
-        <span
-          className="mt-0.5 h-10 w-[3px] shrink-0 rounded-full"
-          title={player.party ? `Party ${player.party.number}` : undefined}
-          style={{ backgroundColor: player.party?.color ?? "transparent" }}
-        />
+      {/* Top Row: Identity & Rank */}
+      <span className="relative flex min-w-0 items-start justify-between gap-3 mb-1.5">
+        <span className="flex min-w-0 items-start gap-2.5">
+          <span
+            className="mt-0.5 h-10 w-[3px] shrink-0 rounded-full"
+            title={player.party ? `Party ${player.party.number}` : undefined}
+            style={{ backgroundColor: player.party?.color ?? "transparent" }}
+          />
 
-        <span className="relative shrink-0">
-          <AgentAvatar portrait={player.agentPortrait} name={player.agent ?? player.name} color={player.agentColor} size={38} />
-          {locked && <span className="absolute -bottom-1 -right-1 h-2.5 w-2.5 rounded-full border border-ink bg-victory" />}
+          <span className="relative shrink-0 mt-0.5">
+            <AgentAvatar portrait={player.agentPortrait} name={player.agent ?? player.name} color={player.agentColor} size={40} />
+            {locked && <span className="absolute -bottom-1 -right-1 h-3 w-3 rounded-full border-2 border-ink bg-victory" />}
+          </span>
+
+          <span className="min-w-0 flex-1 flex flex-col justify-center">
+            <span className="flex min-w-0 items-center gap-1.5">
+              <span dir="auto" className={`truncate font-display text-[17px] font-black tracking-wide leading-none ${player.isSelf ? "text-brand" : "text-zinc-100"}`}>
+                {player.name}
+              </span>
+              {player.party && (
+                <span
+                  title={`Party ${player.party.number}`}
+                  className="inline-flex shrink-0 items-center gap-1 rounded-sm border px-1.5 py-0.5 text-[9px] font-black uppercase tracking-widest"
+                  style={{ borderColor: player.party.color, color: player.party.color, backgroundColor: `${player.party.color}15` }}
+                >
+                  <span className="h-1.5 w-1.5 rounded-sm" style={{ backgroundColor: player.party.color }} />
+                  P{player.party.number}
+                </span>
+              )}
+              {player.saved && <Bookmark size={14} className="shrink-0 text-amber-300" fill="currentColor" aria-label="Saved player" />}
+              {player.nameHidden && <EyeOff size={13} className="shrink-0 text-zinc-500" aria-label="streamer mode name" />}
+              {player.smurf && (
+                <span
+                  data-testid={`smurf-flag-${player.puuid}`}
+                  title={player.smurfReasons.join(" · ")}
+                  className="inline-flex shrink-0 items-center gap-1 rounded-sm border border-defeat bg-defeat px-1.5 py-0.5 text-[10px] font-black uppercase tracking-widest text-white"
+                >
+                  <AlertTriangle size={10} strokeWidth={3} /> SMURF
+                </span>
+              )}
+            </span>
+            <span className="mt-1 block truncate text-[11px] font-medium leading-none text-zinc-400">
+              {player.agent ?? "Unpicked"}{player.role ? ` · ${player.role}` : ""}
+              {player.levelHidden ? " · Lvl hidden" : ` · Lvl ${player.level || "?"}`}
+              {encTotal > 0 ? ` · seen ${encTotal}x` : ""}
+            </span>
+            {player.savedNote && <span className="mt-1 block truncate text-[11px] font-medium leading-none text-amber-300" title={player.savedNote}>{player.savedNote}</span>}
+          </span>
         </span>
 
-        <span className="min-w-0 flex-1 pt-0.5">
-          <span className="flex min-w-0 items-center gap-1.5">
-            <span dir="auto" className={`truncate font-display text-[16px] font-bold leading-tight ${player.isSelf ? "text-brand" : "text-zinc-100"}`}>
-              {player.name}
+        <span className="min-w-[130px] shrink-0 text-right flex flex-col items-end justify-center">
+          <span className="flex items-center justify-end gap-2.5">
+            <span className="flex flex-col items-end justify-center">
+              <span className="block text-[15px] font-black leading-none tracking-wide" style={{ color: player.rankColor }}>{player.rank}</span>
+              {player.rankTier > 2 && <span className="block mt-1 text-[11px] font-bold leading-none text-zinc-400 num">{player.rr} RR</span>}
             </span>
-            {player.party && (
-              <span
-                title={`Party ${player.party.number}`}
-                className="inline-flex shrink-0 items-center gap-1 rounded-sm border px-1 py-px text-[8px] font-black uppercase tracking-wider"
-                style={{ borderColor: player.party.color, color: player.party.color }}
-              >
-                <span className="h-1.5 w-1.5 rounded-[1px]" style={{ backgroundColor: player.party.color }} />
-                P{player.party.number}
-              </span>
-            )}
-            {player.saved && <Bookmark size={12} className="shrink-0 text-amber-300" fill="currentColor" aria-label="Saved player" />}
-            {player.nameHidden && <EyeOff size={11} className="shrink-0 text-zinc-500" aria-label="streamer mode name" />}
-            {player.smurf && (
-              <span
-                data-testid={`smurf-flag-${player.puuid}`}
-                title={player.smurfReasons.join(" · ")}
-                className="inline-flex shrink-0 items-center gap-0.5 rounded-sm bg-amber-400 px-1 py-px text-[9px] font-bold uppercase tracking-wider text-ink"
-              >
-                <AlertTriangle size={9} /> Smurf
-              </span>
-            )}
+            {player.rankIcon && <img src={player.rankIcon} alt="" className="h-10 w-10 shrink-0" loading="lazy" onError={(event) => { event.currentTarget.style.display = "none"; }} />}
           </span>
-          <span className="mt-0.5 block truncate text-[10px] leading-tight text-zinc-400">
-            {player.agent ?? "Unpicked"}{player.role ? ` · ${player.role}` : ""}
-            {player.levelHidden ? " · Lvl hidden" : ` · Lvl ${player.level || "?"}`}
-            {encTotal > 0 ? ` · seen ${encTotal}x` : ""}
-          </span>
-          {player.savedNote && <span className="mt-0.5 block truncate text-[10px] leading-tight text-amber-200" title={player.savedNote}>{player.savedNote}</span>}
-        </span>
-
-        <span className="min-w-[126px] shrink-0 text-right">
-          <span className="flex items-center justify-end gap-2">
-            {player.rankIcon && <img src={player.rankIcon} alt="" className="h-9 w-9 shrink-0" loading="lazy" />}
-            <span className="w-[72px] min-w-0 text-right">
-              <span className="block truncate text-[14px] font-bold leading-tight" style={{ color: player.rankColor }}>{player.rank}</span>
-              {player.rankTier > 2 && <span className="block text-[10px] font-semibold leading-tight text-zinc-300 num">{player.rr} RR</span>}
-            </span>
-          </span>
-          <span className="mt-0.5 flex items-center justify-end gap-1 text-[10px] font-semibold leading-tight text-zinc-500">
-            <span className="text-[8px] uppercase tracking-wider">Peak</span>
-            {player.peakIcon && <img src={player.peakIcon} alt="" className="h-4 w-4 shrink-0" loading="lazy" />}
+          <span className="mt-1.5 flex items-center justify-end gap-1.5 text-[10px] font-bold leading-none text-zinc-500">
+            <span className="text-[9px] uppercase tracking-widest">Peak</span>
+            {player.peakIcon && <img src={player.peakIcon} alt="" className="h-4 w-4 shrink-0 opacity-80" loading="lazy" onError={(event) => { event.currentTarget.style.display = "none"; }} />}
             <span className="truncate" style={{ color: player.peakColor }}>{player.peakRank}</span>
           </span>
         </span>
       </span>
 
-      <span className="relative mt-1 grid grid-cols-4 divide-x divide-edge/70 border-y border-edge/70 bg-ink/35">
-        <Metric label="Act games">{player.games || "—"}</Metric>
-        <Metric label="Act WR">{fmtPct(player.winRate)}</Metric>
-        <Metric label={`${recentLabel} K/D`} color={kdColor(player.kd)}>
-          {player.kd === null ? <span className="animate-pulse text-zinc-600">...</span> : fmtNum(player.kd, 2)}
-        </Metric>
-        <Metric label={`${recentLabel} HS`}>{fmtPct(player.hsPct)}</Metric>
+      {/* Middle Row: Metrics Grid */}
+      <span className="relative mb-1.5 grid grid-cols-4 gap-px overflow-hidden rounded-sm border border-edge/60 bg-edge/40">
+        <span className="bg-ink/80 px-2 py-1.5 flex flex-col justify-center">
+          <Metric label="Act games">{player.games || "—"}</Metric>
+        </span>
+        <span className="bg-ink/80 px-2 py-1.5 flex flex-col justify-center">
+          <Metric label="Act WR">{fmtPct(player.winRate)}</Metric>
+        </span>
+        <span className="bg-ink/80 px-2 py-1.5 flex flex-col justify-center">
+          <Metric label={`${recentLabel} K/D`} color={kdColor(player.kd)}>
+            {player.kd === null ? <span className="animate-pulse text-zinc-600">...</span> : fmtNum(player.kd, 2)}
+          </Metric>
+        </span>
+        <span className="bg-ink/80 px-2 py-1.5 flex flex-col justify-center">
+          <Metric label={`${recentLabel} HS`}>{fmtPct(player.hsPct)}</Metric>
+        </span>
       </span>
 
-      <span className="relative mt-0.5 flex min-w-0 items-end gap-2">
+      {/* Bottom Row: Weapons & Form */}
+      <span className="relative flex min-w-0 items-center justify-between gap-3">
         <FeaturedLoadout weapons={player.weapons} />
-        <span className="flex shrink-0 items-center justify-end gap-2 pb-1">
+        <span className="flex shrink-0 items-center justify-end gap-3">
           {player.streak && player.streak.count >= 3 && (
-            <span className={`text-[10px] font-bold num ${player.streak.type === "W" ? "text-victory" : "text-defeat"}`}>
+            <span className={`rounded-sm border px-1.5 py-0.5 text-[11px] font-black num ${player.streak.type === "W" ? "border-victory/30 bg-victory/20 text-victory" : "border-defeat/30 bg-defeat/20 text-defeat"}`}>
               {player.streak.count}{player.streak.type}
             </span>
           )}
           {player.rrEarned !== null && player.rrEarned !== undefined && (
-            <span className={`text-[10px] font-semibold uppercase tracking-wider num ${player.rrEarned >= 0 ? "text-victory" : "text-defeat"}`}>
+            <span className={`text-[11px] font-black uppercase tracking-wider num ${player.rrEarned >= 0 ? "text-victory" : "text-defeat"}`}>
               {player.rrEarned >= 0 ? `+${player.rrEarned}` : player.rrEarned} RR
             </span>
           )}
-          <FormDots form={player.form} />
+          <span className="scale-95 origin-right">
+            <FormDots form={player.form} />
+          </span>
         </span>
       </span>
     </button>

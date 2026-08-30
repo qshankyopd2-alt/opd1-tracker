@@ -2,6 +2,8 @@ import { useEffect, useReducer } from "react";
 import { ApiError, backend } from "../api/client";
 import type { PerformancePayload } from "../api/types";
 
+const designModeEnabled = import.meta.env.DEV && import.meta.env.VITE_DESIGN_MODE === "true";
+
 interface Store {
   data: PerformancePayload | null;
   error: string | null;
@@ -109,6 +111,13 @@ export function usePerformance() {
     return () => {
       listeners.delete(force);
     };
+  }, []);
+
+  useEffect(() => {
+    if (!designModeEnabled) return;
+    const refreshPreview = () => void load(true);
+    window.addEventListener("opd1:design-view", refreshPreview);
+    return () => window.removeEventListener("opd1:design-view", refreshPreview);
   }, []);
 
   return {

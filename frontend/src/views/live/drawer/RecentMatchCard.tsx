@@ -49,7 +49,7 @@ export function RecentMatchCard({ match, onOpen }: { match: CareerMatch; onOpen:
         </span>
         <span className="text-[10px] text-zinc-400 num">{match.acs} ACS</span>
         <span className="flex min-w-0 items-center justify-end gap-1.5">
-          {match.rankIcon && <img src={match.rankIcon} alt={match.rankAfter ?? "Rank"} className="h-5 w-5 shrink-0" loading="lazy" />}
+          {match.rankIcon && <img src={match.rankIcon} alt={match.rankAfter ?? "Rank"} className="h-5 w-5 shrink-0" loading="lazy" onError={(event) => { event.currentTarget.style.display = "none"; }} />}
           <span className="max-w-[96px] truncate text-right text-[10px] font-semibold" style={{ color: match.rankColor ?? "#A1A1AA" }}>
             {match.rankAfter ?? "Unrated"}
             {match.rrAfter !== null && match.rrAfter !== undefined ? ` · ${match.rrAfter} RR` : ""}

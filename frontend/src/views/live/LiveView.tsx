@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import type { LivePlayer } from "../../api/types";
+import { EyeOff } from "lucide-react";
 import { ErrorBanner } from "../../components/ui/ErrorBanner";
 import { TableSkeleton } from "../../components/ui/Skeleton";
 import { useLiveData } from "../../state/LiveDataContext";
@@ -10,10 +11,13 @@ import { RecapCard } from "./RecapCard";
 import { TeamPanel } from "./TeamPanel";
 import { splitTeams } from "./teamSplit";
 
+const designModeEnabled = import.meta.env.DEV && import.meta.env.VITE_DESIGN_MODE === "true";
+
 export function LiveView() {
   const { board, error, loading, showBoard, refresh } = useLiveData();
   const [selected, setSelected] = useState<{ player: LivePlayer; accountPuuid: string | null } | null>(null);
   const [savedOverrides, setSavedOverrides] = useState<Record<string, { saved: boolean; note: string }>>({});
+  const [previewDrawerRequested, setPreviewDrawerRequested] = useState(false);
   const accountPuuid = board?.selfPuuid ?? null;
 
   useEffect(() => {
@@ -34,6 +38,21 @@ export function LiveView() {
       };
     });
   }, [board, savedOverrides]);
+
+  useEffect(() => {
+    if (!designModeEnabled) return;
+    const onPreviewView = (event: Event) => {
+      setPreviewDrawerRequested((event as CustomEvent<string>).detail === "live-drawer");
+    };
+    window.addEventListener("opd1:design-view", onPreviewView);
+    return () => window.removeEventListener("opd1:design-view", onPreviewView);
+  }, []);
+
+  useEffect(() => {
+    if (!previewDrawerRequested || !board) return;
+    const player = board.players.find((candidate) => candidate.smurf) ?? board.players[0];
+    if (player) setSelected({ player, accountPuuid: board.selfPuuid ?? null });
+  }, [board, previewDrawerRequested]);
 
   if (loading && !board) {
     return (
@@ -105,9 +124,11 @@ export function LiveView() {
           pregame && (
             <div
               data-testid="enemy-hidden-panel"
-              className="border border-dashed border-edge rounded-md flex items-center justify-center text-[12px] text-zinc-500 min-h-[120px]"
+              className="flex min-h-[120px] flex-col items-center justify-center gap-2 rounded-md border border-dashed border-edge bg-panel/30 text-zinc-500"
             >
-              Enemy team is revealed once the match starts.
+              <EyeOff size={24} className="text-zinc-600 mb-1" />
+              <div className="text-[13px] font-semibold uppercase tracking-wider text-zinc-400">Enemy Team Hidden</div>
+              <div className="text-[11px]">Revealed once the match starts</div>
             </div>
           )
         )}

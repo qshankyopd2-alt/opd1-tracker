@@ -3,11 +3,11 @@ import { useLiveData } from "../../state/LiveDataContext";
 import { timeAgo } from "../../lib/format";
 import type { GameState } from "../../api/types";
 
-const STATE_STYLE: Record<GameState, { label: string; color: string }> = {
-  INGAME: { label: "In Game", color: "#10B981" },
-  PREGAME: { label: "Agent Select", color: "#F59E0B" },
-  MENUS: { label: "In Lobby", color: "#3B82F6" },
-  OFFLINE: { label: "Offline", color: "#71717A" },
+const STATE_STYLE: Record<GameState, { label: string; bg: string; text: string; border: string }> = {
+  INGAME: { label: "In Game", bg: "bg-victory/10", text: "text-victory", border: "border-victory/20" },
+  PREGAME: { label: "Agent Select", bg: "bg-amber-500/10", text: "text-amber-500", border: "border-amber-500/20" },
+  MENUS: { label: "In Lobby", bg: "bg-blue-500/10", text: "text-blue-500", border: "border-blue-500/20" },
+  OFFLINE: { label: "Offline", bg: "bg-zinc-800", text: "text-zinc-400", border: "border-zinc-700" },
 };
 
 export function StatusBar() {
@@ -21,33 +21,57 @@ export function StatusBar() {
   return (
     <footer
       data-testid="status-bar"
-      className="h-9 shrink-0 border-t border-edge bg-panel flex items-center gap-4 px-4 text-[11px] text-zinc-500 font-mono"
+      className="relative z-10 flex h-10 shrink-0 items-center border-t border-edge bg-panel px-4 font-mono text-[11px] text-zinc-500"
     >
-      <span data-testid="status-state" className="inline-flex items-center gap-1.5 font-semibold" style={{ color: st.color }}>
-        <span className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: st.color }} />
-        {st.label.toUpperCase()}
-      </span>
-
-      {isLive && board?.map && (
-        <span data-testid="status-match">
-          {board.map} · {board.mode}
-          {board.score && board.score.ally !== undefined && (
-            <span className="text-zinc-300 num"> · {board.score.ally}–{board.score.enemy}</span>
-          )}
+      <div className="flex items-center gap-4 flex-1">
+        <span
+          data-testid="status-state"
+          className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-sm uppercase tracking-wider text-[10px] font-bold border ${st.bg} ${st.text} ${st.border}`}
+        >
+          <span className={`w-1.5 h-1.5 rounded-full ${effectiveState !== 'OFFLINE' ? 'pulse-dot bg-current' : 'bg-current opacity-50'}`} />
+          {st.label}
         </span>
-      )}
 
-      <span className="flex-1" />
+        {isLive && board?.map && (
+          <div data-testid="status-match" className="flex items-center gap-2">
+            <span className="text-zinc-300 font-semibold">{board.map}</span>
+            <span className="text-zinc-600">/</span>
+            <span className="uppercase tracking-wider text-[10px]">{board.mode}</span>
+            {board.score && board.score.ally !== undefined && (
+              <>
+                <span className="text-zinc-600">/</span>
+                <span className="text-zinc-300 num font-semibold">
+                  <span className="text-victory">{board.score.ally}</span>
+                  <span className="text-zinc-500 mx-0.5">–</span>
+                  <span className="text-defeat">{board.score.enemy}</span>
+                </span>
+              </>
+            )}
+          </div>
+        )}
+      </div>
 
-      {backendDown ? (
-        <span data-testid="status-backend" className="text-red-400 font-semibold">BACKEND OFFLINE</span>
-      ) : (
-        <span data-testid="status-backend">
-          {isLive ? "LIVE DATA" : "WAITING FOR CLIENT"}
-        </span>
-      )}
-      {updatedAt && <span data-testid="status-updated">upd {timeAgo(updatedAt)}</span>}
-      {health?.appVersion && <span data-testid="status-version">v{health.appVersion}</span>}
+      <div className="flex items-center gap-4 justify-end">
+        {backendDown ? (
+          <span data-testid="status-backend" className="text-defeat font-bold uppercase tracking-widest text-[10px] bg-defeat/10 px-2 py-0.5 rounded-sm border border-defeat/20">BACKEND OFFLINE</span>
+        ) : (
+          <span data-testid="status-backend" className="font-semibold uppercase tracking-widest text-[10px]">
+            {isLive ? <span className="text-victory">LIVE DATA</span> : "WAITING FOR CLIENT"}
+          </span>
+        )}
+
+        {updatedAt && (
+          <div className="flex items-center gap-2 border-l border-zinc-800 pl-4">
+            <span data-testid="status-updated">upd {timeAgo(updatedAt)}</span>
+          </div>
+        )}
+
+        {health?.appVersion && (
+          <div className="flex items-center gap-2 border-l border-zinc-800 pl-4">
+            <span data-testid="status-version" className="text-zinc-600">v{health.appVersion}</span>
+          </div>
+        )}
+      </div>
     </footer>
   );
 }

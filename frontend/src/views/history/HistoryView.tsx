@@ -7,6 +7,7 @@ import { Badge } from "../../components/ui/Badge";
 import { EmptyState } from "../../components/ui/EmptyState";
 import { ErrorBanner } from "../../components/ui/ErrorBanner";
 import { TableSkeleton } from "../../components/ui/Skeleton";
+import { PageHeader } from "../../components/shell/PageHeader";
 import { usePerformance } from "../../hooks/usePerformance";
 import { fmtDelta, fmtNum, fmtPct, resultColor, scoreline, timeAgo } from "../../lib/format";
 import { MatchDetailModal } from "./MatchDetailModal";
@@ -85,7 +86,7 @@ function MatchRow({
           ) : (
             <span className="text-zinc-600 text-[11px]">—</span>
           )}
-          {rankIcon && <img src={rankIcon} alt="" className="ml-1.5 inline-block h-5 w-5 align-middle" loading="lazy" />}
+          {rankIcon && <img src={rankIcon} alt="" className="ml-1.5 inline-block h-5 w-5 align-middle" loading="lazy" onError={(event) => { event.currentTarget.style.display = "none"; }} />}
         </span>
 
         <span className="flex items-center justify-end gap-1.5 text-zinc-500">
@@ -195,8 +196,7 @@ export function HistoryView() {
   const allMeta = { ...(data?.matchMeta ?? {}), ...metaOverrides };
   return (
     <div className="p-5 space-y-4" data-testid="history-view">
-      <div className="flex items-center gap-3 flex-wrap">
-        <h1 className="font-display font-black italic uppercase text-2xl tracking-tight">Match History</h1>
+      <PageHeader title="Match History">
         <div className="flex border border-edge rounded-sm" data-testid="history-filter">
           {(["all", "wins", "losses", "bookmarked"] as Filter[]).map((f) => (
             <button
@@ -224,7 +224,7 @@ export function HistoryView() {
         >
           <RotateCw size={12} /> Refresh
         </button>
-      </div>
+      </PageHeader>
 
       {points.length === 0 ? (
         <EmptyState
