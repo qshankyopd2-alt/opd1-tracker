@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { AlertTriangle, Bookmark, EyeOff } from "lucide-react";
 import type { LivePlayer, WeaponLoadout } from "../../api/types";
 import { AgentAvatar } from "../../components/domain/AgentAvatar";
-import { FormDots } from "../../components/domain/FormDots";
+import { RecentFormTiles } from "../../components/domain/RecentFormTiles";
 import { fmtNum, fmtPct } from "../../lib/format";
 
 const FEATURED_WEAPONS = [
@@ -36,14 +36,14 @@ function WeaponArtwork({ icon, name, fallback }: { icon: string | null | undefin
   const [failed, setFailed] = useState(false);
   useEffect(() => setFailed(false), [icon]);
   if (!icon || failed) return <span className="text-[10px] font-bold text-zinc-500">{fallback}</span>;
-  return <img src={icon} alt={name} className="h-7 w-[86%] object-contain" loading="lazy" onError={() => setFailed(true)} />;
+  return <img src={icon} alt={name} className="h-6 w-[82%] object-contain opacity-75 transition-opacity duration-200 group-hover/card:opacity-90" loading="lazy" onError={() => setFailed(true)} />;
 }
 
 function FeaturedLoadout({ weapons }: { weapons: WeaponLoadout[] }) {
   const byWeapon = new Map(weapons.map((item) => [item.weapon, item]));
 
   return (
-    <span className="grid min-w-0 flex-1 grid-cols-4 gap-1.5">
+    <span className="grid min-w-0 flex-1 grid-cols-4 gap-1">
       {FEATURED_WEAPONS.map(({ weapon, label }) => {
         const item = byWeapon.get(weapon);
         const skinName = item?.skin?.name;
@@ -52,7 +52,7 @@ function FeaturedLoadout({ weapons }: { weapons: WeaponLoadout[] }) {
           <span
             key={weapon}
             title={skinName ? `${weapon === "Melee" ? "Knife" : weapon}: ${skinName}` : `${weapon}: unavailable`}
-            className="flex h-10 min-w-0 items-center justify-center overflow-hidden rounded-sm border border-edge bg-panel/90"
+            className="flex h-10 min-w-0 items-center justify-center overflow-hidden rounded-sm border border-edge/60 bg-ink/70"
           >
             <WeaponArtwork icon={item?.skin?.icon} name={skinName ?? weapon} fallback={label} />
           </span>
@@ -82,7 +82,7 @@ export function PlayerRow({
       type="button"
       data-testid={`player-row-${player.puuid}`}
       onClick={() => onSelect(player)}
-      className={`group relative flex w-full flex-col overflow-hidden rounded-md border border-edge bg-card/95 px-2.5 py-1.5 text-left transition-colors hover:border-zinc-500 hover:bg-zinc-800/90 ${
+      className={`group/card relative flex w-full flex-col overflow-hidden rounded-md border border-edge bg-card/95 px-2.5 py-1.5 text-left transition-colors hover:border-zinc-500 hover:bg-zinc-800/90 ${
         player.isSelf ? "border-brand/50 bg-brand/5" : ""
       }`}
     >
@@ -90,15 +90,15 @@ export function PlayerRow({
           <img
             src={player.playerCard}
             alt=""
-            className="pointer-events-none absolute inset-0 h-full w-full object-cover object-center opacity-[0.25] saturate-50 transition-opacity duration-200 group-hover:opacity-[0.35]"
+            className="pointer-events-none absolute inset-0 h-full w-full object-cover object-center opacity-[0.12] saturate-50 transition-opacity duration-200 group-hover/card:opacity-[0.18]"
             draggable={false}
             onError={(event) => { event.currentTarget.style.display = "none"; }}
           />
       )}
-      <span className="pointer-events-none absolute inset-0 bg-gradient-to-r from-card/95 via-card/85 to-card/40" />
+      <span className="pointer-events-none absolute inset-0 bg-gradient-to-r from-card/95 via-card/90 to-card/85" />
 
       {/* Top Row: Identity & Rank */}
-      <span className="relative flex min-w-0 items-start justify-between gap-3 mb-1.5">
+      <span className="relative mb-1.5 grid min-w-0 grid-cols-[minmax(0,1fr)_130px] items-start gap-3">
         <span className="flex min-w-0 items-start gap-2.5">
           <span
             className="mt-0.5 h-10 w-[3px] shrink-0 rounded-full"
@@ -108,12 +108,20 @@ export function PlayerRow({
 
           <span className="relative shrink-0 mt-0.5">
             <AgentAvatar portrait={player.agentPortrait} name={player.agent ?? player.name} color={player.agentColor} size={40} />
-            {locked && <span className="absolute -bottom-1 -right-1 h-3 w-3 rounded-full border-2 border-ink bg-victory" />}
+            {locked && <span className="absolute -right-1 -top-1 h-3 w-3 rounded-full border-2 border-ink bg-victory" />}
+            {player.streak && player.streak.count >= 3 && (
+              <span
+                data-testid={`player-streak-${player.puuid}`}
+                className={`absolute -bottom-1 left-1/2 -translate-x-1/2 rounded-sm border bg-zinc-950 px-1.5 py-px text-[9px] font-black leading-none num ${player.streak.type === "W" ? "border-victory/50 text-victory" : "border-defeat/50 text-defeat"}`}
+              >
+                {player.streak.count}{player.streak.type}
+              </span>
+            )}
           </span>
 
           <span className="min-w-0 flex-1 flex flex-col justify-center">
             <span className="flex min-w-0 items-center gap-1.5">
-              <span dir="auto" className={`truncate font-display text-[17px] font-black tracking-wide leading-none ${player.isSelf ? "text-brand" : "text-zinc-100"}`}>
+              <span dir="auto" className={`min-w-0 truncate font-display text-[17px] font-black tracking-wide leading-none ${player.isSelf ? "text-brand" : "text-zinc-100"}`}>
                 {player.name}
               </span>
               {player.party && (
@@ -147,13 +155,13 @@ export function PlayerRow({
           </span>
         </span>
 
-        <span className="min-w-[130px] shrink-0 text-right flex flex-col items-end justify-center">
-          <span className="flex items-center justify-end gap-2.5">
+        <span className="flex w-[130px] min-w-0 flex-col items-end justify-center text-right">
+          <span className="flex items-center justify-end gap-1.5">
             <span className="flex flex-col items-end justify-center">
-              <span className="block text-[15px] font-black leading-none tracking-wide" style={{ color: player.rankColor }}>{player.rank}</span>
+              <span className="block max-w-[88px] truncate whitespace-nowrap text-[14px] font-black leading-none tracking-wide" style={{ color: player.rankColor }} title={player.rank}>{player.rank}</span>
               {player.rankTier > 2 && <span className="block mt-1 text-[11px] font-bold leading-none text-zinc-400 num">{player.rr} RR</span>}
             </span>
-            {player.rankIcon && <img src={player.rankIcon} alt="" className="h-10 w-10 shrink-0" loading="lazy" onError={(event) => { event.currentTarget.style.display = "none"; }} />}
+            {player.rankIcon && <img src={player.rankIcon} alt="" className="h-9 w-9 shrink-0" loading="lazy" onError={(event) => { event.currentTarget.style.display = "none"; }} />}
           </span>
           <span className="mt-1.5 flex items-center justify-end gap-1.5 text-[10px] font-bold leading-none text-zinc-500">
             <span className="text-[9px] uppercase tracking-widest">Peak</span>
@@ -182,23 +190,9 @@ export function PlayerRow({
       </span>
 
       {/* Bottom Row: Weapons & Form */}
-      <span className="relative flex min-w-0 items-center justify-between gap-3">
+      <span className="relative flex min-w-0 items-center justify-between gap-2">
         <FeaturedLoadout weapons={player.weapons} />
-        <span className="flex shrink-0 items-center justify-end gap-3">
-          {player.streak && player.streak.count >= 3 && (
-            <span className={`rounded-sm border px-1.5 py-0.5 text-[11px] font-black num ${player.streak.type === "W" ? "border-victory/30 bg-victory/20 text-victory" : "border-defeat/30 bg-defeat/20 text-defeat"}`}>
-              {player.streak.count}{player.streak.type}
-            </span>
-          )}
-          {player.rrEarned !== null && player.rrEarned !== undefined && (
-            <span className={`text-[11px] font-black uppercase tracking-wider num ${player.rrEarned >= 0 ? "text-victory" : "text-defeat"}`}>
-              {player.rrEarned >= 0 ? `+${player.rrEarned}` : player.rrEarned} RR
-            </span>
-          )}
-          <span className="scale-95 origin-right">
-            <FormDots form={player.form} />
-          </span>
-        </span>
+        <RecentFormTiles form={player.form} latestRr={player.rrEarned} testId={`recent-form-${player.puuid}`} />
       </span>
     </button>
   );

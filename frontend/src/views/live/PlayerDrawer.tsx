@@ -11,6 +11,8 @@ import { Chip } from "./drawer/Chip";
 import { RankCard } from "./drawer/RankCard";
 import { SavedPlayerSection } from "./drawer/SavedPlayerSection";
 
+const FEATURED_WEAPONS = ["Vandal", "Phantom", "Operator", "Melee"] as const;
+
 export function PlayerDrawer({
   player,
   accountPuuid,
@@ -23,7 +25,7 @@ export function PlayerDrawer({
   onClose: () => void;
 }) {
   const [career, setCareer] = useState<Career | null>(null);
-  const dialogRef = useRef<HTMLElement>(null);
+  const dialogRef = useRef<HTMLDivElement>(null);
   const previousFocusRef = useRef<HTMLElement | null>(null);
 
   useEffect(() => {
@@ -102,9 +104,10 @@ export function PlayerDrawer({
 
   const enc = player.encounter;
   const careerUsable = Boolean(career && career.source === "local");
-  const featuredWeapons = ["Vandal", "Phantom", "Operator", "Melee"]
-    .map((weapon) => player.weapons.find((item) => item.weapon === weapon))
-    .filter((item) => item !== undefined);
+  const featuredWeapons = FEATURED_WEAPONS.map((weapon) => ({
+    weapon,
+    item: player.weapons.find((item) => item.weapon === weapon),
+  }));
   const profileBackdrop = player.playerCard ?? player.agentArt ?? player.agentPortrait;
   const largePlayerCard = player.playerCard?.replace("/wideart.png", "/largeart.png");
   const previousRank = RANKS.find((rank) => rank.name === player.previousRank);
@@ -143,35 +146,35 @@ export function PlayerDrawer({
     <div className="fixed inset-0 z-40" data-testid="player-drawer">
       <div className="absolute inset-0 bg-black/60" onClick={onClose} data-testid="player-drawer-backdrop" />
       <div
-        className="absolute right-0 top-0 h-full w-[640px] max-w-full bg-panel border-l border-edge overflow-y-auto rise"
+        className="absolute right-0 top-0 h-full w-[640px] max-w-full scroll-pt-[112px] overflow-y-auto border-l border-edge bg-panel rise"
         role="dialog"
         aria-modal="true"
         aria-labelledby="player-drawer-title"
-        ref={dialogRef as any}
+        ref={dialogRef}
         tabIndex={-1}
         onKeyDown={handleKeyDown}
       >
         {/* header */}
-        <div className="relative border-b border-edge overflow-hidden">
+        <div className="sticky top-0 z-20 overflow-hidden border-b border-edge bg-panel">
           {profileBackdrop && (
-            <img src={profileBackdrop} alt="" className="absolute inset-0 h-full w-full object-cover object-center opacity-30" draggable={false} onError={(event) => { event.currentTarget.style.display = "none"; }} />
+            <img src={profileBackdrop} alt="" className="absolute inset-0 h-full w-full object-cover object-center opacity-[0.18]" draggable={false} onError={(event) => { event.currentTarget.style.display = "none"; }} />
           )}
-          <div className="absolute inset-0 bg-gradient-to-r from-panel via-panel/95 to-panel/75" />
-          <div className="relative flex min-h-[132px] items-center gap-4 p-4">
+          <div className="absolute inset-0 bg-gradient-to-r from-panel via-panel/95 to-panel/85" />
+          <div className="relative flex min-h-[104px] items-center gap-3 px-4 py-3">
             {largePlayerCard && !cardFailed ? (
               <img
                 src={largePlayerCard}
                 alt={`${player.name} player card`}
-                className="h-24 w-16 shrink-0 rounded-sm border border-edge object-cover"
+                className="h-20 w-[52px] shrink-0 rounded-sm border border-edge object-cover"
                 draggable={false}
                 onError={() => setCardFailed(true)}
               />
             ) : (
-              <AgentAvatar portrait={player.agentPortrait} name={player.agent ?? player.name} color={player.agentColor} size={64} />
+              <AgentAvatar portrait={player.agentPortrait} name={player.agent ?? player.name} color={player.agentColor} size={56} />
             )}
             <div className="min-w-0 flex-1 self-center">
               <div className="flex items-center gap-2">
-                <h2 id="player-drawer-title" dir="auto" className="truncate font-display text-[26px] font-black leading-tight">{player.name}</h2>
+                <h2 id="player-drawer-title" dir="auto" className="min-w-0 truncate font-display text-[26px] font-black leading-tight">{player.name}</h2>
                 {player.party && (
                   <span
                     className="shrink-0 rounded-sm border px-1.5 py-0.5 text-[9px] font-black num"
@@ -196,14 +199,14 @@ export function PlayerDrawer({
               aria-label="Close"
               data-testid="player-drawer-close"
               onClick={onClose}
-              className="absolute right-4 top-4 rounded-sm border border-edge p-1.5 text-zinc-400 transition-colors hover:bg-zinc-800 hover:text-zinc-100"
+               className="absolute right-3 top-3 rounded-sm border border-edge p-1.5 text-zinc-400 transition-colors hover:bg-zinc-800 hover:text-zinc-100"
             >
               <X size={15} />
             </button>
           </div>
         </div>
 
-        <div className="p-4 space-y-4">
+        <div className="space-y-3 p-4">
           {player.smurf && player.smurfReasons.length > 0 && (
             <div className="border border-amber-500/30 bg-amber-500/10 rounded-sm px-3 py-2.5 text-[12px] text-amber-200 font-semibold" data-testid="drawer-smurf-reasons">
               {player.smurfReasons.join(" · ")}
@@ -223,7 +226,7 @@ export function PlayerDrawer({
           )}
 
           {/* Act rank information comes from the current competitive MMR payload. */}
-          <div className="space-y-2" data-testid="drawer-rank-chips">
+          <div className="grid grid-cols-[44%_28%_28%] divide-x divide-edge/70 overflow-hidden rounded-sm border border-edge/70" data-testid="drawer-rank-chips">
             <RankCard
               label="Current rank"
               name={player.rank}
@@ -232,26 +235,24 @@ export function PlayerDrawer({
               rr={player.rankTier > 2 ? player.rr : null}
               hero
             />
-            <div className="grid grid-cols-2 gap-2">
-              <RankCard
-                label="Peak rank"
-                name={player.peakRank}
-                icon={player.peakIcon}
-                color={player.peakColor}
-                detail={player.peakAct ?? undefined}
-              />
-              <RankCard
-                label="Previous rank"
-                name={player.previousRank || "Unknown"}
-                icon={previousRankIcon}
-                color={previousRank?.color ?? "#A1A1AA"}
-              />
-            </div>
+            <RankCard
+              label="Peak rank"
+              name={player.peakRank}
+              icon={player.peakIcon}
+              color={player.peakColor}
+              detail={player.peakAct ?? undefined}
+            />
+            <RankCard
+              label="Previous rank"
+              name={player.previousRank || "Unknown"}
+              icon={previousRankIcon}
+              color={previousRank?.color ?? "#A1A1AA"}
+            />
           </div>
 
           {/* encounter history */}
           {enc && (enc.withCount > 0 || enc.againstCount > 0) && (
-            <div className="grid grid-cols-2 gap-2" data-testid="drawer-encounter">
+            <div className="grid grid-cols-2 divide-x divide-edge/70 overflow-hidden rounded-sm border border-edge/70 bg-card/40" data-testid="drawer-encounter">
               <Chip
                 label="Played with you"
                 value={`${enc.withCount}× · ${enc.winsWith}W–${enc.lossesWith}L`}
@@ -266,22 +267,24 @@ export function PlayerDrawer({
           )}
 
           {/* loadout */}
-          {featuredWeapons.length > 0 && (
-            <section data-testid="drawer-loadout">
-              <h3 className="mb-3 text-[11px] font-bold uppercase tracking-[0.2em] text-zinc-400">Featured loadout</h3>
-              <div className="grid grid-cols-2 gap-1.5">
-                {featuredWeapons.map((w) => (
-                  <div key={w.weapon} className="flex items-center gap-2 border border-edge rounded-sm px-2 py-1.5 bg-card">
-                    {w.skin?.icon && <img src={w.skin.icon} alt="" className="h-5 max-w-[64px] object-contain" loading="lazy" onError={(event) => { event.currentTarget.style.display = "none"; }} />}
-                    <div className="min-w-0">
-                      <div className="text-[12px] font-semibold text-zinc-100 truncate">{w.skin?.name ?? "Standard"}</div>
-                      <div className="text-[10px] uppercase tracking-widest text-zinc-500">{w.weapon === "Melee" ? "Knife" : w.weapon}</div>
-                    </div>
+          <section data-testid="drawer-loadout">
+            <h3 className="mb-2 text-[11px] font-bold uppercase tracking-[0.2em] text-zinc-400">Featured loadout</h3>
+            <div className="grid grid-cols-4 divide-x divide-edge/60 overflow-hidden rounded-sm border border-edge/70 bg-card/45">
+              {featuredWeapons.map(({ weapon, item }) => (
+                <div key={weapon} className="flex min-w-0 flex-col justify-center px-2 py-2">
+                  <div className="flex h-6 items-center justify-center">
+                    {item?.skin?.icon
+                      ? <img src={item.skin.icon} alt="" className="h-6 w-full object-contain opacity-80" loading="lazy" onError={(event) => { event.currentTarget.style.display = "none"; }} />
+                      : <span className="text-[9px] font-bold text-zinc-600">—</span>}
                   </div>
-                ))}
-              </div>
-            </section>
-          )}
+                  <div className="mt-1 truncate text-[10px] font-semibold text-zinc-200" title={item?.skin?.name ?? undefined}>
+                    {item ? item.skin?.name ?? "Standard" : "Unavailable"}
+                  </div>
+                  <div className="text-[8px] uppercase tracking-[0.16em] text-zinc-500">{weapon === "Melee" ? "Knife" : weapon}</div>
+                </div>
+              ))}
+            </div>
+          </section>
 
           <CareerSection
             player={player}
