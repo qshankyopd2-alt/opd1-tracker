@@ -29,13 +29,14 @@ export function RecentFormTiles({
   const newestRr = latestRr === null || latestRr === undefined ? "" : ` Newest match RR ${fmtDelta(latestRr)}.`;
 
   return (
-    <span className="recent-form relative flex h-6 w-[116px] shrink-0 items-start" data-testid={testId} onPointerEnter={onRequestDetails}>
+    <span className="recent-form relative flex h-7 w-[98px] shrink-0 items-start" data-testid={testId} onPointerEnter={onRequestDetails}>
       <span className="sr-only">Recent form, newest to oldest: {summary}.{newestRr}</span>
-      <span aria-hidden="true" data-testid={`${testId}-recency-scale`} className="recent-form-scale pointer-events-none absolute inset-x-0 bottom-0 flex h-1.5 items-center justify-around px-1">
-        {[1.5, 2, 2.5, 3, 4].map((size, index) => (
+      <span aria-hidden="true" data-testid={`${testId}-recency-scale`} className="recent-form-scale pointer-events-none absolute inset-x-0 bottom-0 grid h-1.5 grid-cols-5 place-items-center">
+        {[2, 3, 4, 5, 6].map((size, index) => (
           <span
             key={size}
-            className={`rounded-full ${index === 4 ? "bg-zinc-100 shadow-[0_0_6px_rgba(228,228,231,0.5)]" : "bg-zinc-500"}`}
+            data-recency-marker={index}
+            className={`rounded-[1px] ${index === 4 ? "bg-zinc-100 shadow-[0_0_6px_rgba(228,228,231,0.5)]" : "bg-zinc-500"}`}
             style={{ width: size, height: size, opacity: 0.3 + index * 0.17 }}
           />
         ))}
@@ -58,7 +59,7 @@ export function RecentFormTiles({
               key={index}
               data-testid={`${testId}-tile-${index}`}
               data-recency={index === 0 ? "current" : "past"}
-              className={`recent-form-tile group/form-tile relative flex h-[21px] w-[21px] items-center justify-center rounded-sm border text-[10px] font-black num ${index === 0 ? "ring-1 ring-zinc-300/80" : ""} ${resultClass}`}
+              className={`recent-form-tile group/form-tile relative flex h-[18px] w-[18px] items-center justify-center rounded-sm border text-[9px] font-black num ${index === 0 ? "ring-1 ring-zinc-300/80" : ""} ${resultClass}`}
             >
               {normalized ?? "—"}
               {normalized && (

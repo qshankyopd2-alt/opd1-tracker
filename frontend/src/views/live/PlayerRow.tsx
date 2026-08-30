@@ -22,12 +22,12 @@ function kdColor(kd: number | null): string {
 
 function Metric({ label, children, color }: { label: string; children: React.ReactNode; color?: string }) {
   return (
-    <span className="min-w-0 px-1.5 py-0.5">
-      <span className="block truncate text-[10px] font-semibold uppercase tracking-[0.08em] text-zinc-500">
-        {label}
-      </span>
-      <span className="block text-[13px] font-bold leading-tight num" style={{ color }}>
+    <span className="flex min-w-0 flex-1 items-baseline justify-center gap-1 px-1.5 whitespace-nowrap">
+      <span className="text-[13px] font-bold leading-none num" style={{ color }}>
         {children}
+      </span>
+      <span className="truncate text-[10px] font-semibold uppercase tracking-[0.08em] text-zinc-500">
+        {label}
       </span>
     </span>
   );
@@ -37,7 +37,7 @@ function WeaponArtwork({ icon, name, fallback }: { icon: string | null | undefin
   const [failed, setFailed] = useState(false);
   useEffect(() => setFailed(false), [icon]);
   if (!icon || failed) return <span className="text-[10px] font-bold text-zinc-500">{fallback}</span>;
-  return <img src={icon} alt={name} className="h-6 w-[82%] object-contain opacity-75 transition-opacity duration-200 group-hover/card:opacity-90" loading="lazy" onError={() => setFailed(true)} />;
+  return <img src={icon} alt={name} className="max-h-6 w-[88%] object-contain opacity-75 transition-opacity duration-200 group-hover/card:opacity-90" loading="lazy" onError={() => setFailed(true)} />;
 }
 
 function FeaturedLoadout({ weapons }: { weapons: WeaponLoadout[] }) {
@@ -53,7 +53,7 @@ function FeaturedLoadout({ weapons }: { weapons: WeaponLoadout[] }) {
           <span
             key={weapon}
             title={skinName ? `${weapon === "Melee" ? "Knife" : weapon}: ${skinName}` : `${weapon}: unavailable`}
-            className="live-weapon-slot flex h-6 min-w-0 items-center justify-center overflow-hidden rounded-sm border border-edge/60 bg-ink/70"
+            className="live-weapon-slot flex h-8 min-w-0 items-center justify-center overflow-hidden rounded-sm border border-edge/60 bg-ink/90 p-1"
           >
             <WeaponArtwork icon={item?.skin?.icon} name={skinName ?? weapon} fallback={label} />
           </span>
@@ -79,8 +79,6 @@ export function PlayerRow({
   const enc = player.encounter;
   const encTotal = enc ? enc.withCount + enc.againstCount : 0;
   const locked = pregame && player.selection === "locked";
-  const recentCount = player.recentMatches || 0;
-  const recentLabel = recentCount > 0 ? `Last ${recentCount}` : "Recent";
 
   return (
     <button
@@ -106,7 +104,7 @@ export function PlayerRow({
       </span>
 
       {/* Top Row: Identity & Rank */}
-      <span className="live-player-top relative mb-1 grid min-w-0 grid-cols-[minmax(0,1fr)_126px] items-start gap-2">
+      <span className="live-player-top relative mb-1 grid min-w-0 grid-cols-[minmax(0,1fr)_142px] items-start gap-2">
         <span className="flex min-w-0 items-start gap-2.5">
           <span
             className="mt-0.5 h-10 w-[3px] shrink-0 rounded-full"
@@ -156,38 +154,30 @@ export function PlayerRow({
           </span>
         </span>
 
-        <span className="live-player-rank flex w-[126px] min-w-0 flex-col items-end justify-center text-right">
+        <span className="live-player-rank flex w-[142px] min-w-0 flex-col items-end justify-center text-right">
           <span className="flex items-center justify-end gap-1.5">
             <span className="flex flex-col items-end justify-center">
-              <span className="live-current-rank-name block max-w-[112px] whitespace-nowrap font-display text-[14px] font-black leading-none tracking-wide" style={{ color: player.rankColor }} title={player.rank}>{player.rank}</span>
-              {player.rankTier > 2 && <span className="mt-1 inline-flex rounded-sm border border-edge/80 bg-panel/80 px-1.5 py-0.5 font-mono text-[10px] font-bold leading-none text-zinc-200 num">{player.rr} RR</span>}
+              <span className="live-current-rank-name block max-w-[104px] whitespace-nowrap font-display text-[16px] font-black leading-none tracking-wide" style={{ color: player.rankColor }} title={player.rank}>{player.rank}</span>
+              {player.rankTier > 2 && <span className="live-current-rank-rr mt-1 inline-flex rounded-sm border border-edge/80 bg-panel/80 px-1.5 py-0.5 font-mono text-[11px] font-bold leading-none text-zinc-200 num">{player.rr} RR</span>}
             </span>
-            {player.rankIcon && <img src={player.rankIcon} alt="" className="h-9 w-9 shrink-0" loading="lazy" onError={(event) => { event.currentTarget.style.display = "none"; }} />}
+            {player.rankIcon && <img src={player.rankIcon} alt="" className="h-8 w-8 shrink-0" loading="lazy" onError={(event) => { event.currentTarget.style.display = "none"; }} />}
           </span>
-          <span className="live-player-peak mt-1.5 flex items-center justify-end gap-1.5 text-[10px] font-bold leading-none text-zinc-500">
-            <span className="text-[9px] uppercase tracking-widest">Peak</span>
-            {player.peakIcon && <img src={player.peakIcon} alt="" className="h-4 w-4 shrink-0 opacity-80" loading="lazy" onError={(event) => { event.currentTarget.style.display = "none"; }} />}
-            <span className="truncate" style={{ color: player.peakColor }}>{player.peakRank}</span>
+          <span className="live-player-peak mt-1.5 flex min-w-0 items-center justify-end gap-1.5 text-[12px] font-bold leading-none">
+            <span className="live-player-peak-label shrink-0 text-[10px] uppercase tracking-[0.1em] text-zinc-500">Peak</span>
+            {player.peakIcon && <img src={player.peakIcon} alt="" className="live-player-peak-icon h-4 w-4 shrink-0 opacity-90" loading="lazy" onError={(event) => { event.currentTarget.style.display = "none"; }} />}
+            <span className="live-peak-rank-name truncate" style={{ color: player.peakColor }}>{player.peakRank}</span>
           </span>
         </span>
       </span>
 
       {/* Middle Row: Metrics Grid */}
-      <span className="live-player-metrics relative mb-1 grid grid-cols-4 divide-x divide-edge/70 border-y border-edge/50 py-0.5">
-        <span className="flex flex-col justify-center px-1">
-          <Metric label="Act games">{player.games || "—"}</Metric>
-        </span>
-        <span className="flex flex-col justify-center px-1">
-          <Metric label="Act WR">{fmtPct(player.winRate)}</Metric>
-        </span>
-        <span className="flex flex-col justify-center px-1">
-          <Metric label={`${recentLabel} K/D`} color={kdColor(player.kd)}>
-            {player.kd === null ? <span className="animate-pulse text-zinc-600">...</span> : fmtNum(player.kd, 2)}
-          </Metric>
-        </span>
-        <span className="flex flex-col justify-center px-1">
-          <Metric label={`${recentLabel} HS`}>{fmtPct(player.hsPct)}</Metric>
-        </span>
+      <span className="live-player-metrics relative mb-1 flex h-7 items-center divide-x divide-edge/70 rounded-sm border border-edge/60 bg-ink/80 px-1">
+        <Metric label="Act games">{player.games || "—"}</Metric>
+        <Metric label="WR">{fmtPct(player.winRate)}</Metric>
+        <Metric label="K/D" color={kdColor(player.kd)}>
+          {player.kd === null ? <span className="animate-pulse text-zinc-600">...</span> : fmtNum(player.kd, 2)}
+        </Metric>
+        <Metric label="HS">{fmtPct(player.hsPct)}</Metric>
       </span>
 
       {/* Bottom Row: Weapons & Form */}
