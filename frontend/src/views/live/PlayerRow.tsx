@@ -43,7 +43,7 @@ function FeaturedLoadout({ weapons }: { weapons: WeaponLoadout[] }) {
   const byWeapon = new Map(weapons.map((item) => [item.weapon, item]));
 
   return (
-    <span className="grid min-w-0 flex-1 grid-cols-4 gap-1">
+    <span className="live-player-loadout grid min-w-0 flex-1 grid-cols-4 gap-1">
       {FEATURED_WEAPONS.map(({ weapon, label }) => {
         const item = byWeapon.get(weapon);
         const skinName = item?.skin?.name;
@@ -52,7 +52,7 @@ function FeaturedLoadout({ weapons }: { weapons: WeaponLoadout[] }) {
           <span
             key={weapon}
             title={skinName ? `${weapon === "Melee" ? "Knife" : weapon}: ${skinName}` : `${weapon}: unavailable`}
-            className="flex h-10 min-w-0 items-center justify-center overflow-hidden rounded-sm border border-edge/60 bg-ink/70"
+            className="live-weapon-slot flex h-9 min-w-0 items-center justify-center overflow-hidden rounded-sm border border-edge/60 bg-ink/70"
           >
             <WeaponArtwork icon={item?.skin?.icon} name={skinName ?? weapon} fallback={label} />
           </span>
@@ -82,23 +82,25 @@ export function PlayerRow({
       type="button"
       data-testid={`player-row-${player.puuid}`}
       onClick={() => onSelect(player)}
-      className={`group/card relative flex w-full flex-col overflow-hidden rounded-md border border-edge bg-card/95 px-2.5 py-1.5 text-left transition-colors hover:border-zinc-500 hover:bg-zinc-800/90 ${
+      className={`live-player-row group/card relative flex h-full min-h-0 w-full flex-col rounded-md border border-edge bg-card/95 px-2 py-1 text-left transition-colors hover:z-20 hover:border-zinc-500 hover:bg-zinc-800/90 focus-visible:z-20 ${
         player.isSelf ? "border-brand/50 bg-brand/5" : ""
       }`}
     >
-      {player.playerCard && (
+      <span className="live-player-background pointer-events-none absolute inset-0 overflow-hidden rounded-[inherit]">
+        {player.playerCard && (
           <img
             src={player.playerCard}
             alt=""
-            className="pointer-events-none absolute inset-0 h-full w-full object-cover object-center opacity-[0.12] saturate-50 transition-opacity duration-200 group-hover/card:opacity-[0.18]"
+            className="live-player-art absolute inset-0 h-full w-full object-cover object-center opacity-[0.12] saturate-50 transition-opacity duration-200 group-hover/card:opacity-[0.18]"
             draggable={false}
             onError={(event) => { event.currentTarget.style.display = "none"; }}
           />
-      )}
-      <span className="pointer-events-none absolute inset-0 bg-gradient-to-r from-card/95 via-card/90 to-card/85" />
+        )}
+        <span className="absolute inset-0 bg-gradient-to-r from-card/95 via-card/90 to-card/85" />
+      </span>
 
       {/* Top Row: Identity & Rank */}
-      <span className="relative mb-1.5 grid min-w-0 grid-cols-[minmax(0,1fr)_130px] items-start gap-3">
+      <span className="live-player-top relative mb-1 grid min-w-0 grid-cols-[minmax(0,1fr)_126px] items-start gap-2">
         <span className="flex min-w-0 items-start gap-2.5">
           <span
             className="mt-0.5 h-10 w-[3px] shrink-0 rounded-full"
@@ -106,7 +108,7 @@ export function PlayerRow({
             style={{ backgroundColor: player.party?.color ?? "transparent" }}
           />
 
-          <span className="relative shrink-0 mt-0.5">
+          <span className="live-agent-avatar relative mt-0.5 shrink-0">
             <AgentAvatar portrait={player.agentPortrait} name={player.agent ?? player.name} color={player.agentColor} size={40} />
             {locked && <span className="absolute -right-1 -top-1 h-3 w-3 rounded-full border-2 border-ink bg-victory" />}
             {player.streak && player.streak.count >= 3 && (
@@ -127,7 +129,7 @@ export function PlayerRow({
               {player.party && (
                 <span
                   title={`Party ${player.party.number}`}
-                  className="inline-flex shrink-0 items-center gap-1 rounded-sm border px-1.5 py-0.5 text-[9px] font-black uppercase tracking-widest"
+                  className="live-party-badge inline-flex shrink-0 items-center gap-1 rounded-sm border px-1.5 py-0.5 text-[9px] font-black uppercase tracking-widest"
                   style={{ borderColor: player.party.color, color: player.party.color, backgroundColor: `${player.party.color}15` }}
                 >
                   <span className="h-1.5 w-1.5 rounded-sm" style={{ backgroundColor: player.party.color }} />
@@ -146,16 +148,17 @@ export function PlayerRow({
                 </span>
               )}
             </span>
-            <span className="mt-1 block truncate text-[11px] font-medium leading-none text-zinc-400">
-              {player.agent ?? "Unpicked"}{player.role ? ` · ${player.role}` : ""}
-              {player.levelHidden ? " · Lvl hidden" : ` · Lvl ${player.level || "?"}`}
-              {encTotal > 0 ? ` · seen ${encTotal}x` : ""}
+            <span className="live-player-subtitle mt-1 block truncate text-[11px] font-medium leading-none text-zinc-400">
+              <span>{player.agent ?? "Unpicked"}</span>
+              {player.role && <span className="live-player-role"> · {player.role}</span>}
+              <span>{player.levelHidden ? " · Lvl hidden" : ` · Lvl ${player.level || "?"}`}</span>
+              {encTotal > 0 && <span className="live-player-seen"> · seen {encTotal}x</span>}
             </span>
-            {player.savedNote && <span className="mt-1 block truncate text-[11px] font-medium leading-none text-amber-300" title={player.savedNote}>{player.savedNote}</span>}
+            {player.savedNote && <span className="live-saved-note mt-1 block truncate text-[11px] font-medium leading-none text-amber-300" title={player.savedNote}>{player.savedNote}</span>}
           </span>
         </span>
 
-        <span className="flex w-[130px] min-w-0 flex-col items-end justify-center text-right">
+        <span className="live-player-rank flex w-[126px] min-w-0 flex-col items-end justify-center text-right">
           <span className="flex items-center justify-end gap-1.5">
             <span className="flex flex-col items-end justify-center">
               <span className="block max-w-[88px] truncate whitespace-nowrap text-[14px] font-black leading-none tracking-wide" style={{ color: player.rankColor }} title={player.rank}>{player.rank}</span>
@@ -163,7 +166,7 @@ export function PlayerRow({
             </span>
             {player.rankIcon && <img src={player.rankIcon} alt="" className="h-9 w-9 shrink-0" loading="lazy" onError={(event) => { event.currentTarget.style.display = "none"; }} />}
           </span>
-          <span className="mt-1.5 flex items-center justify-end gap-1.5 text-[10px] font-bold leading-none text-zinc-500">
+          <span className="live-player-peak mt-1.5 flex items-center justify-end gap-1.5 text-[10px] font-bold leading-none text-zinc-500">
             <span className="text-[9px] uppercase tracking-widest">Peak</span>
             {player.peakIcon && <img src={player.peakIcon} alt="" className="h-4 w-4 shrink-0 opacity-80" loading="lazy" onError={(event) => { event.currentTarget.style.display = "none"; }} />}
             <span className="truncate" style={{ color: player.peakColor }}>{player.peakRank}</span>
@@ -172,7 +175,7 @@ export function PlayerRow({
       </span>
 
       {/* Middle Row: Metrics Grid */}
-      <span className="relative mb-1.5 grid grid-cols-4 gap-px overflow-hidden rounded-sm border border-edge/60 bg-edge/40">
+      <span className="live-player-metrics relative mb-1 grid grid-cols-4 gap-px overflow-hidden rounded-sm border border-edge/60 bg-edge/40">
         <span className="bg-ink/80 px-2 py-1.5 flex flex-col justify-center">
           <Metric label="Act games">{player.games || "—"}</Metric>
         </span>
@@ -190,8 +193,12 @@ export function PlayerRow({
       </span>
 
       {/* Bottom Row: Weapons & Form */}
-      <span className="relative flex min-w-0 items-center justify-between gap-2">
+      <span className="live-player-bottom relative mt-auto flex min-w-0 items-center justify-between gap-2">
         <FeaturedLoadout weapons={player.weapons} />
+        <span className="live-compact-metrics hidden shrink-0 items-center gap-2 text-[10px] font-semibold text-zinc-400 num">
+          <span>WR <strong className="font-bold text-zinc-100">{fmtPct(player.winRate)}</strong></span>
+          <span>K/D <strong className="font-bold" style={{ color: kdColor(player.kd) }}>{player.kd === null ? "—" : fmtNum(player.kd, 2)}</strong></span>
+        </span>
         <RecentFormTiles form={player.form} latestRr={player.rrEarned} testId={`recent-form-${player.puuid}`} />
       </span>
     </button>

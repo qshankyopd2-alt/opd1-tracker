@@ -16,17 +16,17 @@ export function Sidebar() {
   const clientOk = health?.clientStatus === "ok";
 
   return (
-    <aside data-testid="sidebar" className="w-52 shrink-0 border-r border-edge bg-panel flex flex-col">
-      <div className="px-4 pt-5 pb-4 border-b border-edge bg-zinc-900/50">
-        <div className="flex items-center gap-2.5">
+    <aside data-testid="sidebar" className="flex w-16 shrink-0 flex-col border-r border-edge bg-panel lg:w-52">
+      <div className="border-b border-edge bg-zinc-900/50 px-3 py-4 lg:px-4 lg:pb-4 lg:pt-5">
+        <div className="flex items-center justify-center gap-2.5 lg:justify-start">
           <span className="flex h-7 w-7 items-center justify-center rounded-[2px] border border-brand-hover bg-brand">
             <Crosshair size={15} className="text-white" />
           </span>
-          <span className="font-display italic font-black text-[22px] leading-none tracking-tight text-zinc-100">
+          <span className="hidden font-display text-[22px] font-black italic leading-none tracking-tight text-zinc-100 lg:inline">
             OPD<span className="text-brand">1</span>
           </span>
         </div>
-        <div className="text-[10px] uppercase tracking-[0.35em] text-zinc-500 mt-1.5 ml-[38px] font-bold">Tracker</div>
+        <div className="ml-[38px] mt-1.5 hidden text-[10px] font-bold uppercase tracking-[0.35em] text-zinc-500 lg:block">Tracker</div>
       </div>
 
       <nav className="flex-1 py-3 px-2 space-y-0.5">
@@ -36,24 +36,27 @@ export function Sidebar() {
             <button
               key={id}
               data-testid={`nav-${id}`}
+              aria-label={label}
+              title={label}
               onClick={() => setView(id)}
-              className={`flex w-full items-center gap-3 border-l-2 px-3 py-2.5 text-[13px] font-semibold transition-colors duration-200 ${
+              className={`flex w-full items-center justify-center gap-3 border-l-2 px-2 py-2.5 text-[13px] font-semibold transition-colors duration-200 lg:justify-start lg:px-3 ${
                 active
                   ? "border-brand bg-zinc-800/70 text-zinc-100"
                   : "border-transparent text-zinc-400 hover:bg-zinc-800/50 hover:text-zinc-200"
               }`}
             >
               <Icon size={16} className={active ? "text-brand" : "text-zinc-500"} />
-              {label}
+              <span className="hidden lg:inline">{label}</span>
             </button>
           );
         })}
       </nav>
 
-      <div className="p-3 border-t border-edge">
+      <div className="border-t border-edge p-2 lg:p-3">
         <div
           data-testid="sidebar-client-status"
-          className={`flex items-center gap-2 text-[10px] font-bold uppercase tracking-wider px-2 py-1.5 rounded-sm border ${
+          title={clientOk ? "Client detected" : "Client offline"}
+          className={`flex items-center justify-center gap-2 rounded-sm border px-2 py-1.5 text-[10px] font-bold uppercase tracking-wider lg:justify-start ${
             clientOk
               ? "bg-victory/10 text-victory border-victory/20"
               : "bg-defeat/10 text-defeat border-defeat/20"
@@ -62,7 +65,7 @@ export function Sidebar() {
           <span
             className={`w-1.5 h-1.5 rounded-full ${clientOk ? "bg-victory pulse-dot" : "bg-defeat"}`}
           />
-          {clientOk ? "CLIENT DETECTED" : "CLIENT OFFLINE"}
+          <span className="hidden lg:inline">{clientOk ? "CLIENT DETECTED" : "CLIENT OFFLINE"}</span>
         </div>
       </div>
     </aside>

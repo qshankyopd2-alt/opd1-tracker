@@ -25,8 +25,12 @@ describe("RecentFormTiles", () => {
     const html = render(["W", "L", "L", "W", "W"], 24);
 
     expect(html).toContain("Recent form, newest to oldest: Win, Loss, Loss, Win, Win. Newest match RR +24.");
-    expect(html).toContain("Newest");
-    expect(html).toContain("Oldest");
+    expect(html).not.toContain(">Newest<");
+    expect(html).not.toContain(">Oldest<");
+    expect(html).not.toContain(">→<");
+    expect(html).toContain('data-testid="recent-recency-rail"');
+    expect(html.match(/data-recency="current"/g)).toHaveLength(1);
+    expect(html).toContain("motion-reduce:transition-none");
     expect(html.indexOf('data-testid="recent-tile-0"')).toBeLessThan(html.indexOf('data-testid="recent-tile-4"'));
     expect(html.indexOf("+24 RR")).toBeLessThan(html.indexOf('id="recent-tooltip-1"'));
     expect(html.lastIndexOf("+24 RR")).toBeLessThan(html.indexOf('id="recent-tooltip-1"'));

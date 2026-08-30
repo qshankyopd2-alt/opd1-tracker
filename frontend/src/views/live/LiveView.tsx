@@ -88,13 +88,13 @@ export function LiveView() {
   return (
     <div
       data-testid="live-view"
-      className={menus ? "space-y-4 p-5" : "flex h-full min-h-0 flex-col gap-3 overflow-hidden p-3"}
+      className={menus ? "space-y-4 p-5" : "live-view flex h-full min-h-0 flex-col gap-2 overflow-hidden p-2"}
     >
       <MatchHeader board={board} />
 
       {menus && board.recap && <RecapCard recap={board.recap} />}
 
-      <div className={`grid items-stretch gap-3 ${menus ? "" : "min-h-0 flex-1"} ${enemy.length > 0 ? "grid-cols-1 lg:grid-cols-2" : "grid-cols-1"}`}>
+      <div className={`grid items-stretch gap-2 ${menus ? "" : "min-h-0 flex-1"} ${enemy.length > 0 ? "grid-cols-2" : "grid-cols-1"}`}>
         <TeamPanel
           label={menus ? "Your Party" : "Your Team"}
           accent="#10B981"

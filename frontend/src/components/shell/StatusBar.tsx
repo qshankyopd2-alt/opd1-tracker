@@ -37,16 +37,6 @@ export function StatusBar() {
             <span className="text-zinc-300 font-semibold">{board.map}</span>
             <span className="text-zinc-600">/</span>
             <span className="uppercase tracking-wider text-[10px]">{board.mode}</span>
-            {board.score && board.score.ally !== undefined && (
-              <>
-                <span className="text-zinc-600">/</span>
-                <span className="text-zinc-300 num font-semibold">
-                  <span className="text-victory">{board.score.ally}</span>
-                  <span className="text-zinc-500 mx-0.5">–</span>
-                  <span className="text-defeat">{board.score.enemy}</span>
-                </span>
-              </>
-            )}
           </div>
         )}
       </div>

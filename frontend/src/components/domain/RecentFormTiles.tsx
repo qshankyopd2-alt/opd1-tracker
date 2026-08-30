@@ -24,13 +24,14 @@ export function RecentFormTiles({
   const newestRr = latestRr === null || latestRr === undefined ? "" : ` Newest match RR ${fmtDelta(latestRr)}.`;
 
   return (
-    <span className="flex h-10 w-[156px] shrink-0 flex-col justify-between" data-testid={testId}>
+    <span className="recent-form relative flex h-9 w-[156px] shrink-0 items-start pb-2" data-testid={testId}>
       <span className="sr-only">Recent form, newest to oldest: {summary}.{newestRr}</span>
-      <span aria-hidden="true" className="flex items-center justify-between px-0.5 text-[8px] font-bold uppercase tracking-[0.16em] text-zinc-500">
-        <span>Newest</span>
-        <span className="text-zinc-600">→</span>
-        <span>Oldest</span>
-      </span>
+      <span
+        aria-hidden="true"
+        data-testid={`${testId}-recency-rail`}
+        className="pointer-events-none absolute inset-x-0 bottom-1 h-px bg-gradient-to-r from-zinc-300/80 via-zinc-600/45 to-transparent"
+      />
+      <span aria-hidden="true" className="pointer-events-none absolute bottom-[2px] left-0 h-[5px] w-[5px] rounded-full bg-zinc-200 shadow-[0_0_6px_rgba(228,228,231,0.35)]" />
       <span aria-hidden="true" className="flex items-center gap-1">
         {slots.map((result, index) => {
           const tooltipPosition = index === 0
@@ -48,14 +49,15 @@ export function RecentFormTiles({
             <span
               key={index}
               data-testid={`${testId}-tile-${index}`}
-              className={`group/form-tile relative flex h-7 w-7 items-center justify-center rounded-sm border text-[11px] font-black num ${resultClass}`}
+              data-recency={index === 0 ? "current" : "past"}
+              className={`recent-form-tile group/form-tile relative flex h-7 w-7 items-center justify-center rounded-sm border text-[11px] font-black num ${index === 0 ? "ring-1 ring-zinc-200/70 shadow-[0_0_10px_rgba(228,228,231,0.08)]" : ""} ${resultClass}`}
             >
               {result ?? "—"}
               {result && (
                 <span
                   id={`${testId}-tooltip-${index}`}
                   role="tooltip"
-                  className={`pointer-events-none absolute bottom-[calc(100%+6px)] z-30 w-max max-w-[124px] rounded-sm border border-zinc-700 bg-zinc-950 px-2 py-1.5 text-left font-body normal-case tracking-normal text-zinc-100 opacity-0 shadow-[0_6px_18px_rgba(0,0,0,0.45)] transition-opacity duration-150 group-hover/form-tile:opacity-100 ${index === 0 ? "group-focus-visible/card:opacity-100" : ""} ${tooltipPosition}`}
+                  className={`pointer-events-none absolute bottom-[calc(100%+6px)] z-30 w-max max-w-[124px] rounded-sm border border-zinc-700 bg-zinc-950 px-2 py-1.5 text-left font-body normal-case tracking-normal text-zinc-100 opacity-0 shadow-[0_6px_18px_rgba(0,0,0,0.45)] transition-opacity duration-150 motion-reduce:transition-none group-hover/form-tile:opacity-100 ${index === 0 ? "group-focus-visible/card:opacity-100" : ""} ${tooltipPosition}`}
                 >
                   <span className={`block text-[11px] font-bold ${result === "W" ? "text-victory" : "text-defeat"}`}>
                     {result === "W" ? "Victory" : "Defeat"}

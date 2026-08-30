@@ -36,7 +36,7 @@ export function DesignModeBar() {
   return (
     <div
       data-testid="design-mode-bar"
-      className="fixed bottom-12 right-4 z-50 flex flex-col items-end gap-2"
+      className="fixed bottom-1 right-2 z-50 flex flex-col items-end gap-2"
       style={{ fontFamily: "IBM Plex Mono, Consolas, monospace" }}
     >
       {open && (
