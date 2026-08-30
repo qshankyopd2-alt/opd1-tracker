@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { AlertTriangle, Bookmark, EyeOff } from "lucide-react";
+import { AlertTriangle, Bookmark, Eye, EyeOff, Flame } from "lucide-react";
 import type { LivePlayer, WeaponLoadout } from "../../api/types";
 import { AgentAvatar } from "../../components/domain/AgentAvatar";
 import { RecentFormTiles } from "../../components/domain/RecentFormTiles";
@@ -13,31 +13,24 @@ const FEATURED_WEAPONS = [
   { weapon: "Melee", label: "K" },
 ] as const;
 
-function kdColor(kd: number | null): string {
-  if (kd === null) return "#A1A1AA";
-  if (kd >= 1.2) return "#10B981";
-  if (kd < 0.9) return "#EF4444";
-  return "#E4E4E7";
-}
-
-function Metric({ label, children, color }: { label: string; children: React.ReactNode; color?: string }) {
+function Metric({ label, children, headline = false, className = "" }: { label: string; children: React.ReactNode; headline?: boolean; className?: string }) {
   return (
-    <span className="flex min-w-0 flex-1 items-baseline justify-center gap-1 px-1.5 whitespace-nowrap">
-      <span className="text-[13px] font-bold leading-none num" style={{ color }}>
+    <span className={`live-stat-cell flex min-w-0 flex-col items-center justify-center whitespace-nowrap ${className}`}>
+      <span className={`${headline ? "text-[14px] font-black text-zinc-100" : "text-[11px] font-semibold text-zinc-400"} leading-none num`}>
         {children}
       </span>
-      <span className="truncate text-[10px] font-semibold uppercase tracking-[0.08em] text-zinc-500">
+      <span className={`mt-1 truncate font-semibold uppercase tracking-[0.08em] ${headline ? "text-[9px] text-zinc-400" : "text-[8px] text-zinc-600"}`}>
         {label}
       </span>
     </span>
   );
 }
 
-function WeaponArtwork({ icon, name, fallback }: { icon: string | null | undefined; name: string; fallback: string }) {
+function WeaponArtwork({ icon, name, fallback, melee }: { icon: string | null | undefined; name: string; fallback: string; melee: boolean }) {
   const [failed, setFailed] = useState(false);
   useEffect(() => setFailed(false), [icon]);
   if (!icon || failed) return <span className="text-[10px] font-bold text-zinc-500">{fallback}</span>;
-  return <img src={icon} alt={name} className="max-h-6 w-[88%] object-contain opacity-75 transition-opacity duration-200 group-hover/card:opacity-90" loading="lazy" onError={() => setFailed(true)} />;
+  return <img src={icon} alt={name} className={`max-h-6 w-[88%] object-contain opacity-70 transition-opacity duration-200 group-hover/card:opacity-85 ${melee ? "scale-[1.16]" : ""}`} loading="lazy" onError={() => setFailed(true)} />;
 }
 
 function FeaturedLoadout({ weapons }: { weapons: WeaponLoadout[] }) {
@@ -55,7 +48,7 @@ function FeaturedLoadout({ weapons }: { weapons: WeaponLoadout[] }) {
             title={skinName ? `${weapon === "Melee" ? "Knife" : weapon}: ${skinName}` : `${weapon}: unavailable`}
             className="live-weapon-slot flex h-8 min-w-0 items-center justify-center overflow-hidden rounded-sm border border-edge/60 bg-ink/90 p-1"
           >
-            <WeaponArtwork icon={item?.skin?.icon} name={skinName ?? weapon} fallback={label} />
+            <WeaponArtwork icon={item?.skin?.icon} name={skinName ?? weapon} fallback={label} melee={weapon === "Melee"} />
           </span>
         );
       })}
@@ -79,6 +72,9 @@ export function PlayerRow({
   const enc = player.encounter;
   const encTotal = enc ? enc.withCount + enc.againstCount : 0;
   const locked = pregame && player.selection === "locked";
+  const boostingReasons = player.smurfReasons.filter((reason) => /boost/i.test(reason));
+  const otherSmurfReasons = player.smurfReasons.filter((reason) => !/boost/i.test(reason));
+  const alertReason = [...boostingReasons, ...otherSmurfReasons][0] ?? null;
 
   return (
     <button
@@ -103,9 +99,8 @@ export function PlayerRow({
         <span className="absolute inset-0 bg-gradient-to-r from-card/95 via-card/90 to-card/85" />
       </span>
 
-      {/* Top Row: Identity & Rank */}
-      <span className="live-player-top relative mb-1 grid min-w-0 grid-cols-[minmax(0,1fr)_142px] items-start gap-2">
-        <span className="flex min-w-0 items-start gap-2.5">
+      <span className="live-player-grid relative grid min-h-0 flex-1 min-w-0">
+        <span className="live-player-identity flex min-w-0 items-start gap-2.5">
           <span
             className="mt-0.5 h-10 w-[3px] shrink-0 rounded-full"
             title={player.party ? `Party ${player.party.number}` : undefined}
@@ -119,14 +114,13 @@ export function PlayerRow({
 
           <span className="min-w-0 flex-1 flex flex-col justify-center">
             <span className="flex min-w-0 items-center gap-1.5">
-              <span dir="auto" className={`min-w-0 truncate font-display text-[17px] font-black tracking-wide leading-none ${player.isSelf ? "text-brand" : "text-zinc-100"}`}>
+              <span dir="auto" title={player.name} className={`min-w-0 truncate font-display text-[17px] font-black tracking-wide leading-none ${player.isSelf ? "text-brand" : "text-zinc-100"}`}>
                 {player.name}
               </span>
-              {player.streak && player.streak.count >= 3 && <span data-testid={`player-streak-${player.puuid}`} className={`shrink-0 rounded-sm border px-1 py-px text-[9px] font-black leading-none num ${player.streak.type === "W" ? "border-victory/50 text-victory" : "border-defeat/50 text-defeat"}`}>{player.streak.count}{player.streak.type}</span>}
               {player.party && (
                 <span
                   title={`Party ${player.party.number}`}
-                  className="live-party-badge inline-flex shrink-0 items-center gap-1 rounded-sm border px-1.5 py-0.5 text-[9px] font-black uppercase tracking-widest"
+                  className="live-party-badge inline-flex shrink-0 items-center gap-1 rounded-sm border px-1.5 py-0.5 text-[9px] font-black uppercase tracking-widest opacity-75"
                   style={{ borderColor: player.party.color, color: player.party.color, backgroundColor: `${player.party.color}15` }}
                 >
                   <span className="h-1.5 w-1.5 rounded-sm" style={{ backgroundColor: player.party.color }} />
@@ -135,59 +129,56 @@ export function PlayerRow({
               )}
               {player.saved && <Bookmark size={14} className="shrink-0 text-amber-300" fill="currentColor" aria-label="Saved player" />}
               {player.nameHidden && <EyeOff size={13} className="shrink-0 text-zinc-500" aria-label="streamer mode name" />}
-              {player.smurf && (
-                <span
-                  data-testid={`smurf-flag-${player.puuid}`}
-                  title={player.smurfReasons.join(" · ")}
-                  className="inline-flex shrink-0 items-center gap-1 rounded-sm border border-defeat bg-defeat px-1.5 py-0.5 text-[10px] font-black uppercase tracking-widest text-white"
-                >
-                  <AlertTriangle size={10} strokeWidth={3} /> SMURF
-                </span>
-              )}
             </span>
             <span className="live-player-subtitle mt-1 block truncate text-[11px] font-medium leading-none text-zinc-400">
               <span>{player.agent ?? "Unpicked"}</span>
               <span>{player.levelHidden ? " · Lvl hidden" : ` · Lvl ${player.level || "?"}`}</span>
-              {encTotal > 0 && <span className="live-player-seen"> · seen {encTotal}x</span>}
+              {encTotal > 0 && <span className="live-player-seen inline-flex items-center gap-1"> · <Eye size={10} /> {encTotal}x</span>}
             </span>
-            {player.savedNote && <span className="live-saved-note mt-1 block truncate text-[11px] font-medium leading-none text-amber-300" title={player.savedNote}>{player.savedNote}</span>}
-          </span>
-        </span>
-
-        <span className="live-player-rank flex w-[142px] min-w-0 flex-col items-end justify-center text-right">
-          <span className="flex items-center justify-end gap-1.5">
-            <span className="flex flex-col items-end justify-center">
-              <span className="live-current-rank-name block max-w-[104px] whitespace-nowrap font-display text-[16px] font-black leading-none tracking-wide" style={{ color: player.rankColor }} title={player.rank}>{player.rank}</span>
-              {player.rankTier > 2 && <span className="live-current-rank-rr mt-1 inline-flex rounded-sm border border-edge/80 bg-panel/80 px-1.5 py-0.5 font-mono text-[11px] font-bold leading-none text-zinc-200 num">{player.rr} RR</span>}
+            <span className="live-player-alerts mt-1 flex min-w-0 items-center gap-1">
+              {player.smurf && (
+                <span data-testid={`smurf-flag-${player.puuid}`} title={player.smurfReasons.join(" · ")} className="live-alert-badge live-alert-smurf inline-flex shrink-0 items-center gap-1 rounded-sm border px-1.5 py-0.5 text-[9px] font-black uppercase tracking-wider text-white">
+                  <AlertTriangle size={10} strokeWidth={3} /> SMURF
+                </span>
+              )}
+              {boostingReasons.length > 0 && (
+                <span data-testid={`boosting-flag-${player.puuid}`} title={boostingReasons.join(" · ")} className="live-alert-badge live-alert-boosting inline-flex shrink-0 items-center gap-1 rounded-sm border px-1.5 py-0.5 text-[9px] font-black uppercase tracking-wider text-white">
+                  <AlertTriangle size={10} strokeWidth={3} /> BOOSTING
+                </span>
+              )}
+              {player.streak && player.streak.count >= 3 && (
+                <span data-testid={`player-streak-${player.puuid}`} className="live-signal-streak inline-flex shrink-0 items-center gap-1 rounded-sm border px-1.5 py-0.5 text-[9px] font-black uppercase leading-none num">
+                  <Flame size={9} fill="currentColor" /> {player.streak.count}{player.streak.type}
+                </span>
+              )}
             </span>
-            {player.rankIcon && <img src={player.rankIcon} alt="" className="h-8 w-8 shrink-0" loading="lazy" onError={(event) => { event.currentTarget.style.display = "none"; }} />}
-          </span>
-          <span className="live-player-peak mt-1.5 flex min-w-0 items-center justify-end gap-1.5 text-[12px] font-bold leading-none">
-            <span className="live-player-peak-label shrink-0 text-[10px] uppercase tracking-[0.1em] text-zinc-500">Peak</span>
-            {player.peakIcon && <img src={player.peakIcon} alt="" className="live-player-peak-icon h-4 w-4 shrink-0 opacity-90" loading="lazy" onError={(event) => { event.currentTarget.style.display = "none"; }} />}
-            <span className="live-peak-rank-name truncate" style={{ color: player.peakColor }}>{player.peakRank}</span>
+            {alertReason && <span className="live-alert-reason mt-1 min-w-0 truncate text-[10px] font-semibold text-amber-100" title={player.smurfReasons.join(" · ")}><AlertTriangle size={10} />{alertReason}</span>}
           </span>
         </span>
-      </span>
 
-      {/* Middle Row: Metrics Grid */}
-      <span className="live-player-metrics relative mb-1 flex h-7 items-center divide-x divide-edge/70 rounded-sm border border-edge/60 bg-ink/80 px-1">
-        <Metric label="Act games">{player.games || "—"}</Metric>
-        <Metric label="WR">{fmtPct(player.winRate)}</Metric>
-        <Metric label="K/D" color={kdColor(player.kd)}>
-          {player.kd === null ? <span className="animate-pulse text-zinc-600">...</span> : fmtNum(player.kd, 2)}
-        </Metric>
-        <Metric label="HS">{fmtPct(player.hsPct)}</Metric>
-      </span>
-
-      {/* Bottom Row: Weapons & Form */}
-      <span className="live-player-bottom relative mt-auto flex min-w-0 items-center justify-between gap-1">
-        <FeaturedLoadout weapons={player.weapons} />
-        <span className="live-compact-metrics hidden shrink-0 items-center gap-2 text-[10px] font-semibold text-zinc-400 num">
-          <span>WR <strong className="font-bold text-zinc-100">{fmtPct(player.winRate)}</strong></span>
-          <span>K/D <strong className="font-bold" style={{ color: kdColor(player.kd) }}>{player.kd === null ? "—" : fmtNum(player.kd, 2)}</strong></span>
+        <span className="live-player-stats min-w-0">
+          <span className="live-primary-stats grid min-w-0 items-center divide-x divide-edge/60">
+            <span className="live-player-rank flex min-w-0 items-center justify-end gap-1.5 pr-2 text-right">
+              <span className="flex min-w-0 flex-col items-end justify-center">
+                <span className="live-current-rank-name block max-w-full truncate font-display text-[16px] font-black leading-none tracking-wide" style={{ color: player.rankColor }} title={player.rank}>{player.rank}</span>
+                {player.rankTier > 2 && <span className="live-current-rank-rr mt-1 inline-flex rounded-sm border border-edge/80 bg-panel/80 px-1.5 py-0.5 font-mono text-[11px] font-bold leading-none text-zinc-200 num">{player.rr} RR</span>}
+              </span>
+              {player.rankIcon && <img src={player.rankIcon} alt="" className="live-current-rank-icon h-8 w-8 shrink-0" loading="lazy" onError={(event) => { event.currentTarget.style.display = "none"; }} />}
+            </span>
+            <Metric label="WR" headline>{fmtPct(player.winRate)}</Metric>
+            <Metric label="K/D" className="live-expanded-stat">{player.kd === null ? "—" : fmtNum(player.kd, 2)}</Metric>
+            <Metric label="HS" className="live-expanded-stat">{fmtPct(player.hsPct)}</Metric>
+          </span>
+          <span className="live-secondary-stats mt-1 grid min-w-0 items-center gap-1">
+            <span className="live-player-peak flex min-w-0 items-center gap-1.5 text-[11px] font-bold leading-none">
+              <span className="live-player-peak-label shrink-0 text-[9px] uppercase tracking-[0.1em] text-zinc-500">Peak</span>
+              {player.peakIcon && <img src={player.peakIcon} alt="" className="live-player-peak-icon h-4 w-4 shrink-0 opacity-60 saturate-50" loading="lazy" onError={(event) => { event.currentTarget.style.display = "none"; }} />}
+              <span className="live-peak-rank-name truncate text-zinc-400" title={player.peakRank}>{player.peakRank}</span>
+            </span>
+            <FeaturedLoadout weapons={player.weapons} />
+            <RecentFormTiles form={player.form} latestRr={player.rrEarned} recentDetails={recentDetails} onRequestDetails={() => onRequestRecentDetails?.(player.puuid)} testId={`recent-form-${player.puuid}`} />
+          </span>
         </span>
-        <RecentFormTiles form={player.form} latestRr={player.rrEarned} recentDetails={recentDetails} onRequestDetails={() => onRequestRecentDetails?.(player.puuid)} testId={`recent-form-${player.puuid}`} />
       </span>
     </button>
   );

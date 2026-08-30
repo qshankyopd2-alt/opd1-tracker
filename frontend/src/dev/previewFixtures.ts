@@ -231,6 +231,7 @@ function makePlayer(index: number, opts: {
     smurfReasons: opts.smurf
       ? [
           `Level 22 vs ${r.name} peak`,
+          `Possibly boosting based on party performance gap`,
           `Recent K/D 2.84 across 7 games`,
           `Headshot 41% on Phantom mains`,
         ]
@@ -240,7 +241,7 @@ function makePlayer(index: number, opts: {
     streak: opts.winStreak
       ? { type: "W", count: 4 + (index % 4) }
       : index % 5 === 0
-        ? { type: "L", count: 2 + (index % 3) }
+        ? { type: "L", count: 4 + (index % 3) }
         : null,
     mapWinRate: { winRate: 40 + (index * 9) % 50, games: 18 + (index * 3) % 30 },
     encounter: opts.team === "enemy"
@@ -425,6 +426,9 @@ function makeCareer(): Career {
       { puuid: "teammate-1", name: "NovaFlux", sharedMatches: 6, agents: ["Jett", "Raze"], isParty: true },
       { puuid: "teammate-2", name: "MakoLine", sharedMatches: 4, agents: ["Killjoy", "Cypher"], isParty: false },
       { puuid: "teammate-3", name: "VexOrbit", sharedMatches: 3, agents: ["Omen"], isParty: false },
+      { puuid: "teammate-4", name: "A Very Long Teammate Name That Must Truncate", sharedMatches: 3, agents: ["Sova", "Fade"], isParty: true },
+      { puuid: "teammate-5", name: null, sharedMatches: 2, agents: ["Sage"], isParty: false },
+      { puuid: "teammate-6", name: "QuietOrbit", sharedMatches: 1, agents: [], isParty: false },
     ],
     agentPool: [
       { agent: "Jett", games: 28, winRate: 64, portrait: AGENT_ROSTER[0].portrait, color: AGENT_ROSTER[0].color },

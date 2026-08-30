@@ -3,6 +3,8 @@ import { AgentAvatar } from "../../../components/domain/AgentAvatar";
 import { fmtDelta, matchAgeLabel, resultColor } from "../../../lib/format";
 
 export function RecentMatchCard({ match, onOpen }: { match: CareerMatch; onOpen: () => void }) {
+  const endingRankLabel = `${match.rankAfter ?? "Unrated"}${match.rrAfter !== null && match.rrAfter !== undefined ? ` · ${match.rrAfter} RR` : ""}`;
+
   return (
     <button
       type="button"
@@ -28,8 +30,8 @@ export function RecentMatchCard({ match, onOpen }: { match: CareerMatch; onOpen:
       </span>
       <span className="relative z-10 flex min-w-0 items-center justify-end gap-1.5">
         {match.rankIcon && <img src={match.rankIcon} alt="" className="h-5 w-5 shrink-0" loading="lazy" onError={(event) => { event.currentTarget.style.display = "none"; }} />}
-        <span className="min-w-0 truncate text-right text-[10px] font-semibold" style={{ color: match.rankColor ?? "#A1A1AA" }}>
-          {match.rankAfter ?? "Unrated"}{match.rrAfter !== null && match.rrAfter !== undefined ? ` · ${match.rrAfter} RR` : ""}
+        <span className="min-w-0 truncate text-right text-[10px] font-semibold" title={endingRankLabel} aria-label={`Ending rank ${endingRankLabel}`} style={{ color: match.rankColor ?? "#A1A1AA" }}>
+          {endingRankLabel}
         </span>
       </span>
     </button>

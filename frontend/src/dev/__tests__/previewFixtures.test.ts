@@ -37,7 +37,8 @@ describe("design preview fixtures", () => {
     expect(snapshot.career.matches.every((match) => match.rankAfter && match.rrAfter !== null && match.rrAfter !== undefined)).toBe(true);
     expect(snapshot.career.agentPool.length).toBeGreaterThan(0);
     expect(snapshot.career.mapStats.length).toBeGreaterThan(0);
-    expect(snapshot.career.coPlayers.length).toBeGreaterThan(0);
+    expect(snapshot.career.coPlayers).toHaveLength(6);
+    expect(snapshot.board.players.some((player) => player.smurfReasons.some((reason) => /boost/i.test(reason)))).toBe(true);
     for (const skin of snapshot.inventory.top ?? []) expect(skin.icon).toBeTruthy();
   });
 

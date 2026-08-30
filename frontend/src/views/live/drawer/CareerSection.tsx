@@ -67,34 +67,34 @@ export function CareerSection({
         </div>
       </OverviewSection>
 
-      <OverviewSection label="Recent form" testId="drawer-performance-grid">
+      {careerUsable && career && career.coPlayers.length > 0 && (
+        <OverviewSection label="Frequent teammates" testId="drawer-frequent-connections">
+          <FrequentTeammates teammates={career.coPlayers} embedded />
+        </OverviewSection>
+      )}
+
+      <OverviewSection label="Performance" testId="drawer-performance-grid">
         {loading ? (
           <div className="space-y-2"><Skeleton className="h-8 w-48" /><Skeleton className="h-5 w-full" /></div>
         ) : !careerUsable || !career || error ? (
           <p className="text-[12px] text-zinc-500" data-testid="drawer-career-unavailable">Career details are unavailable for this player right now.</p>
         ) : (
-          <div className="grid grid-cols-4 divide-x divide-edge/60 border border-edge/70 bg-card/30">
-            <div className="px-2 py-1.5"><span className="block font-display text-[19px] font-black leading-none text-zinc-100 num">{wins}W–{losses}L{draws > 0 ? ` · ${draws}D` : ""}</span><span className="mt-1 block text-[10px] uppercase tracking-wide text-zinc-500">Record</span></div>
-            <div className="px-2 py-1.5"><span className="block font-mono text-[15px] font-semibold text-zinc-300 num">{fmtPct(career.averages.winRate)}</span><span className="mt-1 block text-[10px] uppercase tracking-wide text-zinc-500">Win rate</span></div>
-            <div className="px-2 py-1.5"><span className="block font-mono text-[15px] font-semibold text-zinc-200 num">{fmtNum(career.averages.kd, 2)}</span><span className="mt-1 block text-[10px] uppercase tracking-wide text-zinc-500">K/D</span></div>
-            <div className="px-2 py-1.5"><span className="block font-mono text-[15px] font-semibold text-zinc-200 num">{fmtPct(career.averages.hsPct)}</span><span className="mt-1 block text-[10px] uppercase tracking-wide text-zinc-500">Headshots</span></div>
-            <div className="col-span-4 border-t border-edge/60 px-2 py-1 text-[10px] text-zinc-500 num">Avg K/D/A <span className="text-zinc-300">{fmtNum(career.averages.kills, 1)} / {fmtNum(career.averages.deaths, 1)} / {fmtNum(career.averages.assists, 1)}</span><span className="mx-2 text-zinc-700">·</span>This act <span className="text-zinc-300">{player.games}</span> matches<span className="mx-2 text-zinc-700">·</span><span className="text-zinc-300">{fmtPct(player.winRate)}</span> win rate</div>
+          <div className="overflow-hidden border border-edge/70 bg-card/30">
+            <div className="border-b border-edge/60 bg-ink/50 px-2 py-1 text-[10px] font-semibold uppercase tracking-wide text-zinc-500">Last 8 matches</div>
+            <div className="grid grid-cols-4 divide-x divide-edge/60">
+              <div className="px-2 py-1.5"><span className="block font-display text-[19px] font-black leading-none text-zinc-100 num">{wins}W–{losses}L{draws > 0 ? ` · ${draws}D` : ""}</span><span className="mt-1 block text-[10px] uppercase tracking-wide text-zinc-500">Record</span></div>
+              <div className="px-2 py-1.5"><span className="block font-mono text-[15px] font-semibold text-zinc-300 num">{fmtPct(career.averages.winRate)}</span><span className="mt-1 block text-[10px] uppercase tracking-wide text-zinc-500">Win rate</span></div>
+              <div className="px-2 py-1.5"><span className="block font-mono text-[15px] font-semibold text-zinc-200 num">{fmtNum(career.averages.kd, 2)}</span><span className="mt-1 block text-[10px] uppercase tracking-wide text-zinc-500">K/D</span></div>
+              <div className="px-2 py-1.5"><span className="block font-mono text-[15px] font-semibold text-zinc-200 num">{fmtPct(career.averages.hsPct)}</span><span className="mt-1 block text-[10px] uppercase tracking-wide text-zinc-500">Headshots</span></div>
+            </div>
+            <div className="border-y border-edge/60 bg-ink/50 px-2 py-1 text-[10px] font-semibold uppercase tracking-wide text-zinc-500">This act</div>
+            <div className="grid grid-cols-3 divide-x divide-edge/60 text-[10px] num">
+              <div className="px-2 py-1.5 text-zinc-500"><span className="block text-[13px] font-semibold text-zinc-200">{player.games}</span>Matches</div>
+              <div className="px-2 py-1.5 text-zinc-500"><span className="block text-[13px] font-semibold text-zinc-200">{fmtPct(player.winRate)}</span>Win rate</div>
+              <div className="px-2 py-1.5 text-zinc-500"><span className="block text-[13px] font-semibold text-zinc-200">{fmtNum(career.averages.kills, 1)} / {fmtNum(career.averages.deaths, 1)} / {fmtNum(career.averages.assists, 1)}</span>Average K/D/A</div>
+            </div>
           </div>
         )}
-      </OverviewSection>
-
-      <OverviewSection label="Loadout" testId="drawer-loadout">
-        <div className="grid grid-cols-4 divide-x divide-edge/60 overflow-hidden border border-edge/70 bg-card/40">
-          {featuredWeapons.map(({ weapon, item }) => (
-            <div key={weapon} className="min-w-0 px-2 py-2">
-              <div className="flex h-6 items-center justify-center">
-                {item?.skin?.icon ? <img src={item.skin.icon} alt="" className="h-6 w-full object-contain opacity-75" loading="lazy" onError={(event) => { event.currentTarget.style.display = "none"; }} /> : <span className="text-[10px] text-zinc-600">—</span>}
-              </div>
-              <div className="mt-1 truncate text-[11px] font-medium text-zinc-200" title={item?.skin?.name ?? undefined}>{item ? item.skin?.name ?? "Standard" : "Unavailable"}</div>
-              <div className="mt-0.5 truncate text-[10px] text-zinc-500">{weapon === "Melee" ? "Knife" : weapon}</div>
-            </div>
-          ))}
-        </div>
       </OverviewSection>
 
       {careerUsable && career && career.agentPool.length > 0 && (
@@ -121,23 +121,34 @@ export function CareerSection({
         </OverviewSection>
       )}
 
-      {((encounter && (encounter.withCount > 0 || encounter.againstCount > 0)) || (careerUsable && career && career.coPlayers.length > 0)) && (
+      {encounter && (encounter.withCount > 0 || encounter.againstCount > 0) && (
         <OverviewSection label="Connections" testId="drawer-encounter">
-          {encounter && (encounter.withCount > 0 || encounter.againstCount > 0) && (
-            <div className="grid grid-cols-2 divide-x divide-edge/70 border-y border-edge/70 py-2">
-              <div className="pr-3">
-                <div className="text-[10px] font-semibold text-zinc-500">Together</div>
-                <div className="mt-1 text-[12px] font-semibold text-victory num">{encounter.withCount} matches · {encounter.winsWith}W–{encounter.lossesWith}L</div>
-              </div>
-              <div className="pl-3">
-                <div className="text-[10px] font-semibold text-zinc-500">Against</div>
-                <div className="mt-1 text-[12px] font-semibold text-defeat num">{encounter.againstCount} matches · {encounter.winsAgainst}W–{encounter.lossesAgainst}L</div>
-              </div>
+          <div className="grid grid-cols-2 divide-x divide-edge/70 border-y border-edge/70 py-2">
+            <div className="pr-3">
+              <div className="text-[10px] font-semibold text-zinc-500">Together</div>
+              <div className="mt-1 text-[12px] font-semibold text-victory num">{encounter.withCount} matches · {encounter.winsWith}W–{encounter.lossesWith}L</div>
             </div>
-          )}
-          {careerUsable && career && <FrequentTeammates teammates={career.coPlayers} />}
+            <div className="pl-3">
+              <div className="text-[10px] font-semibold text-zinc-500">Against</div>
+              <div className="mt-1 text-[12px] font-semibold text-defeat num">{encounter.againstCount} matches · {encounter.winsAgainst}W–{encounter.lossesAgainst}L</div>
+            </div>
+          </div>
         </OverviewSection>
       )}
+
+      <OverviewSection label="Loadout" testId="drawer-loadout">
+        <div className="grid grid-cols-4 divide-x divide-edge/60 overflow-hidden border border-edge/70 bg-card/25">
+          {featuredWeapons.map(({ weapon, item }) => (
+            <div key={weapon} className="min-w-0 px-2 py-1.5">
+              <div className="flex h-5 items-center justify-center">
+                {item?.skin?.icon ? <img src={item.skin.icon} alt="" className={`h-5 w-full object-contain opacity-60 ${weapon === "Melee" ? "scale-110" : ""}`} loading="lazy" onError={(event) => { event.currentTarget.style.display = "none"; }} /> : <span className="text-[10px] text-zinc-600">—</span>}
+              </div>
+              <div className="mt-1 truncate text-[10px] font-medium text-zinc-400" title={item?.skin?.name ?? undefined}>{item ? item.skin?.name ?? "Standard" : "Unavailable"}</div>
+              <div className="truncate text-[10px] text-zinc-600">{weapon === "Melee" ? "Knife" : weapon}</div>
+            </div>
+          ))}
+        </div>
+      </OverviewSection>
     </div>
   );
 }

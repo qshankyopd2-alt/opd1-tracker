@@ -14,7 +14,7 @@ describe("Player Drawer sections", () => {
       .map((weapon) => weapon.weapon === "Phantom" ? { ...weapon, skin: null } : weapon);
     const html = renderToStaticMarkup(
       <CareerSection
-        player={{ ...player, weapons }}
+        player={{ ...player, weapons, encounter: { withCount: 2, againstCount: 3, winsWith: 1, lossesWith: 1, winsAgainst: 2, lossesAgainst: 1 } }}
         career={snapshot.career}
         careerUsable
         loading={false}
@@ -26,12 +26,17 @@ describe("Player Drawer sections", () => {
     );
 
     expect(html).toContain("Rank history");
-    expect(html).toContain("Recent form");
+    expect(html).toContain("Performance");
+    expect(html).toContain("Last 8 matches");
+    expect(html).toContain("This act");
     expect(html).toContain("Most played agents");
     expect(html).toContain("Most played maps");
     expect(html).toContain("Connections");
     expect(html).toContain("Standard");
     expect(html).toContain("Unavailable");
+    expect(html.indexOf("Rank history")).toBeLessThan(html.indexOf("Frequent teammates"));
+    expect(html.indexOf("Frequent teammates")).toBeLessThan(html.indexOf("Performance"));
+    expect(html.indexOf("Connections")).toBeLessThan(html.indexOf("Loadout"));
   });
 
   it("renders aligned teammate names, fallbacks, agents, and party state", () => {
@@ -62,5 +67,7 @@ describe("Player Drawer sections", () => {
     const populated = renderToStaticMarkup(<MatchesSection career={career} careerUsable loading={false} error={null} onOpenMatch={() => undefined} />);
     expect(populated.match(/data-testid="drawer-match-(?!list)/g)).toHaveLength(8);
     expect(populated).toContain("/splash.png");
+    expect(populated).toContain('title="Ascendant 2 · 30 RR"');
+    expect(populated).toContain('aria-label="Ending rank Ascendant 2 · 30 RR"');
   });
 });

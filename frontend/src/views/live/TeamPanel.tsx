@@ -69,6 +69,11 @@ export function TeamPanel({
               <span className="text-[8px] font-bold uppercase tracking-widest text-zinc-500">WR</span>
               <span className="text-zinc-100 font-bold">{fmtPct(stats.avgWinRate)}</span>
             </div>
+            <div className="team-stats-compact hidden items-center gap-1 rounded-sm border border-edge bg-zinc-900/50 px-1 py-0.5 text-[9px] font-semibold text-zinc-500" title={`Team average K/D ${stats.avgKd !== null ? fmtNum(stats.avgKd, 2) : "unavailable"}; win rate ${fmtPct(stats.avgWinRate)}.`}>
+              <span>K</span><span className="text-zinc-200">{stats.avgKd !== null ? fmtNum(stats.avgKd, 2) : "—"}</span>
+              <span className="text-zinc-700">·</span>
+              <span>W</span><span className="text-zinc-200">{fmtPct(stats.avgWinRate)}</span>
+            </div>
             {stats.smurfCount > 0 && (
               <div className="flex items-center gap-1 rounded-sm border border-amber-500/20 bg-amber-500/10 px-1.5 py-0.5 font-bold text-amber-400" data-testid={`${testId}-smurf-count`}>
                 {stats.smurfCount} smurf{stats.smurfCount > 1 ? "s" : ""}
@@ -82,20 +87,21 @@ export function TeamPanel({
         data-testid={`${testId}-parties`}
       >
         <span className="party-heading text-[9px] font-bold uppercase tracking-[0.2em] text-zinc-500">Parties</span>
-        {visibleParties.length > 0 ? visibleParties.map((party) => (
-          <span
-            key={party.id}
-            title={`${party.size} players share this Riot party`}
-            className="inline-flex items-center gap-1.5 rounded-sm border border-edge bg-panel px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-zinc-300"
-          >
-            <span className="h-2 w-2 rounded-[2px]" style={{ backgroundColor: party.color }} />
-            <span className="party-label-full">Party {party.number} <span className="mx-0.5 text-zinc-500">·</span></span>
-            <span className="party-label-compact">P{party.number} </span>
-            {party.declaredSize && party.declaredSize > party.size
-              ? `${party.size}/${party.declaredSize}`
-              : `${party.size}`}
-          </span>
-        )) : (
+        {visibleParties.length > 0 ? visibleParties.map((party) => {
+          const teamPartySize = party.members.filter((member) => playerIds.has(member)).length;
+          return (
+            <span
+              key={party.id}
+              title={`${teamPartySize} players on this team were detected in the same Riot party.`}
+              className="inline-flex items-center gap-1.5 rounded-sm border border-edge bg-panel px-2 py-0.5 text-[10px] font-bold tracking-wide text-zinc-300"
+            >
+              <span className="h-2 w-2 rounded-[2px]" style={{ backgroundColor: party.color }} />
+              <span>P{party.number}</span><span className="text-zinc-600">·</span>
+              <span className="party-label-full">Party of {teamPartySize}</span>
+              <span className="party-label-compact">{teamPartySize}-player party</span>
+            </span>
+          );
+        }) : (
           <span className="text-[10px] font-medium text-zinc-500">
             {partyDetection?.status === "complete"
               ? "None detected"

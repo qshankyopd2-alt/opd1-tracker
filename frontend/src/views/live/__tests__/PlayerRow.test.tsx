@@ -3,8 +3,8 @@ import { describe, expect, it } from "vitest";
 import { makeSnapshot } from "../../../dev/previewFixtures";
 import { PlayerRow } from "../PlayerRow";
 
-function renderPlayerRow() {
-  const player = { ...makeSnapshot("INGAME", 1).board.players[0], role: "Duelist" };
+function renderPlayerRow(playerIndex = 0) {
+  const player = { ...makeSnapshot("INGAME", 1).board.players[playerIndex], role: "Duelist" };
   return renderToStaticMarkup(<PlayerRow player={player} pregame={false} onSelect={() => undefined} />);
 }
 
@@ -17,12 +17,13 @@ describe("PlayerRow hierarchy", () => {
     expect(html).toContain("max-h-6 w-[88%] object-contain");
   });
 
-  it("renders a single compact stat rail and the complete rank hierarchy", () => {
+  it("renders aligned identity and stats zones with the expanded hierarchy", () => {
     const html = renderPlayerRow();
 
-    expect(html).toContain("live-player-metrics relative mb-1 flex h-7 items-center");
-    expect(html).toContain("bg-ink/80");
-    expect(html).toContain("Act games");
+    expect(html).toContain("live-player-grid");
+    expect(html).toContain("live-player-identity");
+    expect(html).toContain("live-player-stats");
+    expect(html).toContain("live-primary-stats");
     expect(html).toContain("WR");
     expect(html).toContain("K/D");
     expect(html).toContain("HS");
@@ -36,5 +37,26 @@ describe("PlayerRow hierarchy", () => {
 
     expect(html).not.toContain("Duelist");
     expect(html).toContain("player-streak-");
+    expect(html).toContain("live-signal-streak");
+    expect(html).toContain('title="NovaFlux"');
+  });
+
+  it("reserves threat classes for smurf and boosting while streak uses amber signal styling", () => {
+    const smurfHtml = renderPlayerRow(4);
+    const lossHtml = renderPlayerRow(5);
+
+    expect(smurfHtml).toContain("live-alert-smurf");
+    expect(smurfHtml).toContain("live-alert-boosting");
+    expect(smurfHtml).toContain("BOOSTING");
+    expect(lossHtml).toContain("live-signal-streak");
+    expect(lossHtml).not.toContain("live-alert-loss");
+    expect(smurfHtml).not.toContain("live-current-rank-name live-alert");
+  });
+
+  it("keeps win rate typographically stronger than supporting K/D and headshots", () => {
+    const html = renderPlayerRow();
+
+    expect(html).toContain('text-[14px] font-black text-zinc-100');
+    expect(html.match(/text-\[11px\] font-semibold text-zinc-400/g)).toHaveLength(2);
   });
 });

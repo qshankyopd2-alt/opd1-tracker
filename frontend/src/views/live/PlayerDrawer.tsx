@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { Bookmark, X } from "lucide-react";
+import { AlertTriangle, Bookmark, Flame, X } from "lucide-react";
 import { ApiError, backend } from "../../api/client";
 import type { Career, LivePlayer, MatchMeta } from "../../api/types";
 import { AgentAvatar } from "../../components/domain/AgentAvatar";
@@ -159,6 +159,8 @@ export function PlayerDrawer({
     if (match.mapSplash && !mapSplashes.has(match.map)) mapSplashes.set(match.map, match.mapSplash);
   }
   const matchCount = career?.matches.length ?? player.recentMatches ?? 0;
+  const boostingReasons = player.smurfReasons.filter((reason) => /boost/i.test(reason));
+  const hasDrawerAlerts = player.smurf || boostingReasons.length > 0 || Boolean(player.streak && player.streak.count >= 3);
 
   return (
     <div className="fixed inset-0 z-40" data-testid="player-drawer">
@@ -244,10 +246,14 @@ export function PlayerDrawer({
         <div ref={scrollRef} className="min-h-0 flex-1 overflow-y-auto" data-testid="drawer-scroll-region">
           {activeTab === "overview" ? (
             <div id="drawer-panel-overview" role="tabpanel" aria-labelledby="drawer-tab-overview" className="p-3" data-testid="drawer-overview-panel">
-              {player.smurf && player.smurfReasons.length > 0 && (
-                <section className="mb-3 border border-amber-500/30 bg-amber-500/10 px-3 py-2.5" data-testid="drawer-smurf-reasons">
-                  <div className="text-[11px] font-semibold text-amber-300">Smurf signals</div>
-                  <p className="mt-1 text-[11px] leading-relaxed text-amber-100/85">{player.smurfReasons.join(" · ")}</p>
+              {hasDrawerAlerts && (
+                <section className="mb-3 border border-rose-400/50 bg-zinc-950 px-3 py-2.5 shadow-[inset_3px_0_0_#e11d48]" data-testid="drawer-smurf-reasons">
+                  <div className="flex flex-wrap items-center gap-1.5">
+                    {player.smurf && <span className="live-alert-badge live-alert-smurf inline-flex items-center gap-1 rounded-sm border px-2 py-1 text-[10px] font-black uppercase tracking-wider text-white"><AlertTriangle size={11} strokeWidth={3} />Smurf</span>}
+                    {boostingReasons.length > 0 && <span className="live-alert-badge live-alert-boosting inline-flex items-center gap-1 rounded-sm border px-2 py-1 text-[10px] font-black uppercase tracking-wider text-white"><AlertTriangle size={11} strokeWidth={3} />Boosting</span>}
+                    {player.streak && player.streak.count >= 3 && <span className="live-signal-streak inline-flex items-center gap-1 rounded-sm border px-2 py-1 text-[10px] font-black uppercase tracking-wider"><Flame size={10} fill="currentColor" />{player.streak.count}{player.streak.type} streak</span>}
+                  </div>
+                  {player.smurfReasons.length > 0 && <p className="mt-2 text-[11px] font-medium leading-relaxed text-zinc-200">{player.smurfReasons.join(" · ")}</p>}
                 </section>
               )}
               <CareerSection
