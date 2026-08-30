@@ -1,6 +1,7 @@
 import type { LivePlayer, Party, PartyDetectionTeam, TeamStats } from "../../api/types";
 import { fmtNum, fmtPct } from "../../lib/format";
 import { PlayerRow } from "./PlayerRow";
+import type { RecentDetailsByPlayer } from "../../hooks/useRecentFormDetails";
 
 export function TeamPanel({
   label,
@@ -12,6 +13,8 @@ export function TeamPanel({
   savedOverrides,
   pregame,
   onSelect,
+  recentDetailsByPlayer,
+  onRequestRecentDetails,
   testId,
 }: {
   label: string;
@@ -23,6 +26,8 @@ export function TeamPanel({
   savedOverrides: Record<string, { saved: boolean; note: string }>;
   pregame: boolean;
   onSelect: (p: LivePlayer) => void;
+  recentDetailsByPlayer: RecentDetailsByPlayer;
+  onRequestRecentDetails: (puuid: string) => void;
   testId: string;
 }) {
   const playerIds = new Set(players.map((player) => player.puuid));
@@ -114,6 +119,8 @@ export function TeamPanel({
             } : p}
             pregame={pregame}
             onSelect={onSelect}
+            recentDetails={recentDetailsByPlayer[p.puuid]}
+            onRequestRecentDetails={onRequestRecentDetails}
           />
         ))}
       </div>

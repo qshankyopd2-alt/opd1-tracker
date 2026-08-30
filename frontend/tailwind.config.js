@@ -16,9 +16,9 @@ export default {
         defeat: "#EF4444",
       },
       fontFamily: {
-        display: ['"Barlow Condensed"', "Arial Narrow", "sans-serif"],
-        body: ['"IBM Plex Sans"', "Segoe UI", "sans-serif"],
-        mono: ['"IBM Plex Mono"', "Consolas", "monospace"],
+        display: ['"Fira Sans Condensed"', "Arial Narrow", "sans-serif"],
+        body: ['"Fira Sans"', "Segoe UI", "sans-serif"],
+        mono: ['"Fira Code"', "Consolas", "monospace"],
       },
     },
   },

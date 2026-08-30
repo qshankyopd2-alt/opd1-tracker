@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { timeAgo, fmtDelta, fmtNum, fmtPct, scoreline, matchDate, resultColor } from '../format';
+import { timeAgo, matchAgeLabel, fmtDelta, fmtNum, fmtPct, scoreline, matchDate, resultColor } from '../format';
 
 describe('format', () => {
   describe('timeAgo', () => {
@@ -64,6 +64,26 @@ describe('format', () => {
     it('does not add "+" to 0 or negative numbers', () => {
       expect(fmtDelta(0)).toBe('0');
       expect(fmtDelta(-5)).toBe('-5');
+    });
+  });
+
+  describe('matchAgeLabel', () => {
+    const now = new Date('2024-01-04T12:00:00Z').getTime();
+
+    it('uses total hours through the end of the third day', () => {
+      expect(matchAgeLabel(now - 30 * 60 * 1000, now)).toBe('Less than 1 hour ago');
+      expect(matchAgeLabel(now - 60 * 60 * 1000, now)).toBe('1 hour ago');
+      expect(matchAgeLabel(now - 26 * 60 * 60 * 1000, now)).toBe('26 hours ago');
+      expect(matchAgeLabel(now - 95 * 60 * 60 * 1000, now)).toBe('95 hours ago');
+    });
+
+    it('switches to whole days from the fourth day', () => {
+      expect(matchAgeLabel(now - 4 * 24 * 60 * 60 * 1000, now)).toBe('4 days ago');
+    });
+
+    it('returns an em dash for missing timestamps', () => {
+      expect(matchAgeLabel(null, now)).toBe('—');
+      expect(matchAgeLabel(undefined, now)).toBe('—');
     });
   });
 

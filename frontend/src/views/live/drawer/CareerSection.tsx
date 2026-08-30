@@ -9,8 +9,8 @@ const FEATURED_WEAPONS = ["Vandal", "Phantom", "Operator", "Melee"] as const;
 
 function OverviewSection({ label, testId, children }: { label: string; testId?: string; children: React.ReactNode }) {
   return (
-    <section className="grid grid-cols-[104px_minmax(0,1fr)] border-b border-edge/70 py-3 max-[560px]:grid-cols-1 max-[560px]:gap-2" data-testid={testId}>
-      <h3 className="text-[11px] font-semibold text-zinc-400">{label}</h3>
+    <section className="grid grid-cols-[88px_minmax(0,1fr)] border-b border-edge/70 py-2.5 max-[560px]:grid-cols-1 max-[560px]:gap-1.5" data-testid={testId}>
+      <h3 className="pt-0.5 text-[10px] font-semibold uppercase tracking-wide text-zinc-500">{label}</h3>
       <div className="min-w-0">{children}</div>
     </section>
   );
@@ -61,7 +61,7 @@ export function CareerSection({
   return (
     <div data-testid="drawer-career">
       <OverviewSection label="Rank history" testId="drawer-rank-chips">
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-2 gap-2">
           <RankEntry label="Peak" name={player.peakRank || "Unknown"} icon={player.peakIcon} color={player.peakColor} detail={player.peakAct} />
           <RankEntry label="Previous" name={player.previousRank || "Unknown"} icon={previousRankIcon} color={previousRankColor} />
         </div>
@@ -73,21 +73,12 @@ export function CareerSection({
         ) : !careerUsable || !career || error ? (
           <p className="text-[12px] text-zinc-500" data-testid="drawer-career-unavailable">Career details are unavailable for this player right now.</p>
         ) : (
-          <div>
-            <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
-              <span className="font-display text-[24px] font-black leading-none text-zinc-100 num">
-                {wins}W–{losses}L{draws > 0 ? ` · ${draws}D` : ""}
-              </span>
-              <span className="font-mono text-[16px] font-semibold text-zinc-300 num">{fmtPct(career.averages.winRate)} win rate</span>
-            </div>
-            <p className="mt-2 text-[11px] leading-relaxed text-zinc-400 num">
-              <span className="text-zinc-200">{fmtNum(career.averages.kd, 2)} K/D</span>
-              <span className="mx-2 text-zinc-700">·</span>{fmtPct(career.averages.hsPct)} headshots
-              <span className="mx-2 text-zinc-700">·</span>{fmtNum(career.averages.kills, 1)} / {fmtNum(career.averages.deaths, 1)} / {fmtNum(career.averages.assists, 1)} avg K/D/A
-            </p>
-            <p className="mt-2 border-t border-edge/60 pt-2 text-[10px] text-zinc-500 num">
-              This act <span className="mx-1.5 text-zinc-700">·</span><span className="text-zinc-300">{player.games}</span> matches <span className="mx-1.5 text-zinc-700">·</span><span className="text-zinc-300">{fmtPct(player.winRate)}</span> win rate
-            </p>
+          <div className="grid grid-cols-4 divide-x divide-edge/60 border border-edge/70 bg-card/30">
+            <div className="px-2 py-1.5"><span className="block font-display text-[19px] font-black leading-none text-zinc-100 num">{wins}W–{losses}L{draws > 0 ? ` · ${draws}D` : ""}</span><span className="mt-1 block text-[10px] uppercase tracking-wide text-zinc-500">Record</span></div>
+            <div className="px-2 py-1.5"><span className="block font-mono text-[15px] font-semibold text-zinc-300 num">{fmtPct(career.averages.winRate)}</span><span className="mt-1 block text-[10px] uppercase tracking-wide text-zinc-500">Win rate</span></div>
+            <div className="px-2 py-1.5"><span className="block font-mono text-[15px] font-semibold text-zinc-200 num">{fmtNum(career.averages.kd, 2)}</span><span className="mt-1 block text-[10px] uppercase tracking-wide text-zinc-500">K/D</span></div>
+            <div className="px-2 py-1.5"><span className="block font-mono text-[15px] font-semibold text-zinc-200 num">{fmtPct(career.averages.hsPct)}</span><span className="mt-1 block text-[10px] uppercase tracking-wide text-zinc-500">Headshots</span></div>
+            <div className="col-span-4 border-t border-edge/60 px-2 py-1 text-[10px] text-zinc-500 num">Avg K/D/A <span className="text-zinc-300">{fmtNum(career.averages.kills, 1)} / {fmtNum(career.averages.deaths, 1)} / {fmtNum(career.averages.assists, 1)}</span><span className="mx-2 text-zinc-700">·</span>This act <span className="text-zinc-300">{player.games}</span> matches<span className="mx-2 text-zinc-700">·</span><span className="text-zinc-300">{fmtPct(player.winRate)}</span> win rate</div>
           </div>
         )}
       </OverviewSection>

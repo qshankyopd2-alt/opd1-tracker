@@ -3,6 +3,7 @@ import { AlertTriangle, Bookmark, EyeOff } from "lucide-react";
 import type { LivePlayer, WeaponLoadout } from "../../api/types";
 import { AgentAvatar } from "../../components/domain/AgentAvatar";
 import { RecentFormTiles } from "../../components/domain/RecentFormTiles";
+import type { RecentFormDetail } from "../../components/domain/RecentFormTiles";
 import { fmtNum, fmtPct } from "../../lib/format";
 
 const FEATURED_WEAPONS = [
@@ -22,7 +23,7 @@ function kdColor(kd: number | null): string {
 function Metric({ label, children, color }: { label: string; children: React.ReactNode; color?: string }) {
   return (
     <span className="min-w-0 px-1.5 py-0.5">
-      <span className="block truncate text-[8px] font-semibold uppercase tracking-[0.12em] text-zinc-500">
+      <span className="block truncate text-[10px] font-semibold uppercase tracking-[0.08em] text-zinc-500">
         {label}
       </span>
       <span className="block text-[13px] font-bold leading-tight num" style={{ color }}>
@@ -52,7 +53,7 @@ function FeaturedLoadout({ weapons }: { weapons: WeaponLoadout[] }) {
           <span
             key={weapon}
             title={skinName ? `${weapon === "Melee" ? "Knife" : weapon}: ${skinName}` : `${weapon}: unavailable`}
-            className="live-weapon-slot flex h-9 min-w-0 items-center justify-center overflow-hidden rounded-sm border border-edge/60 bg-ink/70"
+            className="live-weapon-slot flex h-6 min-w-0 items-center justify-center overflow-hidden rounded-sm border border-edge/60 bg-ink/70"
           >
             <WeaponArtwork icon={item?.skin?.icon} name={skinName ?? weapon} fallback={label} />
           </span>
@@ -66,10 +67,14 @@ export function PlayerRow({
   player,
   pregame,
   onSelect,
+  recentDetails,
+  onRequestRecentDetails,
 }: {
   player: LivePlayer;
   pregame: boolean;
   onSelect: (p: LivePlayer) => void;
+  recentDetails?: RecentFormDetail[];
+  onRequestRecentDetails?: (puuid: string) => void;
 }) {
   const enc = player.encounter;
   const encTotal = enc ? enc.withCount + enc.againstCount : 0;
@@ -82,7 +87,8 @@ export function PlayerRow({
       type="button"
       data-testid={`player-row-${player.puuid}`}
       onClick={() => onSelect(player)}
-      className={`live-player-row group/card relative flex h-full min-h-0 w-full flex-col rounded-md border border-edge bg-card/95 px-2 py-1 text-left transition-colors hover:z-20 hover:border-zinc-500 hover:bg-zinc-800/90 focus-visible:z-20 ${
+      onFocus={() => onRequestRecentDetails?.(player.puuid)}
+      className={`live-player-row group/card relative flex h-full min-h-0 w-full flex-col rounded-md border border-edge bg-card/95 px-2 py-0.5 text-left transition-colors hover:z-20 hover:border-zinc-500 hover:bg-zinc-800/90 focus-visible:z-20 ${
         player.isSelf ? "border-brand/50 bg-brand/5" : ""
       }`}
     >
@@ -111,14 +117,6 @@ export function PlayerRow({
           <span className="live-agent-avatar relative mt-0.5 shrink-0">
             <AgentAvatar portrait={player.agentPortrait} name={player.agent ?? player.name} color={player.agentColor} size={40} />
             {locked && <span className="absolute -right-1 -top-1 h-3 w-3 rounded-full border-2 border-ink bg-victory" />}
-            {player.streak && player.streak.count >= 3 && (
-              <span
-                data-testid={`player-streak-${player.puuid}`}
-                className={`absolute -bottom-1 left-1/2 -translate-x-1/2 rounded-sm border bg-zinc-950 px-1.5 py-px text-[9px] font-black leading-none num ${player.streak.type === "W" ? "border-victory/50 text-victory" : "border-defeat/50 text-defeat"}`}
-              >
-                {player.streak.count}{player.streak.type}
-              </span>
-            )}
           </span>
 
           <span className="min-w-0 flex-1 flex flex-col justify-center">
@@ -126,6 +124,7 @@ export function PlayerRow({
               <span dir="auto" className={`min-w-0 truncate font-display text-[17px] font-black tracking-wide leading-none ${player.isSelf ? "text-brand" : "text-zinc-100"}`}>
                 {player.name}
               </span>
+              {player.streak && player.streak.count >= 3 && <span data-testid={`player-streak-${player.puuid}`} className={`shrink-0 rounded-sm border px-1 py-px text-[9px] font-black leading-none num ${player.streak.type === "W" ? "border-victory/50 text-victory" : "border-defeat/50 text-defeat"}`}>{player.streak.count}{player.streak.type}</span>}
               {player.party && (
                 <span
                   title={`Party ${player.party.number}`}
@@ -150,7 +149,6 @@ export function PlayerRow({
             </span>
             <span className="live-player-subtitle mt-1 block truncate text-[11px] font-medium leading-none text-zinc-400">
               <span>{player.agent ?? "Unpicked"}</span>
-              {player.role && <span className="live-player-role"> · {player.role}</span>}
               <span>{player.levelHidden ? " · Lvl hidden" : ` · Lvl ${player.level || "?"}`}</span>
               {encTotal > 0 && <span className="live-player-seen"> · seen {encTotal}x</span>}
             </span>
@@ -161,8 +159,8 @@ export function PlayerRow({
         <span className="live-player-rank flex w-[126px] min-w-0 flex-col items-end justify-center text-right">
           <span className="flex items-center justify-end gap-1.5">
             <span className="flex flex-col items-end justify-center">
-              <span className="block max-w-[88px] truncate whitespace-nowrap text-[14px] font-black leading-none tracking-wide" style={{ color: player.rankColor }} title={player.rank}>{player.rank}</span>
-              {player.rankTier > 2 && <span className="block mt-1 text-[11px] font-bold leading-none text-zinc-400 num">{player.rr} RR</span>}
+              <span className="live-current-rank-name block max-w-[112px] whitespace-nowrap font-display text-[14px] font-black leading-none tracking-wide" style={{ color: player.rankColor }} title={player.rank}>{player.rank}</span>
+              {player.rankTier > 2 && <span className="mt-1 inline-flex rounded-sm border border-edge/80 bg-panel/80 px-1.5 py-0.5 font-mono text-[10px] font-bold leading-none text-zinc-200 num">{player.rr} RR</span>}
             </span>
             {player.rankIcon && <img src={player.rankIcon} alt="" className="h-9 w-9 shrink-0" loading="lazy" onError={(event) => { event.currentTarget.style.display = "none"; }} />}
           </span>
@@ -175,31 +173,31 @@ export function PlayerRow({
       </span>
 
       {/* Middle Row: Metrics Grid */}
-      <span className="live-player-metrics relative mb-1 grid grid-cols-4 gap-px overflow-hidden rounded-sm border border-edge/60 bg-edge/40">
-        <span className="bg-ink/80 px-2 py-1.5 flex flex-col justify-center">
+      <span className="live-player-metrics relative mb-1 grid grid-cols-4 divide-x divide-edge/70 border-y border-edge/50 py-0.5">
+        <span className="flex flex-col justify-center px-1">
           <Metric label="Act games">{player.games || "—"}</Metric>
         </span>
-        <span className="bg-ink/80 px-2 py-1.5 flex flex-col justify-center">
+        <span className="flex flex-col justify-center px-1">
           <Metric label="Act WR">{fmtPct(player.winRate)}</Metric>
         </span>
-        <span className="bg-ink/80 px-2 py-1.5 flex flex-col justify-center">
+        <span className="flex flex-col justify-center px-1">
           <Metric label={`${recentLabel} K/D`} color={kdColor(player.kd)}>
             {player.kd === null ? <span className="animate-pulse text-zinc-600">...</span> : fmtNum(player.kd, 2)}
           </Metric>
         </span>
-        <span className="bg-ink/80 px-2 py-1.5 flex flex-col justify-center">
+        <span className="flex flex-col justify-center px-1">
           <Metric label={`${recentLabel} HS`}>{fmtPct(player.hsPct)}</Metric>
         </span>
       </span>
 
       {/* Bottom Row: Weapons & Form */}
-      <span className="live-player-bottom relative mt-auto flex min-w-0 items-center justify-between gap-2">
+      <span className="live-player-bottom relative mt-auto flex min-w-0 items-center justify-between gap-1">
         <FeaturedLoadout weapons={player.weapons} />
         <span className="live-compact-metrics hidden shrink-0 items-center gap-2 text-[10px] font-semibold text-zinc-400 num">
           <span>WR <strong className="font-bold text-zinc-100">{fmtPct(player.winRate)}</strong></span>
           <span>K/D <strong className="font-bold" style={{ color: kdColor(player.kd) }}>{player.kd === null ? "—" : fmtNum(player.kd, 2)}</strong></span>
         </span>
-        <RecentFormTiles form={player.form} latestRr={player.rrEarned} testId={`recent-form-${player.puuid}`} />
+        <RecentFormTiles form={player.form} latestRr={player.rrEarned} recentDetails={recentDetails} onRequestDetails={() => onRequestRecentDetails?.(player.puuid)} testId={`recent-form-${player.puuid}`} />
       </span>
     </button>
   );

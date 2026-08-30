@@ -10,6 +10,7 @@ import { PlayerDrawer } from "./PlayerDrawer";
 import { RecapCard } from "./RecapCard";
 import { TeamPanel } from "./TeamPanel";
 import { splitTeams } from "./teamSplit";
+import { useRecentFormDetails } from "../../hooks/useRecentFormDetails";
 
 const designModeEnabled = import.meta.env.DEV && import.meta.env.VITE_DESIGN_MODE === "true";
 
@@ -18,6 +19,7 @@ export function LiveView() {
   const [selected, setSelected] = useState<{ player: LivePlayer; accountPuuid: string | null } | null>(null);
   const [savedOverrides, setSavedOverrides] = useState<Record<string, { saved: boolean; note: string }>>({});
   const [previewDrawerRequested, setPreviewDrawerRequested] = useState(false);
+  const { recentDetailsByPlayer, onRequestRecentDetails } = useRecentFormDetails();
   const accountPuuid = board?.selfPuuid ?? null;
 
   useEffect(() => {
@@ -105,6 +107,8 @@ export function LiveView() {
           savedOverrides={savedOverrides}
           pregame={pregame}
           onSelect={(player) => setSelected({ player, accountPuuid })}
+          recentDetailsByPlayer={recentDetailsByPlayer}
+          onRequestRecentDetails={onRequestRecentDetails}
           testId="ally-team-panel"
         />
         {enemy.length > 0 ? (
@@ -118,6 +122,8 @@ export function LiveView() {
             savedOverrides={savedOverrides}
             pregame={pregame}
             onSelect={(player) => setSelected({ player, accountPuuid })}
+            recentDetailsByPlayer={recentDetailsByPlayer}
+            onRequestRecentDetails={onRequestRecentDetails}
             testId="enemy-team-panel"
           />
         ) : (

@@ -185,7 +185,7 @@ export function PlayerDrawer({
             <h2 id="player-drawer-title" dir="auto" className="truncate font-display text-[24px] font-black leading-none text-zinc-100">{player.name}</h2>
             {player.title && <div className="mt-1 truncate text-[11px] italic text-zinc-500">{player.title}</div>}
             <div className="mt-1 truncate text-[11px] text-zinc-400">
-              {player.agent ?? "Unpicked"}{player.role ? ` · ${player.role}` : ""}{player.levelHidden ? " · Level hidden" : ` · Level ${player.level || "?"}`}
+              {player.agent ?? "Unpicked"}{player.levelHidden ? " · Level hidden" : ` · Level ${player.level || "?"}`}
             </div>
             <div className="mt-1.5 flex min-w-0 items-center gap-1.5">
               {player.party && (
@@ -196,10 +196,10 @@ export function PlayerDrawer({
               {player.smurf && <Badge color="#F59E0B" filled testId="drawer-smurf-badge">Smurf</Badge>}
             </div>
           </div>
-          <div className="relative flex w-[168px] shrink-0 items-center justify-end gap-2 pr-7" data-testid="drawer-current-rank">
+          <div className="relative flex w-[190px] shrink-0 items-center justify-end gap-2 pr-7" data-testid="drawer-current-rank">
             <div className="min-w-0 text-right">
               <div className="text-[10px] font-semibold text-zinc-500">Current</div>
-              <div className="truncate font-display text-[16px] font-black leading-tight" style={{ color: player.rankColor }}>{player.rank}</div>
+              <div className="whitespace-nowrap font-display text-[15px] font-black leading-tight" style={{ color: player.rankColor }}>{player.rank}</div>
               {player.rankTier > 2 && <div className="font-mono text-[11px] text-zinc-400 num">{player.rr} RR</div>}
             </div>
             {player.rankIcon && <img src={player.rankIcon} alt="" className="h-10 w-10 shrink-0" loading="lazy" onError={(event) => { event.currentTarget.style.display = "none"; }} />}
@@ -243,7 +243,7 @@ export function PlayerDrawer({
 
         <div ref={scrollRef} className="min-h-0 flex-1 overflow-y-auto" data-testid="drawer-scroll-region">
           {activeTab === "overview" ? (
-            <div id="drawer-panel-overview" role="tabpanel" aria-labelledby="drawer-tab-overview" className="p-4" data-testid="drawer-overview-panel">
+            <div id="drawer-panel-overview" role="tabpanel" aria-labelledby="drawer-tab-overview" className="p-3" data-testid="drawer-overview-panel">
               {player.smurf && player.smurfReasons.length > 0 && (
                 <section className="mb-3 border border-amber-500/30 bg-amber-500/10 px-3 py-2.5" data-testid="drawer-smurf-reasons">
                   <div className="text-[11px] font-semibold text-amber-300">Smurf signals</div>
@@ -275,7 +275,7 @@ export function PlayerDrawer({
               )}
             </div>
           ) : (
-            <div id="drawer-panel-matches" role="tabpanel" aria-labelledby="drawer-tab-matches" className="p-4" data-testid="drawer-matches-panel">
+            <div id="drawer-panel-matches" role="tabpanel" aria-labelledby="drawer-tab-matches" className="flex h-full min-h-0 flex-col p-3" data-testid="drawer-matches-panel">
               <MatchesSection career={career} careerUsable={careerUsable} loading={loading} error={error} onOpenMatch={setOpenMatch} />
             </div>
           )}

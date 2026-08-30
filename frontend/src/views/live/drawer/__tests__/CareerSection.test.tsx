@@ -61,6 +61,6 @@ describe("Player Drawer sections", () => {
     expect(renderToStaticMarkup(<MatchesSection career={{ ...career, matches: [] }} careerUsable loading={false} error={null} onOpenMatch={() => undefined} />)).toContain("No recent matches available.");
     const populated = renderToStaticMarkup(<MatchesSection career={career} careerUsable loading={false} error={null} onOpenMatch={() => undefined} />);
     expect(populated.match(/data-testid="drawer-match-(?!list)/g)).toHaveLength(8);
-    expect(populated).not.toContain("mapSplash");
+    expect(populated).toContain("/splash.png");
   });
 });

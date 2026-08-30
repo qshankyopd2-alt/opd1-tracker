@@ -1,10 +1,10 @@
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
-import { RecentFormTiles } from "../RecentFormTiles";
+import { RecentFormTiles, type RecentFormDetail } from "../RecentFormTiles";
 
-function render(form: ("W" | "L")[], latestRr: number | null = null): string {
+function render(form: ("W" | "L")[], latestRr: number | null = null, recentDetails?: RecentFormDetail[]): string {
   return renderToStaticMarkup(
-    <RecentFormTiles form={form} latestRr={latestRr} testId="recent" />,
+    <RecentFormTiles form={form} latestRr={latestRr} recentDetails={recentDetails} testId="recent" />,
   );
 }
 
@@ -28,7 +28,9 @@ describe("RecentFormTiles", () => {
     expect(html).not.toContain(">Newest<");
     expect(html).not.toContain(">Oldest<");
     expect(html).not.toContain(">→<");
-    expect(html).toContain('data-testid="recent-recency-rail"');
+    expect(html).toContain('data-testid="recent-recency-scale"');
+    expect(html).not.toContain('data-testid="recent-recency-rail"');
+    expect(html).toContain("flex-row-reverse");
     expect(html.match(/data-recency="current"/g)).toHaveLength(1);
     expect(html).toContain("motion-reduce:transition-none");
     expect(html.indexOf('data-testid="recent-tile-0"')).toBeLessThan(html.indexOf('data-testid="recent-tile-4"'));
@@ -58,5 +60,22 @@ describe("RecentFormTiles", () => {
     const html = render(["W", "L", "W", "L", "W"], null);
 
     expect(html).not.toContain(" RR");
+  });
+
+  it("shows real RR and elapsed time for every loaded match", () => {
+    const now = Date.now();
+    const html = render(["W", "L", "W"], null, [
+      { result: "W", rrDelta: 22, startMillis: now - 7 * 3_600_000 },
+      { result: "L", rrDelta: -18, startMillis: now - 26 * 3_600_000 },
+      { result: "W", rrDelta: 19, startMillis: now - 96 * 3_600_000 },
+    ]);
+
+    expect(html).toContain("+22 RR");
+    expect(html).toContain("-18 RR");
+    expect(html).toContain("+19 RR");
+    expect(html).toContain("7 hours ago");
+    expect(html).toContain("26 hours ago");
+    expect(html).toContain("4 days ago");
+    expect(html).not.toContain("matches ago");
   });
 });

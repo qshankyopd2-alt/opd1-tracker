@@ -3,13 +3,13 @@
   "purpose": "Visual and UX design reference for OPD1 Tracker. Describes how the UI should look and feel. Does NOT prescribe the technical stack, dependencies, or architecture of the application — those are governed by AGENTS.md, package.json, and the actual source code. This file must never override the project's established stack, dependencies, API contracts, or repository architecture.",
   "typography": {
     "headings": {
-      "fontFamily": "Barlow Condensed, sans-serif",
-      "weights": ["600", "700", "900"],
+      "fontFamily": "Fira Sans Condensed, sans-serif",
+      "weights": ["500", "600", "700", "800"],
       "usage": "Used for all main metrics (KD, ACS, RR), player names, and dashboard headers. Provides a bold, tactical athletic feel that fits a competitive tracker."
     },
     "body": {
-      "fontFamily": "IBM Plex Sans, sans-serif",
-      "weights": ["400", "500", "600"],
+      "fontFamily": "Fira Sans, sans-serif",
+      "weights": ["400", "500", "600", "700"],
       "usage": "Highly legible, slightly technical font for tables, lists, and secondary data. Perfect for high information density."
     }
   },
