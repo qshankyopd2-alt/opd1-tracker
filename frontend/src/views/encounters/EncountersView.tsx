@@ -1,5 +1,5 @@
 import { Fragment, useEffect, useMemo, useState } from "react";
-import { Bookmark, ChevronDown, ChevronUp, Pencil, RotateCw, Save, Search, Trash2 } from "lucide-react";
+import { Bookmark, ChevronDown, ChevronUp, Pencil, RotateCw, Save, Search, Trash2, X } from "lucide-react";
 import { ApiError, backend } from "../../api/client";
 import type { SavedPlayer } from "../../api/types";
 import { AgentAvatar } from "../../components/domain/AgentAvatar";
@@ -147,7 +147,17 @@ export function EncountersView() {
                             autoFocus
                             value={draft}
                             maxLength={500}
+                            placeholder="Add a note about this player..."
+                            aria-label="Player note"
                             onChange={(event) => setDraft(event.target.value)}
+                            onKeyDown={(event) => {
+                              if (event.key === "Escape") {
+                                setEditing(null);
+                              } else if (event.key === "Enter" && (event.ctrlKey || event.metaKey)) {
+                                event.preventDefault();
+                                void mutate(player, true, draft);
+                              }
+                            }}
                             className="min-h-16 w-full resize-y rounded-sm border border-amber-400/40 bg-zinc-900 px-2.5 py-1.5 text-[11px] text-zinc-200 focus-visible:ring-1 focus-visible:ring-amber-400/60"
                           />
                         ) : (
@@ -187,16 +197,27 @@ export function EncountersView() {
                       <td className="pr-3 text-right align-middle">
                         <span className="inline-flex items-center gap-0.5 opacity-60 group-hover/row:opacity-100 transition-opacity">
                           {isEditing ? (
-                            <button
-                              type="button"
-                              disabled={busy === player.puuid}
-                              onClick={() => void mutate(player, true, draft)}
-                              title="Save note"
-                              aria-label="Save note"
-                              className="rounded-sm p-1.5 text-amber-300 hover:bg-zinc-700 disabled:opacity-50 transition-colors"
-                            >
-                              <Save size={14} />
-                            </button>
+                            <>
+                              <button
+                                type="button"
+                                disabled={busy === player.puuid}
+                                onClick={() => void mutate(player, true, draft)}
+                                title="Save note (Ctrl+Enter)"
+                                aria-label="Save note"
+                                className="rounded-sm p-1.5 text-amber-300 hover:bg-zinc-700 disabled:opacity-50 transition-colors"
+                              >
+                                <Save size={14} />
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => setEditing(null)}
+                                title="Cancel editing (Esc)"
+                                aria-label="Cancel editing"
+                                className="rounded-sm p-1.5 text-zinc-400 hover:bg-zinc-700 hover:text-zinc-100 transition-colors"
+                              >
+                                <X size={14} />
+                              </button>
+                            </>
                           ) : (
                             <button
                               type="button"
