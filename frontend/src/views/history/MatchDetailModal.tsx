@@ -108,7 +108,9 @@ function MetaEditor({
       <div className="flex items-center gap-2">
         <h4 className="text-[10px] uppercase tracking-[0.25em] text-zinc-500 flex-1">Notes</h4>
         <button
+          type="button"
           data-testid="meta-bookmark-toggle"
+          aria-pressed={bookmarked}
           onClick={() => setBookmarked((b) => !b)}
           className={`inline-flex items-center gap-1 border rounded-sm px-2 py-1 text-[10px] uppercase tracking-wider font-semibold transition-colors ${
             bookmarked ? "border-amber-400 text-amber-300 bg-amber-400/10" : "border-edge text-zinc-400 hover:bg-zinc-800"
@@ -135,12 +137,13 @@ function MetaEditor({
           className="flex-1 bg-panel border border-edge rounded-sm px-2 py-1.5 text-[12px] text-zinc-200 placeholder:text-zinc-600"
         />
         <button
+          type="button"
           data-testid="meta-save-button"
           disabled={busy}
           onClick={save}
           className="bg-brand hover:bg-brand-hover text-ink rounded-sm px-3 text-[11px] uppercase tracking-wider font-bold transition-colors disabled:opacity-50"
         >
-          Save
+          {busy ? "Saving…" : "Save"}
         </button>
       </div>
       {msg && <p className="text-[11px] text-zinc-400">{msg}</p>}
@@ -281,7 +284,8 @@ export function MatchDetailModal({
               </div>
             )}
             <button
-              aria-label="Close"
+              type="button"
+              aria-label="Close match details"
               data-testid="match-detail-close"
               onClick={onClose}
               className="ml-auto p-1.5 border border-edge rounded-sm text-zinc-400 hover:text-zinc-100 hover:bg-zinc-800 transition-colors"
