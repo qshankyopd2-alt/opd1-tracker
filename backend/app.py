@@ -657,6 +657,9 @@ def index():
 if __name__ == "__main__":
     port = int(os.getenv("BACKEND_PORT", os.getenv("PORT", "5000")))
     debug = os.getenv("FLASK_DEBUG", "false").lower() == "true"
+    import encounter_reconciler
+    if encounter_reconciler.should_start_flask_worker(debug):
+        encounter_reconciler.start()
 
     print(f"[app] OPD1 Tracker API on http://127.0.0.1:{port}  "
           f"(source={client.source_pref}, key={'set' if client.api_key else 'unset'})",

@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState } from "react";
 import { Bookmark, X } from "lucide-react";
 import { ApiError, backend } from "../../api/client";
 import type { DetailPlayer, MatchDetail, MatchMeta } from "../../api/types";
@@ -6,6 +6,8 @@ import { AgentAvatar } from "../../components/domain/AgentAvatar";
 import { Badge } from "../../components/ui/Badge";
 import { ErrorBanner } from "../../components/ui/ErrorBanner";
 import { TableSkeleton } from "../../components/ui/Skeleton";
+import { ModalLayer } from "../../components/ui/ModalLayer";
+import { useDialogFocusTrap } from "../../hooks/useDialogFocusTrap";
 import { fmtNum, fmtPct, resultColor, scoreline } from "../../lib/format";
 import { useApp } from "../../state/AppContext";
 
@@ -169,51 +171,7 @@ export function MatchDetailModal({
   const { health } = useApp();
   const clientOffline = health != null && health.clientStatus !== "ok";
 
-  const dialogRef = useRef<HTMLDivElement>(null);
-  const previousFocusRef = useRef<HTMLElement | null>(null);
-
-  useEffect(() => {
-    previousFocusRef.current = document.activeElement as HTMLElement;
-    if (dialogRef.current) {
-      dialogRef.current.focus();
-    }
-    return () => {
-      if (previousFocusRef.current) {
-        previousFocusRef.current.focus();
-      }
-    };
-  }, []);
-
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
-    if (e.key === "Escape") {
-      e.stopPropagation();
-      onClose();
-      return;
-    }
-    if (e.key === "Tab") {
-      if (!dialogRef.current) return;
-      const selectors = 'a[href], button:not([disabled]), textarea:not([disabled]), input:not([type="hidden"]):not([disabled]), select:not([disabled]), [tabindex]:not([tabindex="-1"])';
-      const focusableElements = Array.from(dialogRef.current.querySelectorAll<HTMLElement>(selectors))
-        .filter((el) => el.offsetWidth > 0 || el.offsetHeight > 0);
-
-      if (focusableElements.length === 0) return;
-
-      const firstElement = focusableElements[0];
-      const lastElement = focusableElements[focusableElements.length - 1];
-
-      if (e.shiftKey) {
-        if (document.activeElement === firstElement || document.activeElement === dialogRef.current) {
-          lastElement?.focus();
-          e.preventDefault();
-        }
-      } else {
-        if (document.activeElement === lastElement) {
-          firstElement?.focus();
-          e.preventDefault();
-        }
-      }
-    }
-  };
+  const { dialogRef, onKeyDown: handleKeyDown } = useDialogFocusTrap(onClose);
 
   useEffect(() => {
     if (clientOffline) {
@@ -252,8 +210,8 @@ export function MatchDetailModal({
   const orderedTeams = subjectTeam ? [subjectTeam, ...teams.filter((t) => t !== subjectTeam)] : teams;
 
   return (
-    <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-6"
+    <ModalLayer><div
+      className="fixed inset-0 z-[70] flex items-center justify-center p-6"
       data-testid="match-detail-modal"
       role="dialog"
       aria-modal="true"
@@ -284,7 +242,7 @@ export function MatchDetailModal({
               aria-label="Close"
               data-testid="match-detail-close"
               onClick={onClose}
-              className="ml-auto p-1.5 border border-edge rounded-sm text-zinc-400 hover:text-zinc-100 hover:bg-zinc-800 transition-colors"
+              className="ml-auto flex h-8 w-8 items-center justify-center rounded-sm border border-edge text-zinc-400 transition-colors hover:bg-zinc-800 hover:text-zinc-100"
             >
               <X size={15} />
             </button>
@@ -322,6 +280,6 @@ export function MatchDetailModal({
           )}
         </div>
       </div>
-    </div>
+    </div></ModalLayer>
   );
 }

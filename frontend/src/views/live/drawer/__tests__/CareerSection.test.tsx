@@ -1,11 +1,18 @@
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
 import { makeSnapshot } from "../../../../dev/previewFixtures";
-import { CareerSection } from "../CareerSection";
+import { CareerSection, connectionSummary } from "../CareerSection";
 import { FrequentTeammates } from "../FrequentTeammates";
 import { MatchesSection } from "../MatchesSection";
+import careerSectionSource from "../CareerSection.tsx?raw";
+import matchesSectionSource from "../MatchesSection.tsx?raw";
 
 describe("Player Drawer sections", () => {
+  it("keeps connection totals consistent for draw, pending, and legacy data", () => {
+    expect(connectionSummary(5, 2, 1, 1, 1)).toBe("5 matches · 2W–1L–1D · 1 result unavailable");
+    expect(connectionSummary(5, 2, 1)).toBe("5 matches · 2W–1L–0D · 2 results unavailable");
+    expect(connectionSummary(2, 3, 1, 0, 0)).toBe("4 matches · 3W–1L–0D");
+  });
   it("renders grouped overview copy and truthful loadout fallbacks", () => {
     const snapshot = makeSnapshot("INGAME", 1);
     const player = snapshot.board.players[0];
@@ -37,11 +44,13 @@ describe("Player Drawer sections", () => {
     expect(html.indexOf("Rank history")).toBeLessThan(html.indexOf("Frequent teammates"));
     expect(html.indexOf("Frequent teammates")).toBeLessThan(html.indexOf("Performance"));
     expect(html.indexOf("Connections")).toBeLessThan(html.indexOf("Loadout"));
+    expect(careerSectionSource).not.toContain("grid-cols-[88px_minmax(0,1fr)]");
+    expect(careerSectionSource).toContain("border-y border-edge/70");
   });
 
   it("renders aligned teammate names, fallbacks, agents, and party state", () => {
     const teammates = Array.from({ length: 6 }, (_, index) => ({
-      puuid: `teammate-${index}-abcdefgh`,
+      puuid: index === 1 ? "8f1c2a7e9d4b6083" : `teammate-${index}-abcdefgh`,
       name: index === 1 ? null : index === 0 ? "A Very Long Teammate Name That Must Truncate" : `Player ${index}`,
       sharedMatches: index + 1,
       agents: index === 2 ? [] : ["Jett", "Raze"],
@@ -50,7 +59,7 @@ describe("Player Drawer sections", () => {
     const html = renderToStaticMarkup(<FrequentTeammates teammates={teammates} />);
 
     expect(html.match(/<li/g)).toHaveLength(6);
-    expect(html).toContain("Player teammate");
+    expect(html).toContain("Player 8f1c2a7e");
     expect(html).toContain("Jett · Raze");
     expect(html).toContain("Agents unavailable");
     expect(html).toContain("Party");
@@ -69,5 +78,9 @@ describe("Player Drawer sections", () => {
     expect(populated).toContain("/splash.png");
     expect(populated).toContain('title="Ascendant 2 · 30 RR"');
     expect(populated).toContain('aria-label="Ending rank Ascendant 2 · 30 RR"');
+    expect(populated).toContain("auto-rows-[68px]");
+    expect(populated).toContain("h-[68px]");
+    expect(populated).toContain("opacity-[0.28]");
+    expect(matchesSectionSource).not.toContain("minmax(66px, 1fr)");
   });
 });

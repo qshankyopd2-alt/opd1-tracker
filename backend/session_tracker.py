@@ -344,8 +344,7 @@ def observe(board: dict, lm) -> None:
                     with _LOCK:
                         _STATE["recorded"].discard(key)
                     return
-                won = {"Victory": True, "Defeat": False}.get(recap.get("result"))
-                encounter_log.record_result(snap, won)
+                encounter_log.record_result(snap, recap.get("result"))
                 point = _point_from_recap(recap)
                 history.record(point, puuid=recap.get("puuid"), riot_id=recap.get("riotId"))
                 with _LOCK:

@@ -4,6 +4,8 @@ import { ApiError, backend } from "../../api/client";
 import type { Career, LivePlayer, MatchMeta } from "../../api/types";
 import { AgentAvatar } from "../../components/domain/AgentAvatar";
 import { Badge } from "../../components/ui/Badge";
+import { ModalLayer } from "../../components/ui/ModalLayer";
+import { useDialogFocusTrap } from "../../hooks/useDialogFocusTrap";
 import { RANKS } from "../../lib/ranks";
 import { MatchDetailModal } from "../history/MatchDetailModal";
 import { CareerSection } from "./drawer/CareerSection";
@@ -44,16 +46,9 @@ export function PlayerDrawer({
   const [savedMessage, setSavedMessage] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<DrawerTab>("overview");
   const [noteExpanded, setNoteExpanded] = useState(false);
-  const dialogRef = useRef<HTMLDivElement>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
   const tabRefs = useRef<Array<HTMLButtonElement | null>>([]);
-  const previousFocusRef = useRef<HTMLElement | null>(null);
-
-  useEffect(() => {
-    previousFocusRef.current = document.activeElement as HTMLElement;
-    dialogRef.current?.focus();
-    return () => previousFocusRef.current?.focus();
-  }, []);
+  const { dialogRef, onKeyDown: handleKeyDown } = useDialogFocusTrap(onClose);
 
   useEffect(() => {
     let alive = true;
@@ -78,30 +73,6 @@ export function PlayerDrawer({
     setNoteExpanded(false);
     scrollRef.current?.scrollTo({ top: 0 });
   }, [player.puuid, player.saved, player.savedNote]);
-
-  const handleKeyDown = (event: React.KeyboardEvent<HTMLDivElement>) => {
-    if (event.key === "Escape") {
-      event.stopPropagation();
-      onClose();
-      return;
-    }
-    if (event.key !== "Tab" || !dialogRef.current) return;
-
-    const selectors = 'a[href], button:not([disabled]), textarea:not([disabled]), input:not([type="hidden"]):not([disabled]), select:not([disabled]), [tabindex]:not([tabindex="-1"])';
-    const focusableElements = Array.from(dialogRef.current.querySelectorAll<HTMLElement>(selectors))
-      .filter((element) => element.offsetWidth > 0 || element.offsetHeight > 0);
-    if (focusableElements.length === 0) return;
-
-    const firstElement = focusableElements[0];
-    const lastElement = focusableElements[focusableElements.length - 1];
-    if (event.shiftKey && (document.activeElement === firstElement || document.activeElement === dialogRef.current)) {
-      lastElement?.focus();
-      event.preventDefault();
-    } else if (!event.shiftKey && document.activeElement === lastElement) {
-      firstElement?.focus();
-      event.preventDefault();
-    }
-  };
 
   const handleTabKeyDown = (event: React.KeyboardEvent<HTMLButtonElement>, index: number) => {
     const nextIndex = nextDrawerTabIndex(index, event.key);
@@ -160,11 +131,12 @@ export function PlayerDrawer({
   }
   const matchCount = career?.matches.length ?? player.recentMatches ?? 0;
   const boostingReasons = player.smurfReasons.filter((reason) => /boost/i.test(reason));
+  const hasThreatAlerts = player.smurf || boostingReasons.length > 0;
   const hasDrawerAlerts = player.smurf || boostingReasons.length > 0 || Boolean(player.streak && player.streak.count >= 3);
 
   return (
-    <div className="fixed inset-0 z-40" data-testid="player-drawer">
-      <div className="absolute inset-0 bg-black/60" onClick={onClose} data-testid="player-drawer-backdrop" />
+    <ModalLayer><div className="fixed inset-0 z-[60]" data-testid="player-drawer">
+      <div className="absolute inset-0 bg-black/70" onClick={onClose} data-testid="player-drawer-backdrop" />
       <div
         className="drawer-slide absolute right-0 top-0 flex h-full w-[640px] max-w-full flex-col overflow-hidden border-l border-edge bg-panel"
         role="dialog"
@@ -173,6 +145,7 @@ export function PlayerDrawer({
         ref={dialogRef}
         tabIndex={-1}
         onKeyDown={handleKeyDown}
+        {...(openMatch ? { inert: "", "aria-hidden": true } : {})}
       >
         <header className="relative flex h-24 shrink-0 items-center gap-3 overflow-hidden border-b border-edge bg-panel px-4" data-testid="drawer-header">
           {profileBackdrop && (
@@ -211,7 +184,7 @@ export function PlayerDrawer({
               <Bookmark size={14} fill={saved ? "currentColor" : "none"} />
             </button>
           )}
-          <button type="button" aria-label="Close" data-testid="player-drawer-close" onClick={onClose} className="absolute right-3 top-3 rounded-sm border border-edge bg-panel p-1.5 text-zinc-400 transition-colors hover:bg-zinc-800 hover:text-zinc-100">
+          <button type="button" aria-label="Close" data-testid="player-drawer-close" onClick={onClose} className="absolute right-3 top-3 flex h-8 w-8 items-center justify-center rounded-sm border border-edge bg-panel text-zinc-400 transition-colors hover:bg-zinc-800 hover:text-zinc-100">
             <X size={15} />
           </button>
         </header>
@@ -247,13 +220,13 @@ export function PlayerDrawer({
           {activeTab === "overview" ? (
             <div id="drawer-panel-overview" role="tabpanel" aria-labelledby="drawer-tab-overview" className="p-3" data-testid="drawer-overview-panel">
               {hasDrawerAlerts && (
-                <section className="mb-3 border border-rose-400/50 bg-zinc-950 px-3 py-2.5 shadow-[inset_3px_0_0_#e11d48]" data-testid="drawer-smurf-reasons">
+                <section className={`mb-3 border bg-zinc-950 px-3 py-2 ${hasThreatAlerts ? "border-rose-400/50 shadow-[inset_3px_0_0_#e11d48]" : "border-amber-400/45 shadow-[inset_3px_0_0_#b45309]"}`} data-testid="drawer-smurf-reasons" data-alert-kind={hasThreatAlerts ? "threat" : "streak"}>
                   <div className="flex flex-wrap items-center gap-1.5">
                     {player.smurf && <span className="live-alert-badge live-alert-smurf inline-flex items-center gap-1 rounded-sm border px-2 py-1 text-[10px] font-black uppercase tracking-wider text-white"><AlertTriangle size={11} strokeWidth={3} />Smurf</span>}
                     {boostingReasons.length > 0 && <span className="live-alert-badge live-alert-boosting inline-flex items-center gap-1 rounded-sm border px-2 py-1 text-[10px] font-black uppercase tracking-wider text-white"><AlertTriangle size={11} strokeWidth={3} />Boosting</span>}
                     {player.streak && player.streak.count >= 3 && <span className="live-signal-streak inline-flex items-center gap-1 rounded-sm border px-2 py-1 text-[10px] font-black uppercase tracking-wider"><Flame size={10} fill="currentColor" />{player.streak.count}{player.streak.type} streak</span>}
                   </div>
-                  {player.smurfReasons.length > 0 && <p className="mt-2 text-[11px] font-medium leading-relaxed text-zinc-200">{player.smurfReasons.join(" · ")}</p>}
+                  {hasThreatAlerts && player.smurfReasons.length > 0 && <p className="mt-1.5 text-[11px] font-medium leading-relaxed text-zinc-300">{player.smurfReasons.join(" · ")}</p>}
                 </section>
               )}
               <CareerSection
@@ -298,6 +271,6 @@ export function PlayerDrawer({
           onClose={() => setOpenMatch(null)}
         />
       )}
-    </div>
+    </div></ModalLayer>
   );
 }

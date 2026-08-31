@@ -108,22 +108,54 @@ body {
   overflow: visible;
 }
 
+.live-player-row {
+  container-type: inline-size;
+  container-name: player-row;
+}
+
+.live-player-art {
+  transform-origin: right center;
+}
+
+.live-player-matte {
+  background: linear-gradient(90deg, rgba(24, 24, 27, 1) 0%, rgba(24, 24, 27, 0.97) 46%, rgba(24, 24, 27, 0.82) 72%, rgba(24, 24, 27, 0.64) 100%);
+}
+
+.live-roster {
+  grid-template-rows: repeat(var(--live-player-count), clamp(92px, 14vh, 124px));
+  align-content: space-between;
+}
+
 .live-player-grid {
-  grid-template-columns: minmax(180px, 42%) minmax(0, 1fr);
-  gap: 0.5rem;
+  grid-template-areas:
+    "identity primary"
+    "identity secondary";
+  grid-template-columns: minmax(170px, 1fr) minmax(330px, auto);
+  grid-template-rows: auto auto;
+  column-gap: 0.5rem;
+  row-gap: 0.25rem;
+  align-items: center;
+}
+
+.live-player-identity {
+  grid-area: identity;
+  align-self: center;
 }
 
 .live-player-stats {
-  display: grid;
-  grid-template-rows: minmax(44px, 1fr) auto;
+  display: contents;
 }
 
 .live-primary-stats {
-  grid-template-columns: minmax(124px, 1fr) 46px 46px 46px;
+  grid-area: primary;
+  grid-template-columns: minmax(120px, max-content) 48px 40px 40px;
+  justify-content: end;
 }
 
 .live-secondary-stats {
-  grid-template-columns: minmax(82px, 0.8fr) minmax(124px, 1fr) 96px;
+  grid-area: secondary;
+  grid-template-columns: max-content minmax(136px, 1fr) max-content;
+  margin-top: 0;
 }
 
 .live-alert-badge {
@@ -161,17 +193,50 @@ body {
 }
 
 .live-weapon-slot img {
-  max-width: calc(100% - 8px);
+  max-width: 100%;
+  flex-shrink: 0;
+}
+
+@container player-row (max-width: 520px) {
+  .live-player-grid {
+    grid-template-areas:
+      "identity primary"
+      "secondary secondary";
+    grid-template-columns: minmax(0, 1fr) max-content;
+    grid-template-rows: minmax(0, 1fr) auto;
+    column-gap: 0.375rem;
+  }
+  .live-primary-stats { grid-template-columns: minmax(96px, max-content) 44px; }
+  .live-expanded-stat { display: none; }
+  .live-secondary-stats { grid-template-columns: max-content minmax(136px, 1fr) max-content; }
+}
+
+@container player-row (max-width: 440px) {
+  .live-secondary-stats,
+  .live-alert-reason,
+  .live-player-subtitle > span:nth-child(2) { display: none; }
+  .live-player-row { padding: 0.125rem 0.375rem; }
+  .live-player-grid {
+    grid-template-areas: "identity primary";
+    grid-template-rows: minmax(0, 1fr);
+  }
+  .live-agent-avatar > img,
+  .live-agent-avatar > span { width: 34px !important; height: 34px !important; }
+  .live-player-identity { gap: 0.375rem; }
+  .live-player-alerts { gap: 2px; }
+  .live-alert-badge,
+  .live-signal-streak { gap: 2px; padding: 2px 4px; font-size: 8px; }
+  .live-current-rank-icon { width: 24px; height: 24px; }
+  .live-current-rank-name { font-size: 11px; letter-spacing: 0; }
+  .live-player-rank { gap: 2px; padding-right: 4px; }
+  .live-current-rank-rr { margin-top: 2px; padding: 1px 4px; font-size: 9px; }
+  .live-player-art { width: 52%; }
 }
 
 [data-window-density="compact"] .team-stat-secondary,
 [data-window-density="compact"] .party-heading,
 [data-window-density="compact"] .party-label-full,
-[data-window-density="compact"] .party-detected-label,
-[data-window-density="compact"] .live-expanded-stat,
-[data-window-density="compact"] .live-secondary-stats,
-[data-window-density="compact"] .live-alert-reason,
-[data-window-density="compact"] .live-player-subtitle > span:nth-child(2) {
+[data-window-density="compact"] .party-detected-label {
   display: none;
 }
 
@@ -194,67 +259,6 @@ body {
 
 [data-window-density="compact"] .live-party-rail > span {
   padding-inline: 0.375rem;
-}
-
-[data-window-density="compact"] .live-player-row {
-  padding: 0.125rem 0.375rem;
-}
-
-[data-window-density="compact"] .live-player-grid {
-  grid-template-columns: minmax(0, 1fr) 164px;
-  gap: 0.25rem;
-  align-items: center;
-}
-
-[data-window-density="compact"] .live-player-stats {
-  display: block;
-}
-
-[data-window-density="compact"] .live-primary-stats {
-  grid-template-columns: minmax(0, 1fr) 42px;
-  height: 50px;
-}
-
-[data-window-density="compact"] .live-agent-avatar > img,
-[data-window-density="compact"] .live-agent-avatar > span {
-  width: 34px !important;
-  height: 34px !important;
-}
-
-[data-window-density="compact"] .live-player-identity {
-  gap: 0.375rem;
-}
-
-[data-window-density="compact"] .live-player-alerts {
-  gap: 2px;
-}
-
-[data-window-density="compact"] .live-alert-badge,
-[data-window-density="compact"] .live-signal-streak {
-  gap: 2px;
-  padding: 2px 4px;
-  font-size: 8px;
-}
-
-[data-window-density="compact"] .live-current-rank-icon {
-  width: 24px;
-  height: 24px;
-}
-
-[data-window-density="compact"] .live-current-rank-name {
-  font-size: 11px;
-  letter-spacing: 0;
-}
-
-[data-window-density="compact"] .live-player-rank {
-  gap: 2px;
-  padding-right: 4px;
-}
-
-[data-window-density="compact"] .live-current-rank-rr {
-  margin-top: 2px;
-  padding: 1px 4px;
-  font-size: 9px;
 }
 
 @media (max-height: 720px) {
@@ -284,7 +288,7 @@ body {
   .live-roster {
     gap: 2px;
     padding: 2px;
-    grid-template-rows: repeat(5, minmax(0, 80px));
+    grid-template-rows: repeat(var(--live-player-count), minmax(0, 80px));
     align-content: center;
   }
 
@@ -309,7 +313,7 @@ body {
     font-size: 10px;
   }
 
-  .live-player-art { opacity: 0.07 !important; }
+  .live-player-art { opacity: 0.14 !important; }
 }
 
 @media (prefers-reduced-motion: reduce) {

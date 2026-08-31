@@ -16,7 +16,7 @@ const FEATURED_WEAPONS = [
 function Metric({ label, children, headline = false, className = "" }: { label: string; children: React.ReactNode; headline?: boolean; className?: string }) {
   return (
     <span className={`live-stat-cell flex min-w-0 flex-col items-center justify-center whitespace-nowrap ${className}`}>
-      <span className={`${headline ? "text-[14px] font-black text-zinc-100" : "text-[11px] font-semibold text-zinc-400"} leading-none num`}>
+      <span className={`${headline ? "text-[15px] font-black text-zinc-100" : "text-[10px] font-medium text-zinc-500"} leading-none num`}>
         {children}
       </span>
       <span className={`mt-1 truncate font-semibold uppercase tracking-[0.08em] ${headline ? "text-[9px] text-zinc-400" : "text-[8px] text-zinc-600"}`}>
@@ -30,7 +30,7 @@ function WeaponArtwork({ icon, name, fallback, melee }: { icon: string | null | 
   const [failed, setFailed] = useState(false);
   useEffect(() => setFailed(false), [icon]);
   if (!icon || failed) return <span className="text-[10px] font-bold text-zinc-500">{fallback}</span>;
-  return <img src={icon} alt={name} className={`max-h-6 w-[88%] object-contain opacity-70 transition-opacity duration-200 group-hover/card:opacity-85 ${melee ? "scale-[1.16]" : ""}`} loading="lazy" onError={() => setFailed(true)} />;
+  return <img src={icon} alt={name} draggable={false} className={`h-6 max-h-6 w-full object-contain opacity-70 transition-opacity duration-200 group-hover/card:opacity-85 ${melee ? "scale-[1.12]" : ""}`} loading="lazy" onError={() => setFailed(true)} />;
 }
 
 function FeaturedLoadout({ weapons }: { weapons: WeaponLoadout[] }) {
@@ -82,7 +82,7 @@ export function PlayerRow({
       data-testid={`player-row-${player.puuid}`}
       onClick={() => onSelect(player)}
       onFocus={() => onRequestRecentDetails?.(player.puuid)}
-      className={`live-player-row group/card relative flex h-full min-h-0 w-full flex-col rounded-md border border-edge bg-card/95 px-2 py-0.5 text-left transition-colors hover:z-20 hover:border-zinc-500 hover:bg-zinc-800/90 focus-visible:z-20 ${
+      className={`live-player-row group/card relative flex h-full min-h-0 w-full select-none flex-col rounded-md border border-edge bg-card/95 px-2 py-1 text-left transition-colors hover:z-20 hover:border-zinc-500 hover:bg-zinc-800/90 focus-visible:z-20 ${
         player.isSelf ? "border-brand/50 bg-brand/5" : ""
       }`}
     >
@@ -91,12 +91,12 @@ export function PlayerRow({
           <img
             src={player.playerCard}
             alt=""
-            className="live-player-art absolute inset-0 h-full w-full object-cover object-center opacity-[0.12] saturate-50 transition-opacity duration-200 group-hover/card:opacity-[0.18]"
+            className="live-player-art absolute inset-y-0 right-0 h-full w-[58%] object-cover object-[center_18%] opacity-20 saturate-[0.65] transition-opacity duration-200 group-hover/card:opacity-[0.26]"
             draggable={false}
             onError={(event) => { event.currentTarget.style.display = "none"; }}
           />
         )}
-        <span className="absolute inset-0 bg-gradient-to-r from-card/95 via-card/90 to-card/85" />
+        <span className="live-player-matte absolute inset-0" />
       </span>
 
       <span className="live-player-grid relative grid min-h-0 flex-1 min-w-0">
@@ -152,7 +152,12 @@ export function PlayerRow({
                 </span>
               )}
             </span>
-            {alertReason && <span className="live-alert-reason mt-1 min-w-0 truncate text-[10px] font-semibold text-amber-100" title={player.smurfReasons.join(" · ")}><AlertTriangle size={10} />{alertReason}</span>}
+            {alertReason && (
+              <span className="live-alert-reason mt-1 min-w-0 text-[10px] font-semibold text-amber-100" title={player.smurfReasons.join(" · ")}>
+                <AlertTriangle size={10} className="shrink-0" />
+                <span className="min-w-0 truncate">{alertReason}</span>
+              </span>
+            )}
           </span>
         </span>
 
@@ -163,7 +168,7 @@ export function PlayerRow({
                 <span className="live-current-rank-name block max-w-full truncate font-display text-[16px] font-black leading-none tracking-wide" style={{ color: player.rankColor }} title={player.rank}>{player.rank}</span>
                 {player.rankTier > 2 && <span className="live-current-rank-rr mt-1 inline-flex rounded-sm border border-edge/80 bg-panel/80 px-1.5 py-0.5 font-mono text-[11px] font-bold leading-none text-zinc-200 num">{player.rr} RR</span>}
               </span>
-              {player.rankIcon && <img src={player.rankIcon} alt="" className="live-current-rank-icon h-8 w-8 shrink-0" loading="lazy" onError={(event) => { event.currentTarget.style.display = "none"; }} />}
+              {player.rankIcon && <img src={player.rankIcon} alt="" draggable={false} className="live-current-rank-icon h-8 w-8 shrink-0" loading="lazy" onError={(event) => { event.currentTarget.style.display = "none"; }} />}
             </span>
             <Metric label="WR" headline>{fmtPct(player.winRate)}</Metric>
             <Metric label="K/D" className="live-expanded-stat">{player.kd === null ? "—" : fmtNum(player.kd, 2)}</Metric>
@@ -172,8 +177,8 @@ export function PlayerRow({
           <span className="live-secondary-stats mt-1 grid min-w-0 items-center gap-1">
             <span className="live-player-peak flex min-w-0 items-center gap-1.5 text-[11px] font-bold leading-none">
               <span className="live-player-peak-label shrink-0 text-[9px] uppercase tracking-[0.1em] text-zinc-500">Peak</span>
-              {player.peakIcon && <img src={player.peakIcon} alt="" className="live-player-peak-icon h-4 w-4 shrink-0 opacity-60 saturate-50" loading="lazy" onError={(event) => { event.currentTarget.style.display = "none"; }} />}
-              <span className="live-peak-rank-name truncate text-zinc-400" title={player.peakRank}>{player.peakRank}</span>
+              {player.peakIcon && <img src={player.peakIcon} alt="" draggable={false} className="live-player-peak-icon h-4 w-4 shrink-0 opacity-60 saturate-50" loading="lazy" onError={(event) => { event.currentTarget.style.display = "none"; }} />}
+              <span className="live-peak-rank-name whitespace-nowrap text-zinc-400" title={player.peakRank}>{player.peakRank}</span>
             </span>
             <FeaturedLoadout weapons={player.weapons} />
             <RecentFormTiles form={player.form} latestRr={player.rrEarned} recentDetails={recentDetails} onRequestDetails={() => onRequestRecentDetails?.(player.puuid)} testId={`recent-form-${player.puuid}`} />

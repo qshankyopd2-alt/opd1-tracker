@@ -32,18 +32,15 @@ export function MatchesSection({
   }
 
   return (
-    <section aria-label="Recent matches" className="flex min-h-full flex-1 flex-col" data-testid="drawer-match-list">
-      <div className="grid shrink-0 grid-cols-[3px_28px_minmax(0,1fr)_auto_auto_auto_minmax(96px,116px)] gap-2 border-b border-edge bg-ink/90 px-3 py-1.5 text-[10px] font-semibold text-zinc-500" aria-hidden="true">
+    <section aria-label="Recent matches" data-testid="drawer-match-list">
+      <div className="grid shrink-0 grid-cols-[3px_28px_minmax(0,1fr)_auto_auto_auto_minmax(96px,116px)] gap-2 border-y border-edge bg-ink/90 px-3 py-2 text-[10px] font-semibold text-zinc-400" aria-hidden="true">
         <span className="col-span-3">Match</span>
         <span>K/D/A</span>
         <span>ACS</span>
         <span>RR</span>
         <span className="text-right">Ending rank</span>
       </div>
-      <div
-        className="grid flex-1 border-x border-b border-edge [&>*:last-child]:border-b-0"
-        style={{ minHeight: career.matches.length * 66, gridTemplateRows: `repeat(${career.matches.length}, minmax(66px, 1fr))` }}
-      >
+      <div className="grid auto-rows-[68px] border-x border-b border-edge [&>*:last-child]:border-b-0">
         {[...career.matches].sort((a, b) => b.startMillis - a.startMillis).map((match) => (
           <RecentMatchCard key={match.matchId} match={match} onOpen={() => onOpenMatch(match.matchId)} />
         ))}

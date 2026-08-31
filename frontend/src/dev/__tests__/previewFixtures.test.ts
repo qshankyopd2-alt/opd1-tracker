@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { RANKS } from "../../lib/ranks";
 import { makeSnapshot } from "../previewFixtures";
 
 describe("design preview fixtures", () => {
@@ -13,6 +14,10 @@ describe("design preview fixtures", () => {
       expect(player.playerCard).toBeTruthy();
       expect(player.rankIcon).toBeTruthy();
       expect(player.peakIcon).toBeTruthy();
+      expect(player.peakRankTier).toBeGreaterThanOrEqual(player.rankTier);
+      expect(player.peakRankTier).toBeGreaterThanOrEqual(
+        RANKS.find((rank) => rank.name === player.previousRank)?.tier ?? 0,
+      );
       expect(player.rr).toBeGreaterThan(0);
       expect(player.kd).not.toBeNull();
       expect(player.hsPct).not.toBeNull();
@@ -22,6 +27,16 @@ describe("design preview fixtures", () => {
       expect(player.weapons).toHaveLength(4);
       expect(player.weapons.map((weapon) => weapon.weapon)).toEqual(["Vandal", "Phantom", "Operator", "Melee"]);
       for (const weapon of player.weapons) expect(weapon.skin?.icon).toBeTruthy();
+      if (player.encounter) {
+        expect(player.encounter.withCount).toBe(
+          player.encounter.winsWith + player.encounter.lossesWith
+          + (player.encounter.drawsWith ?? 0) + (player.encounter.pendingWith ?? 0),
+        );
+        expect(player.encounter.againstCount).toBe(
+          player.encounter.winsAgainst + player.encounter.lossesAgainst
+          + (player.encounter.drawsAgainst ?? 0) + (player.encounter.pendingAgainst ?? 0),
+        );
+      }
     }
 
     expect(snapshot.board.players.some((player) => player.name.length > 30 && player.party)).toBe(true);
@@ -38,6 +53,7 @@ describe("design preview fixtures", () => {
     expect(snapshot.career.agentPool.length).toBeGreaterThan(0);
     expect(snapshot.career.mapStats.length).toBeGreaterThan(0);
     expect(snapshot.career.coPlayers).toHaveLength(6);
+    expect(snapshot.career.coPlayers.some((player) => !player.name && !player.puuid.startsWith("teammate-"))).toBe(true);
     expect(snapshot.board.players.some((player) => player.smurfReasons.some((reason) => /boost/i.test(reason)))).toBe(true);
     for (const skin of snapshot.inventory.top ?? []) expect(skin.icon).toBeTruthy();
   });

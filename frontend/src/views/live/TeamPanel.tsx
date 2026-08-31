@@ -1,3 +1,4 @@
+import type { CSSProperties } from "react";
 import type { LivePlayer, Party, PartyDetectionTeam, TeamStats } from "../../api/types";
 import { fmtNum, fmtPct } from "../../lib/format";
 import { PlayerRow } from "./PlayerRow";
@@ -113,7 +114,7 @@ export function TeamPanel({
       </div>
       <div
         className="live-roster stagger grid min-h-0 flex-1 gap-1 p-1"
-        style={{ gridTemplateRows: `repeat(${Math.max(players.length, 1)}, minmax(0, 1fr))` }}
+        style={{ "--live-player-count": Math.max(players.length, 1) } as CSSProperties}
       >
         {orderedPlayers.map((p) => (
           <PlayerRow

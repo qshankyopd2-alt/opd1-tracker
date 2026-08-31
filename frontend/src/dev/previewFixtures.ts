@@ -167,7 +167,7 @@ function makePlayer(index: number, opts: {
 }): LivePlayer {
   const r = RANK(opts.tier);
   const agent = opts.agentOverride !== undefined ? AGENT_ROSTER[opts.agentOverride] : pick(AGENT_ROSTER, index);
-  const peakTier = Math.max(0, opts.tier - 1 - (index % 3));
+  const peakTier = Math.min(27, opts.tier + 1 + (index % 3));
   const peakR = RANK(peakTier);
   const prevR = RANK(Math.max(0, opts.tier - 2));
   const kd = +((0.78 + (index * 0.13) % 1.4).toFixed(2));
@@ -246,12 +246,16 @@ function makePlayer(index: number, opts: {
     mapWinRate: { winRate: 40 + (index * 9) % 50, games: 18 + (index * 3) % 30 },
     encounter: opts.team === "enemy"
       ? {
-          withCount: 4 + (index % 5),
-          againstCount: 11 + (index % 6),
-          winsWith: 2 + (index % 3),
-          lossesWith: 1 + (index % 2),
-          winsAgainst: 5 + (index % 4),
-          lossesAgainst: 6 + (index % 3),
+          withCount: 5,
+          againstCount: 11,
+          winsWith: 2,
+          lossesWith: 1,
+          drawsWith: 1,
+          pendingWith: 1,
+          winsAgainst: 5,
+          lossesAgainst: 4,
+          drawsAgainst: 1,
+          pendingAgainst: 1,
         }
       : null,
     saved: Boolean(opts.saved),
@@ -427,7 +431,7 @@ function makeCareer(): Career {
       { puuid: "teammate-2", name: "MakoLine", sharedMatches: 4, agents: ["Killjoy", "Cypher"], isParty: false },
       { puuid: "teammate-3", name: "VexOrbit", sharedMatches: 3, agents: ["Omen"], isParty: false },
       { puuid: "teammate-4", name: "A Very Long Teammate Name That Must Truncate", sharedMatches: 3, agents: ["Sova", "Fade"], isParty: true },
-      { puuid: "teammate-5", name: null, sharedMatches: 2, agents: ["Sage"], isParty: false },
+      { puuid: "8f1c2a7e9d4b6083f761c5aa21bb94de", name: null, sharedMatches: 2, agents: ["Sage"], isParty: false },
       { puuid: "teammate-6", name: "QuietOrbit", sharedMatches: 1, agents: [], isParty: false },
     ],
     agentPool: [
