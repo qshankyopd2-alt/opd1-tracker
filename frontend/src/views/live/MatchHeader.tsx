@@ -30,7 +30,7 @@ export function MatchHeader({ board }: { board: LiveBoard }) {
             style={{ width: `${probability}%`, backgroundColor: probabilityTone(probability) }}
           />
         </div>
-        <span className="w-11 shrink-0 text-right font-mono text-[14px] font-bold text-zinc-100 num">{probability}%</span>
+        <span className="w-11 shrink-0 text-right text-[14px] font-bold text-zinc-100 num">{probability}%</span>
       </section>
     );
   }
@@ -39,7 +39,7 @@ export function MatchHeader({ board }: { board: LiveBoard }) {
     return (
       <section data-testid="match-header" className="live-match-header flex min-h-11 shrink-0 items-center rounded-sm border border-edge bg-panel px-3">
         <span className="text-[11px] font-semibold text-zinc-300">Agents locked</span>
-        <span className="ml-auto font-mono text-[14px] font-bold text-brand num" data-testid="lock-progress">
+        <span className="ml-auto text-[14px] font-bold text-brand num" data-testid="lock-progress">
           {board.lockProgress.locked}/{board.lockProgress.total}
         </span>
       </section>

@@ -11,12 +11,13 @@ import { RecapCard } from "./RecapCard";
 import { TeamPanel } from "./TeamPanel";
 import { splitTeams } from "./teamSplit";
 import { useRecentFormDetails } from "../../hooks/useRecentFormDetails";
+import { backend } from "../../api/client";
 
 const designModeEnabled = import.meta.env.DEV && import.meta.env.VITE_DESIGN_MODE === "true";
 
 export function LiveView() {
   const { board, error, loading, showBoard, refresh } = useLiveData();
-  const [selected, setSelected] = useState<{ player: LivePlayer; accountPuuid: string | null } | null>(null);
+  const [selected, setSelected] = useState<{ player: LivePlayer; accountPuuid: string | null; restoreFocus: HTMLElement | null } | null>(null);
   const [savedOverrides, setSavedOverrides] = useState<Record<string, { saved: boolean; note: string }>>({});
   const [previewDrawerRequested, setPreviewDrawerRequested] = useState(false);
   const { recentDetailsByPlayer, onRequestRecentDetails } = useRecentFormDetails();
@@ -53,7 +54,7 @@ export function LiveView() {
   useEffect(() => {
     if (!previewDrawerRequested || !board) return;
     const player = board.players.find((candidate) => candidate.smurf) ?? board.players[0];
-    if (player) setSelected({ player, accountPuuid: board.selfPuuid ?? null });
+    if (player) setSelected({ player, accountPuuid: board.selfPuuid ?? null, restoreFocus: null });
   }, [board, previewDrawerRequested]);
 
   if (loading && !board) {
@@ -86,6 +87,12 @@ export function LiveView() {
   const pregame = board.state === "PREGAME";
   const menus = board.state === "MENUS";
   const { allyId, enemyId, ally, enemy } = splitTeams(board);
+  const bookmarkPlayer = async (player: LivePlayer) => {
+    if (!accountPuuid || player.isSelf) return;
+    const next = !Boolean(player.saved);
+    const result = await backend.updateSavedPlayer(player.puuid, { accountPuuid, saved: next, note: next ? player.savedNote ?? "" : "" });
+    setSavedOverrides((current) => ({ ...current, [player.puuid]: { saved: result.saved, note: result.saved ? player.savedNote ?? "" : "" } }));
+  };
 
   return (
     <div
@@ -106,7 +113,8 @@ export function LiveView() {
           partyDetection={allyId ? board.partyDetection?.teams?.[allyId] : undefined}
           savedOverrides={savedOverrides}
           pregame={pregame}
-          onSelect={(player) => setSelected({ player, accountPuuid })}
+          onSelect={(player, restoreFocus) => setSelected({ player, accountPuuid, restoreFocus })}
+          onBookmark={(player) => void bookmarkPlayer(player)}
           recentDetailsByPlayer={recentDetailsByPlayer}
           onRequestRecentDetails={onRequestRecentDetails}
           testId="ally-team-panel"
@@ -121,7 +129,8 @@ export function LiveView() {
             partyDetection={enemyId ? board.partyDetection?.teams?.[enemyId] : undefined}
             savedOverrides={savedOverrides}
             pregame={pregame}
-            onSelect={(player) => setSelected({ player, accountPuuid })}
+            onSelect={(player, restoreFocus) => setSelected({ player, accountPuuid, restoreFocus })}
+            onBookmark={(player) => void bookmarkPlayer(player)}
             recentDetailsByPlayer={recentDetailsByPlayer}
             onRequestRecentDetails={onRequestRecentDetails}
             testId="enemy-team-panel"
@@ -144,6 +153,7 @@ export function LiveView() {
         <PlayerDrawer
           player={selected.player}
           accountPuuid={selected.accountPuuid}
+          restoreFocus={selected.restoreFocus}
           onSavedChange={(saved, note) => {
             setSavedOverrides((current) => ({
               ...current,

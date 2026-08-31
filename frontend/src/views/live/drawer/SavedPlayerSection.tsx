@@ -1,4 +1,5 @@
 import { Bookmark, ChevronDown, Save, Trash2 } from "lucide-react";
+import * as Accordion from "@radix-ui/react-accordion";
 
 export function SavedPlayerSection({
   saved,
@@ -24,12 +25,8 @@ export function SavedPlayerSection({
   return (
     <section id="drawer-player-note" className="grid grid-cols-[104px_minmax(0,1fr)] py-3 max-[560px]:grid-cols-1 max-[560px]:gap-2" data-testid="drawer-saved-player">
       <h3 className="text-[11px] font-semibold text-zinc-400">Player note</h3>
-      <div className="min-w-0 border border-amber-400/30 bg-amber-400/5">
-        <button
-          type="button"
-          aria-expanded={expanded}
-          aria-controls="drawer-player-note-content"
-          onClick={() => onExpandedChange(!expanded)}
+      <Accordion.Root type="single" collapsible value={expanded ? "note" : ""} onValueChange={(value) => onExpandedChange(value === "note")} className="min-w-0 border border-amber-400/30 bg-amber-400/5">
+        <Accordion.Item value="note"><Accordion.Header><Accordion.Trigger
           className="flex w-full min-w-0 items-center gap-2 px-3 py-2 text-left"
           data-testid="drawer-note-toggle"
         >
@@ -39,10 +36,9 @@ export function SavedPlayerSection({
             <span className="mt-0.5 block truncate text-[10px] text-zinc-500">{note.trim() || "No note added"}</span>
           </span>
           <ChevronDown size={14} className={`shrink-0 text-zinc-500 transition-transform motion-reduce:transition-none ${expanded ? "rotate-180" : ""}`} />
-        </button>
+        </Accordion.Trigger></Accordion.Header>
 
-        {expanded && (
-          <div id="drawer-player-note-content" className="border-t border-amber-400/20 p-3">
+        <Accordion.Content id="drawer-player-note-content" className="overflow-hidden border-t border-amber-400/20 data-[state=closed]:animate-accordion-up data-[state=open]:animate-accordion-down"><div className="p-3">
             <textarea
               value={note}
               maxLength={500}
@@ -61,12 +57,12 @@ export function SavedPlayerSection({
                   </button>
                 )}
               </div>
-              <span className="font-mono text-[10px] text-zinc-600 num">{note.length}/500</span>
+              <span className="text-[10px] text-zinc-500 tabular-nums">{note.length}/500</span>
             </div>
-          </div>
-        )}
-        {savedMessage && <p className="border-t border-amber-400/20 px-3 py-2 text-[10px] text-zinc-400" role="status">{savedMessage}</p>}
-      </div>
+          </div></Accordion.Content>
+          {savedMessage && <p className="border-t border-amber-400/20 px-3 py-2 text-[10px] text-zinc-400" role="status">{savedMessage}</p>}
+        </Accordion.Item>
+      </Accordion.Root>
     </section>
   );
 }

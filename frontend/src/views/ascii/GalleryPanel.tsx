@@ -92,7 +92,7 @@ export function GalleryPanel() {
                   className="relative mx-3 grid min-h-[150px] flex-1 place-items-center overflow-auto rounded-sm border border-edge bg-ink/70 p-3 text-left"
                   aria-label={`Copy ${piece.name}`}
                 >
-                  <pre className="whitespace-pre font-mono text-[9px] leading-[1.05] text-zinc-200">
+                  <pre className="whitespace-pre font-code text-[9px] leading-[1.05] text-zinc-200">
                     {preview}
                   </pre>
                 </button>

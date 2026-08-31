@@ -169,7 +169,7 @@ export function DrawStudioPanel() {
                   maxLength={2}
                   aria-label="Custom brush glyph"
                   placeholder="+"
-                  className="h-8 w-10 rounded-sm border border-edge bg-panel text-center font-mono text-sm text-zinc-200 placeholder:text-zinc-600"
+                  className="h-8 w-10 rounded-sm border border-edge bg-panel text-center font-code text-sm text-zinc-200 placeholder:text-zinc-600"
                 />
               </div>
             </div>
@@ -242,7 +242,7 @@ export function DrawStudioPanel() {
             </span>
           </div>
           <div className="overflow-auto rounded-sm border border-edge bg-ink/80 p-4">
-            <pre className="min-w-max whitespace-pre font-mono text-[12px] leading-[1.08] text-zinc-100">
+            <pre className="min-w-max whitespace-pre font-code text-[12px] leading-[1.08] text-zinc-100">
               {preview}
             </pre>
           </div>
@@ -297,7 +297,7 @@ function GlyphButton({ glyph, selected, onClick }: GlyphButtonProps) {
     <button
       type="button"
       onClick={onClick}
-      className={`grid h-8 w-8 place-items-center rounded-sm border font-mono text-sm transition-colors ${
+      className={`grid h-8 w-8 place-items-center rounded-sm border font-code text-sm transition-colors ${
         selected ? "border-brand bg-brand text-ink" : "border-edge bg-panel text-zinc-300 hover:border-brand/40"
       }`}
     >

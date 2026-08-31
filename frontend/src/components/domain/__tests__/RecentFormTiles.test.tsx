@@ -18,7 +18,7 @@ describe("RecentFormTiles", () => {
     const html = render(form);
 
     expect(html.match(/data-testid="recent-tile-/g)).toHaveLength(5);
-    expect(html.match(/>—<\/span>/g) ?? []).toHaveLength(placeholders);
+    expect(html.match(/data-testid="outcome-unresolved"/g) ?? []).toHaveLength(placeholders);
   });
 
   it("preserves newest-to-oldest order and exposes a text summary", () => {

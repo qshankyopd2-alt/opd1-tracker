@@ -116,9 +116,9 @@ export function CareerSection({
             <div className="mb-1 text-[10px] font-semibold uppercase tracking-wide text-zinc-500">Last 8 matches</div>
             <div className="grid grid-cols-[1.25fr_repeat(3,1fr)] divide-x divide-edge/60 border-y border-edge/70">
               <div className="px-2 py-2"><span className="block font-display text-[20px] font-black leading-none text-zinc-100 num">{wins}W–{losses}L{draws > 0 ? ` · ${draws}D` : ""}</span><span className="mt-1 block text-[10px] uppercase tracking-wide text-zinc-500">Record</span></div>
-              <div className="px-2 py-2"><span className="block font-mono text-[14px] font-semibold text-zinc-300 num">{fmtPct(career.averages.winRate)}</span><span className="mt-1 block text-[10px] uppercase tracking-wide text-zinc-500">Win rate</span></div>
-              <div className="px-2 py-2"><span className="block font-mono text-[13px] font-medium text-zinc-400 num">{fmtNum(career.averages.kd, 2)}</span><span className="mt-1 block text-[10px] uppercase tracking-wide text-zinc-600">K/D</span></div>
-              <div className="px-2 py-2"><span className="block font-mono text-[13px] font-medium text-zinc-400 num">{fmtPct(career.averages.hsPct)}</span><span className="mt-1 block text-[10px] uppercase tracking-wide text-zinc-600">Headshots</span></div>
+              <div className="px-2 py-2"><span className="block text-[14px] font-semibold text-zinc-300 num">{fmtPct(career.averages.winRate)}</span><span className="mt-1 block text-[10px] uppercase tracking-wide text-zinc-500">Win rate</span></div>
+              <div className="px-2 py-2"><span className="block text-[13px] font-medium text-zinc-400 num">{fmtNum(career.averages.kd, 2)}</span><span className="mt-1 block text-[10px] uppercase tracking-wide text-zinc-600">K/D</span></div>
+              <div className="px-2 py-2"><span className="block text-[13px] font-medium text-zinc-400 num">{fmtPct(career.averages.hsPct)}</span><span className="mt-1 block text-[10px] uppercase tracking-wide text-zinc-600">Headshots</span></div>
             </div>
             <div className="flex flex-wrap items-center gap-x-5 gap-y-1 border-b border-edge/70 px-2 py-2 text-[10px] text-zinc-500 num">
               <span className="font-semibold uppercase tracking-wide text-zinc-500">This act</span>

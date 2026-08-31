@@ -78,8 +78,8 @@ describe("Player Drawer sections", () => {
     expect(populated).toContain("/splash.png");
     expect(populated).toContain('title="Ascendant 2 · 30 RR"');
     expect(populated).toContain('aria-label="Ending rank Ascendant 2 · 30 RR"');
-    expect(populated).toContain("auto-rows-[68px]");
-    expect(populated).toContain("h-[68px]");
+    expect(populated).toContain("auto-rows-[minmax(88px,auto)]");
+    expect(populated).toContain("min-h-[88px]");
     expect(populated).toContain("opacity-[0.28]");
     expect(matchesSectionSource).not.toContain("minmax(66px, 1fr)");
   });

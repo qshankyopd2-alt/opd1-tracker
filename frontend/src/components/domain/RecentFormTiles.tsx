@@ -1,4 +1,5 @@
 import { fmtDelta, matchAgeLabel } from "../../lib/format";
+import { OutcomeBadge } from "../ui/OutcomeBadge";
 
 const SLOT_COUNT = 5;
 
@@ -37,12 +38,6 @@ export function RecentFormTiles({
           const rr = detail?.rrDelta ?? (index === 0 ? latestRr : null);
           const age = detail?.startMillis ? matchAgeLabel(detail.startMillis) : "Match age unavailable";
           const normalized = detail?.result === "Victory" ? "W" : detail?.result === "Defeat" ? "L" : result;
-          const resultClass = normalized === "W"
-            ? "border-victory/60 bg-victory/20 text-victory"
-            : normalized === "L"
-              ? "border-defeat/60 bg-defeat/20 text-defeat"
-              : "border-edge bg-ink/70 text-zinc-600";
-
           return (
             <span
               key={index}
@@ -50,9 +45,9 @@ export function RecentFormTiles({
               data-recency={index === 0 ? "current" : "past"}
               data-size={20 - index}
               style={{ width: 20 - index, height: 20 - index }}
-              className={`recent-form-tile group/form-tile relative flex shrink-0 items-center justify-center rounded-sm border text-[9px] font-black num ${index === 0 ? "ring-1 ring-zinc-300/80" : ""} ${resultClass}`}
+              className={`recent-form-tile group/form-tile relative flex shrink-0 items-center justify-center ${index === 0 ? "ring-1 ring-zinc-300/80" : ""}`}
             >
-              {normalized ?? "—"}
+              <OutcomeBadge size="xs" outcome={normalized === "W" ? "win" : normalized === "L" ? "loss" : "unresolved"} className="h-full w-full px-0 [&>svg]:hidden" />
               {normalized && (
                 <span
                   id={`${testId}-tooltip-${index}`}

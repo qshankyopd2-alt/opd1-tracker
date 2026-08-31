@@ -1,4 +1,5 @@
 import type { CSSProperties } from "react";
+import { AlertTriangle } from "lucide-react";
 import type { LivePlayer, Party, PartyDetectionTeam, TeamStats } from "../../api/types";
 import { fmtNum, fmtPct } from "../../lib/format";
 import { PlayerRow } from "./PlayerRow";
@@ -14,6 +15,7 @@ export function TeamPanel({
   savedOverrides,
   pregame,
   onSelect,
+  onBookmark,
   recentDetailsByPlayer,
   onRequestRecentDetails,
   testId,
@@ -26,7 +28,8 @@ export function TeamPanel({
   partyDetection?: PartyDetectionTeam;
   savedOverrides: Record<string, { saved: boolean; note: string }>;
   pregame: boolean;
-  onSelect: (p: LivePlayer) => void;
+  onSelect: (p: LivePlayer, opener: HTMLElement) => void;
+  onBookmark?: (p: LivePlayer) => void;
   recentDetailsByPlayer: RecentDetailsByPlayer;
   onRequestRecentDetails: (puuid: string) => void;
   testId: string;
@@ -76,8 +79,8 @@ export function TeamPanel({
               <span>W</span><span className="text-zinc-200">{fmtPct(stats.avgWinRate)}</span>
             </div>
             {stats.smurfCount > 0 && (
-              <div className="flex items-center gap-1 rounded-sm border border-amber-500/20 bg-amber-500/10 px-1.5 py-0.5 font-bold text-amber-400" data-testid={`${testId}-smurf-count`}>
-                {stats.smurfCount} smurf{stats.smurfCount > 1 ? "s" : ""}
+              <div className="flex items-center gap-1 rounded-full border border-flag-ring bg-flag-subtle px-2 py-0.5 font-bold text-flag" data-testid={`${testId}-smurf-count`}>
+                <AlertTriangle size={11} /> {stats.smurfCount} smurf{stats.smurfCount > 1 ? "s" : ""}
               </div>
             )}
           </div>
@@ -126,6 +129,7 @@ export function TeamPanel({
             } : p}
             pregame={pregame}
             onSelect={onSelect}
+            onBookmark={onBookmark}
             recentDetails={recentDetailsByPlayer[p.puuid]}
             onRequestRecentDetails={onRequestRecentDetails}
           />

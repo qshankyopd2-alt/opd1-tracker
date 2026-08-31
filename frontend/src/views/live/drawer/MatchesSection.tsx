@@ -13,7 +13,7 @@ export function MatchesSection({
   careerUsable: boolean;
   loading: boolean;
   error: string | null;
-  onOpenMatch: (matchId: string) => void;
+  onOpenMatch: (matchId: string, opener: HTMLElement) => void;
 }) {
   if (loading) {
     return (
@@ -40,9 +40,9 @@ export function MatchesSection({
         <span>RR</span>
         <span className="text-right">Ending rank</span>
       </div>
-      <div className="grid auto-rows-[68px] border-x border-b border-edge [&>*:last-child]:border-b-0">
+      <div className="grid auto-rows-[minmax(88px,auto)] border-x border-b border-edge [&>*:last-child]:border-b-0">
         {[...career.matches].sort((a, b) => b.startMillis - a.startMillis).map((match) => (
-          <RecentMatchCard key={match.matchId} match={match} onOpen={() => onOpenMatch(match.matchId)} />
+          <RecentMatchCard key={match.matchId} match={match} onOpen={(opener) => onOpenMatch(match.matchId, opener)} />
         ))}
       </div>
     </section>

@@ -1,14 +1,14 @@
 import { useEffect, useState } from "react";
 import { Bookmark, X } from "lucide-react";
+import * as Dialog from "@radix-ui/react-dialog";
 import { ApiError, backend } from "../../api/client";
 import type { DetailPlayer, MatchDetail, MatchMeta } from "../../api/types";
 import { AgentAvatar } from "../../components/domain/AgentAvatar";
 import { Badge } from "../../components/ui/Badge";
 import { ErrorBanner } from "../../components/ui/ErrorBanner";
 import { TableSkeleton } from "../../components/ui/Skeleton";
-import { ModalLayer } from "../../components/ui/ModalLayer";
-import { useDialogFocusTrap } from "../../hooks/useDialogFocusTrap";
-import { fmtNum, fmtPct, resultColor, scoreline } from "../../lib/format";
+import { OutcomeBadge, normalizeOutcome } from "../../components/ui/OutcomeBadge";
+import { fmtNum, fmtPct, scoreline } from "../../lib/format";
 import { useApp } from "../../state/AppContext";
 
 interface ExpectedMatch {
@@ -54,12 +54,12 @@ function DetailTable({ players, accent, label }: { players: DetailPlayer[]; acce
                   {p.isTeamMvp && !p.isMatchMvp && <Badge color="#A1A1AA">Team MVP</Badge>}
                 </span>
               </td>
-              <td className="text-right num text-zinc-300">
+              <td className="text-right text-zinc-300 tabular-nums">
                 {p.kills}/{p.deaths}/{p.assists}
               </td>
-              <td className="text-right num text-zinc-300">{fmtNum(p.kd, 2)}</td>
-              <td className="text-right num font-semibold text-zinc-200">{p.acs}</td>
-              <td className="text-right num text-zinc-400 pr-2">{fmtPct(p.hsPct)}</td>
+              <td className="text-right text-zinc-300 tabular-nums">{fmtNum(p.kd, 2)}</td>
+              <td className="text-right font-semibold text-zinc-200 tabular-nums">{p.acs}</td>
+              <td className="pr-2 text-right text-zinc-400 tabular-nums">{fmtPct(p.hsPct)}</td>
             </tr>
           ))}
         </tbody>
@@ -119,7 +119,8 @@ function MetaEditor({
           <Bookmark size={11} /> {bookmarked ? "Bookmarked" : "Bookmark"}
         </button>
       </div>
-      <textarea
+      <label htmlFor="match-notes" className="block text-[10px] font-semibold text-white/60">Notes</label>
+      <textarea id="match-notes"
         data-testid="meta-note-input"
         value={note}
         onChange={(e) => setNote(e.target.value)}
@@ -128,12 +129,13 @@ function MetaEditor({
         placeholder="What happened this game?"
         className="w-full bg-panel border border-edge rounded-sm px-2 py-1.5 text-[12px] text-zinc-200 placeholder:text-zinc-600 resize-none"
       />
-      <div className="flex gap-2">
-        <input
+      <div className="grid grid-cols-[minmax(0,1fr)_auto] gap-2">
+        <label htmlFor="match-tags" className="col-span-2 text-[10px] font-semibold text-white/60">Tags</label>
+        <input id="match-tags"
           data-testid="meta-tags-input"
           value={tags}
           onChange={(e) => setTags(e.target.value)}
-          placeholder="tags, comma separated (max 5)"
+          placeholder="e.g. clutch, ace, throw"
           className="flex-1 bg-panel border border-edge rounded-sm px-2 py-1.5 text-[12px] text-zinc-200 placeholder:text-zinc-600"
         />
         <button
@@ -157,6 +159,7 @@ export function MatchDetailModal({
   meta,
   onMetaSaved,
   onClose,
+  restoreFocus,
 }: {
   matchId: string;
   subject: string | null;
@@ -164,14 +167,13 @@ export function MatchDetailModal({
   meta: MatchMeta | undefined;
   onMetaSaved: (id: string, m: MatchMeta) => void;
   onClose: () => void;
+  restoreFocus?: HTMLElement | null;
 }) {
   const [detail, setDetail] = useState<MatchDetail | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const { health } = useApp();
   const clientOffline = health != null && health.clientStatus !== "ok";
-
-  const { dialogRef, onKeyDown: handleKeyDown } = useDialogFocusTrap(onClose);
 
   useEffect(() => {
     if (clientOffline) {
@@ -210,18 +212,9 @@ export function MatchDetailModal({
   const orderedTeams = subjectTeam ? [subjectTeam, ...teams.filter((t) => t !== subjectTeam)] : teams;
 
   return (
-    <ModalLayer><div
-      className="fixed inset-0 z-[70] flex items-center justify-center p-6"
-      data-testid="match-detail-modal"
-      role="dialog"
-      aria-modal="true"
-      aria-labelledby="match-detail-title"
-      ref={dialogRef}
-      tabIndex={-1}
-      onKeyDown={handleKeyDown}
-    >
-      <div className="absolute inset-0 bg-black/70" onClick={onClose} data-testid="match-detail-backdrop" />
-      <div className="relative bg-panel border border-edge rounded-md w-full max-w-3xl max-h-[88vh] overflow-y-auto rise">
+    <Dialog.Root open onOpenChange={(open) => { if (!open) onClose(); }}><Dialog.Portal><div className="fixed inset-0 z-[70] flex items-center justify-center p-6" data-testid="match-detail-modal">
+      <Dialog.Overlay className="absolute inset-0 bg-black/70" data-testid="match-detail-backdrop" />
+      <Dialog.Content onCloseAutoFocus={(event) => { event.preventDefault(); if (restoreFocus?.isConnected) restoreFocus.focus(); }} className="relative max-h-[88vh] w-full max-w-3xl overflow-y-auto rounded-xl border border-white/10 bg-surface-modal/95 shadow-modal backdrop-blur-modal rise">
         {/* header */}
         <div className="relative border-b border-edge overflow-hidden">
           {detail?.mapSplash && (
@@ -231,12 +224,10 @@ export function MatchDetailModal({
           <div className="relative flex items-center gap-4 p-4">
             <div>
               <div className="text-[11px] uppercase tracking-wider text-zinc-400">{detail?.mode ?? "Match"}</div>
-              <h2 id="match-detail-title" className="font-display font-black italic uppercase text-2xl leading-tight">{detail?.map ?? "Match Details"}</h2>
+              <Dialog.Title id="match-detail-title" className="font-display text-2xl font-bold italic uppercase leading-tight">{detail?.map ?? "Match Details"}</Dialog.Title>
             </div>
             {detail && (
-              <div className="font-display font-black text-2xl num" style={{ color: resultColor(detail.result) }}>
-                {detail.result ?? ""} <span className="text-zinc-300">{scoreline(detail.scores, subjectTeam)}</span>
-              </div>
+              <OutcomeBadge size="lg" outcome={normalizeOutcome(detail.result)} score={scoreline(detail.scores, subjectTeam)} />
             )}
             <button
               aria-label="Close"
@@ -279,7 +270,7 @@ export function MatchDetailModal({
             <MetaEditor matchId={matchId} meta={meta} onSaved={(m) => onMetaSaved(matchId, m)} />
           )}
         </div>
-      </div>
-    </div></ModalLayer>
+      </Dialog.Content>
+    </div></Dialog.Portal></Dialog.Root>
   );
 }

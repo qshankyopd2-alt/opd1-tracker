@@ -1,10 +1,15 @@
 import { useEffect, useState } from "react";
-import { AlertTriangle, Bookmark, Eye, EyeOff, Flame } from "lucide-react";
+import { AlertTriangle, Bookmark, Eye, EyeOff } from "lucide-react";
+import * as Tooltip from "@radix-ui/react-tooltip";
 import type { LivePlayer, WeaponLoadout } from "../../api/types";
 import { AgentAvatar } from "../../components/domain/AgentAvatar";
 import { RecentFormTiles } from "../../components/domain/RecentFormTiles";
 import type { RecentFormDetail } from "../../components/domain/RecentFormTiles";
 import { fmtNum, fmtPct } from "../../lib/format";
+import { PlayerPreviewPopover } from "../../components/ui/PlayerPreviewPopover";
+import { RowActionMenu } from "../../components/ui/RowActionMenu";
+import { StreakBadge } from "../../components/ui/StreakBadge";
+import { Truncate } from "../../components/ui/Truncate";
 
 const FEATURED_WEAPONS = [
   { weapon: "Vandal", label: "V" },
@@ -59,13 +64,14 @@ function FeaturedLoadout({ weapons }: { weapons: WeaponLoadout[] }) {
 export function PlayerRow({
   player,
   pregame,
-  onSelect,
+  onSelect, onBookmark,
   recentDetails,
   onRequestRecentDetails,
 }: {
   player: LivePlayer;
   pregame: boolean;
-  onSelect: (p: LivePlayer) => void;
+  onSelect: (p: LivePlayer, opener: HTMLElement) => void;
+  onBookmark?: (p: LivePlayer) => void;
   recentDetails?: RecentFormDetail[];
   onRequestRecentDetails?: (puuid: string) => void;
 }) {
@@ -74,18 +80,16 @@ export function PlayerRow({
   const locked = pregame && player.selection === "locked";
   const boostingReasons = player.smurfReasons.filter((reason) => /boost/i.test(reason));
   const otherSmurfReasons = player.smurfReasons.filter((reason) => !/boost/i.test(reason));
-  const alertReason = [...boostingReasons, ...otherSmurfReasons][0] ?? null;
+  const openFrom = (element: HTMLElement) => onSelect(player, element);
 
   return (
-    <button
-      type="button"
+    <Tooltip.Provider delayDuration={400}><div
       data-testid={`player-row-${player.puuid}`}
-      onClick={() => onSelect(player)}
-      onFocus={() => onRequestRecentDetails?.(player.puuid)}
-      className={`live-player-row group/card relative flex h-full min-h-0 w-full select-none flex-col rounded-md border border-edge bg-card/95 px-2 py-1 text-left transition-colors hover:z-20 hover:border-zinc-500 hover:bg-zinc-800/90 focus-visible:z-20 ${
+      className={`live-player-row group/card relative flex h-full min-h-[88px] w-full select-none flex-col rounded-lg border border-white/10 bg-card/80 px-2 py-1 text-left transition-colors hover:z-20 hover:border-white/20 hover:bg-zinc-800/80 ${
         player.isSelf ? "border-brand/50 bg-brand/5" : ""
       }`}
     >
+      <button type="button" aria-label={`View profile for ${player.name}`} data-testid={`player-row-open-${player.puuid}`} onClick={(event) => openFrom(event.currentTarget)} onFocus={() => onRequestRecentDetails?.(player.puuid)} className="absolute inset-0 z-[1] rounded-[inherit] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand" />
       <span className="live-player-background pointer-events-none absolute inset-0 overflow-hidden rounded-[inherit]">
         {player.playerCard && (
           <img
@@ -99,7 +103,7 @@ export function PlayerRow({
         <span className="live-player-matte absolute inset-0" />
       </span>
 
-      <span className="live-player-grid relative grid min-h-0 flex-1 min-w-0">
+      <span className="live-player-grid pointer-events-none relative z-[2] grid min-h-0 flex-1 min-w-0">
         <span className="live-player-identity flex min-w-0 items-start gap-2.5">
           <span
             className="mt-0.5 h-10 w-[3px] shrink-0 rounded-full"
@@ -114,9 +118,7 @@ export function PlayerRow({
 
           <span className="min-w-0 flex-1 flex flex-col justify-center">
             <span className="flex min-w-0 items-center gap-1.5">
-              <span dir="auto" title={player.name} className={`min-w-0 truncate font-display text-[17px] font-black tracking-wide leading-none ${player.isSelf ? "text-brand" : "text-zinc-100"}`}>
-                {player.name}
-              </span>
+              <PlayerPreviewPopover player={player}><button type="button" onClick={(event) => { event.stopPropagation(); openFrom(event.currentTarget); }} className={`pointer-events-auto min-w-0 text-left font-display text-[17px] font-bold leading-none tracking-wide ${player.isSelf ? "text-brand" : "text-zinc-100"}`}><Truncate text={player.name} maxWidth={160} tooltip={false} /></button></PlayerPreviewPopover>
               {player.party && (
                 <span
                   title={`Party ${player.party.number}`}
@@ -136,28 +138,14 @@ export function PlayerRow({
               {encTotal > 0 && <span className="live-player-seen inline-flex items-center gap-1"> · <Eye size={10} /> {encTotal}x</span>}
             </span>
             <span className="live-player-alerts mt-1 flex min-w-0 items-center gap-1">
-              {player.smurf && (
-                <span data-testid={`smurf-flag-${player.puuid}`} title={player.smurfReasons.join(" · ")} className="live-alert-badge live-alert-smurf inline-flex shrink-0 items-center gap-1 rounded-sm border px-1.5 py-0.5 text-[9px] font-black uppercase tracking-wider text-white">
-                  <AlertTriangle size={10} strokeWidth={3} /> SMURF
-                </span>
-              )}
+              {player.smurf && <Tooltip.Root><Tooltip.Trigger asChild><span data-testid={`smurf-flag-${player.puuid}`} className="live-alert-badge live-alert-smurf pointer-events-auto inline-flex shrink-0 items-center gap-1 rounded-md border px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wider"><AlertTriangle size={10} /> SMURF</span></Tooltip.Trigger><Tooltip.Portal><Tooltip.Content collisionPadding={12} className="z-[100] max-w-xs rounded-lg border border-white/10 bg-surface-popover/95 px-2.5 py-1.5 text-xs text-white/80 shadow-panel backdrop-blur-panel">{otherSmurfReasons.join(" · ") || "Smurf indicators detected"}</Tooltip.Content></Tooltip.Portal></Tooltip.Root>}
               {boostingReasons.length > 0 && (
-                <span data-testid={`boosting-flag-${player.puuid}`} title={boostingReasons.join(" · ")} className="live-alert-badge live-alert-boosting inline-flex shrink-0 items-center gap-1 rounded-sm border px-1.5 py-0.5 text-[9px] font-black uppercase tracking-wider text-white">
-                  <AlertTriangle size={10} strokeWidth={3} /> BOOSTING
-                </span>
+                <Tooltip.Root><Tooltip.Trigger asChild><span data-testid={`boosting-flag-${player.puuid}`} className="live-alert-badge live-alert-boosting pointer-events-auto inline-flex shrink-0 items-center gap-1 rounded-md border px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wider"><AlertTriangle size={10} /> BOOSTING</span></Tooltip.Trigger><Tooltip.Portal><Tooltip.Content collisionPadding={12} className="z-[100] max-w-xs rounded-lg border border-white/10 bg-surface-popover/95 px-2.5 py-1.5 text-xs text-white/80 shadow-panel backdrop-blur-panel">{boostingReasons.join(" · ")}</Tooltip.Content></Tooltip.Portal></Tooltip.Root>
               )}
               {player.streak && player.streak.count >= 3 && (
-                <span data-testid={`player-streak-${player.puuid}`} className="live-signal-streak inline-flex shrink-0 items-center gap-1 rounded-sm border px-1.5 py-0.5 text-[9px] font-black uppercase leading-none num">
-                  <Flame size={9} fill="currentColor" /> {player.streak.count}{player.streak.type}
-                </span>
+                <StreakBadge type={player.streak.type} count={player.streak.count} />
               )}
             </span>
-            {alertReason && (
-              <span className="live-alert-reason mt-1 min-w-0 text-[10px] font-semibold text-amber-100" title={player.smurfReasons.join(" · ")}>
-                <AlertTriangle size={10} className="shrink-0" />
-                <span className="min-w-0 truncate">{alertReason}</span>
-              </span>
-            )}
           </span>
         </span>
 
@@ -166,7 +154,7 @@ export function PlayerRow({
             <span className="live-player-rank flex min-w-0 items-center justify-end gap-1.5 pr-2 text-right">
               <span className="flex min-w-0 flex-col items-end justify-center">
                 <span className="live-current-rank-name block max-w-full truncate font-display text-[16px] font-black leading-none tracking-wide" style={{ color: player.rankColor }} title={player.rank}>{player.rank}</span>
-                {player.rankTier > 2 && <span className="live-current-rank-rr mt-1 inline-flex rounded-sm border border-edge/80 bg-panel/80 px-1.5 py-0.5 font-mono text-[11px] font-bold leading-none text-zinc-200 num">{player.rr} RR</span>}
+                {player.rankTier > 2 && <span className="live-current-rank-rr mt-1 inline-flex rounded-sm border border-edge/80 bg-panel/80 px-1.5 py-0.5 text-[11px] font-bold leading-none text-zinc-200 tabular-nums">{player.rr} RR</span>}
               </span>
               {player.rankIcon && <img src={player.rankIcon} alt="" draggable={false} className="live-current-rank-icon h-8 w-8 shrink-0" loading="lazy" onError={(event) => { event.currentTarget.style.display = "none"; }} />}
             </span>
@@ -181,10 +169,11 @@ export function PlayerRow({
               <span className="live-peak-rank-name whitespace-nowrap text-zinc-400" title={player.peakRank}>{player.peakRank}</span>
             </span>
             <FeaturedLoadout weapons={player.weapons} />
-            <RecentFormTiles form={player.form} latestRr={player.rrEarned} recentDetails={recentDetails} onRequestDetails={() => onRequestRecentDetails?.(player.puuid)} testId={`recent-form-${player.puuid}`} />
+            <span className="pointer-events-auto"><RecentFormTiles form={player.form} latestRr={player.rrEarned} recentDetails={recentDetails} onRequestDetails={() => onRequestRecentDetails?.(player.puuid)} testId={`recent-form-${player.puuid}`} /></span>
           </span>
         </span>
       </span>
-    </button>
+      <span className="pointer-events-auto absolute right-2 top-2 z-[3]"><RowActionMenu name={player.name} saved={Boolean(player.saved)} onViewProfile={() => { const opener = document.querySelector(`[data-testid="player-row-open-${player.puuid}"]`); if (opener instanceof HTMLElement) openFrom(opener); }} onBookmark={() => onBookmark?.(player)} /></span>
+    </div></Tooltip.Provider>
   );
 }

@@ -64,9 +64,8 @@ describe("PlayerRow hierarchy", () => {
     const html = renderPlayerRow();
 
     expect(html).not.toContain("Duelist");
-    expect(html).toContain("player-streak-");
-    expect(html).toContain("live-signal-streak");
-    expect(html).toContain('title="NovaFlux"');
+    expect(html).toContain('data-testid="streak-w"');
+    expect(html).toContain("max-width:160px");
   });
 
   it("reserves threat classes for smurf and boosting while streak uses amber signal styling", () => {
@@ -76,12 +75,11 @@ describe("PlayerRow hierarchy", () => {
     expect(smurfHtml).toContain("live-alert-smurf");
     expect(smurfHtml).toContain("live-alert-boosting");
     expect(smurfHtml).toContain("BOOSTING");
-    expect(lossHtml).toContain("live-signal-streak");
+    expect(lossHtml).toContain('data-testid="streak-l"');
     expect(lossHtml).not.toContain("live-alert-loss");
     expect(smurfHtml).not.toContain("live-current-rank-name live-alert");
-    expect(smurfHtml).toContain("live-alert-reason");
-    expect(smurfHtml).toContain('<span class="min-w-0 truncate">');
-    expect(smurfHtml).toContain("Possibly boosting based on party performance gap");
+    expect(smurfHtml).not.toContain("live-alert-reason");
+    expect(smurfHtml).toContain('aria-haspopup="dialog"');
   });
 
   it("keeps win rate typographically stronger than supporting K/D and headshots", () => {

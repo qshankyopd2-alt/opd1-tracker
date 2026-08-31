@@ -1,4 +1,5 @@
 import { lazy, Suspense } from "react";
+import * as Tooltip from "@radix-ui/react-tooltip";
 import { AppProvider, useApp } from "./state/AppContext";
 import { AppShell } from "./components/shell/AppShell";
 import { LiveView } from "./views/live/LiveView";
@@ -35,7 +36,7 @@ function CurrentView() {
 
 export default function App() {
   return (
-    <AppProvider>
+    <Tooltip.Provider delayDuration={400} skipDelayDuration={150}><AppProvider>
       <AppShell>
         <CurrentView />
       </AppShell>
@@ -44,6 +45,6 @@ export default function App() {
           <DesignModeBar />
         </Suspense>
       )}
-    </AppProvider>
+    </AppProvider></Tooltip.Provider>
   );
 }

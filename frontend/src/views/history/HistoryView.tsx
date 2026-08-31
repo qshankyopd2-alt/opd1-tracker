@@ -11,6 +11,7 @@ import { PageHeader } from "../../components/shell/PageHeader";
 import { usePerformance } from "../../hooks/usePerformance";
 import { fmtDelta, fmtNum, fmtPct, resultColor, scoreline, timeAgo } from "../../lib/format";
 import { MatchDetailModal } from "./MatchDetailModal";
+import { OutcomeBadge, normalizeOutcome } from "../../components/ui/OutcomeBadge";
 
 type Filter = "all" | "wins" | "losses" | "bookmarked";
 
@@ -25,13 +26,13 @@ function MatchRow({
   meta: MatchMeta | undefined;
   splash: string | null | undefined;
   rankIcon: string | null | undefined;
-  onOpen: () => void;
+  onOpen: (opener: HTMLElement) => void;
 }) {
   return (
     <button
       data-testid={`history-row-${point.matchId}`}
-      onClick={onOpen}
-      className="group relative min-h-[72px] w-full overflow-hidden rounded-md border border-edge bg-card text-left transition-colors hover:border-zinc-600"
+      onClick={(event) => onOpen(event.currentTarget)}
+      className="group relative min-h-[88px] w-full overflow-hidden rounded-lg border border-white/10 bg-card/80 text-left transition-colors hover:border-white/20"
     >
       {splash && (
         <span className="absolute inset-y-0 left-0 w-[300px] overflow-hidden">
@@ -48,10 +49,7 @@ function MatchRow({
           </span>
         </span>
 
-        <span className="text-[12px] font-bold num" style={{ color: resultColor(point.result) }}>
-          {point.result === "Victory" ? "WIN" : point.result === "Defeat" ? "LOSS" : point.result === "Draw" ? "DRAW" : "—"}
-          <span className="block text-[10px] text-zinc-500 font-normal">{scoreline(point.scores, null, point.result)}</span>
-        </span>
+        <span><OutcomeBadge size="sm" outcome={normalizeOutcome(point.result)} /><span className="mt-1 block text-[10px] text-white/40 tabular-nums">{scoreline(point.scores, null, point.result)}</span></span>
 
         <span className="flex min-w-0 items-center gap-2.5">
           {point.agent ? (
@@ -66,7 +64,7 @@ function MatchRow({
 
         <span className="text-right text-zinc-300">
           <span className="block text-[8px] font-semibold uppercase tracking-wider text-zinc-600">K/D/A · K/D</span>
-          <span className="text-[12px] num">
+          <span className="text-[12px] tabular-nums">
             {point.kills !== undefined
               ? `${point.kills}/${point.deaths}/${point.assists}${point.kd !== undefined ? ` · ${fmtNum(point.kd, 2)}` : ""}`
               : "—"}
@@ -74,7 +72,7 @@ function MatchRow({
         </span>
         <span className="text-right text-zinc-300">
           <span className="block text-[8px] font-semibold uppercase tracking-wider text-zinc-600">ACS · HS%</span>
-          <span className="text-[12px] num">{point.acs ?? "—"}{point.hsPct !== null && point.hsPct !== undefined ? ` · ${fmtPct(point.hsPct)}` : ""}</span>
+          <span className="text-[12px] tabular-nums">{point.acs ?? "—"}{point.hsPct !== null && point.hsPct !== undefined ? ` · ${fmtPct(point.hsPct)}` : ""}</span>
         </span>
 
         <span className="text-right">
@@ -102,7 +100,7 @@ function MatchRow({
 export function HistoryView() {
   const { data, error, loading, stale, refresh } = usePerformance();
   const [filter, setFilter] = useState<Filter>("all");
-  const [openMatch, setOpenMatch] = useState<string | null>(null);
+  const [openMatch, setOpenMatch] = useState<{ id: string; opener: HTMLElement } | null>(null);
   const [metaOverrides, setMetaOverrides] = useState<Record<string, MatchMeta>>({});
   const [recentModes, setRecentModes] = useState<HistoryPoint[]>([]);
 
@@ -246,7 +244,7 @@ export function HistoryView() {
               meta={allMeta[p.matchId]}
               splash={p.mapSplash ?? (p.map ? data?.mapSplashes?.[p.map] : null)}
               rankIcon={typeof p.tier === "number" ? data?.rankIcons?.[String(p.tier)] : null}
-              onOpen={() => setOpenMatch(p.matchId)}
+              onOpen={(opener) => setOpenMatch({ id: p.matchId, opener })}
             />
           ))}
         </div>
@@ -254,10 +252,11 @@ export function HistoryView() {
 
       {openMatch && (
         <MatchDetailModal
-          matchId={openMatch}
+          matchId={openMatch.id}
           subject={data?.account.puuid ?? null}
-          expected={allPoints.find((point) => point.matchId === openMatch)}
-          meta={allMeta[openMatch]}
+          expected={allPoints.find((point) => point.matchId === openMatch.id)}
+          meta={allMeta[openMatch.id]}
+          restoreFocus={openMatch.opener}
           onMetaSaved={(id, m) => setMetaOverrides((prev) => ({ ...prev, [id]: m }))}
           onClose={() => setOpenMatch(null)}
         />

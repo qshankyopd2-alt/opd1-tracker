@@ -1,101 +1,38 @@
 {
   "theme": "dark",
-  "purpose": "Visual and UX design reference for OPD1 Tracker. Describes how the UI should look and feel. Does NOT prescribe the technical stack, dependencies, or architecture of the application — those are governed by AGENTS.md, package.json, and the actual source code. This file must never override the project's established stack, dependencies, API contracts, or repository architecture.",
+  "purpose": "Visual and UX reference for OPD1 Tracker. Stack, API contracts, and repository architecture remain governed by AGENTS.md and the source.",
   "typography": {
-    "headings": {
-      "fontFamily": "Fira Sans Condensed, sans-serif",
-      "weights": ["500", "600", "700", "800"],
-      "usage": "Used for all main metrics (KD, ACS, RR), player names, and dashboard headers. Provides a bold, tactical athletic feel that fits a competitive tracker."
-    },
-    "body": {
-      "fontFamily": "Fira Sans, sans-serif",
-      "weights": ["400", "500", "600", "700"],
-      "usage": "Highly legible, slightly technical font for tables, lists, and secondary data. Perfect for high information density."
-    }
+    "ui": { "fontFamily": "IBM Plex Sans, sans-serif", "weights": ["400", "500", "600", "700"], "usage": "All application UI." },
+    "outcome_score": { "fontFamily": "IBM Plex Mono, monospace", "weight": "700", "usage": "Only the large score inside OutcomeBadge." },
+    "ascii": { "fontFamily": "Cascadia Mono, Consolas, ui-monospace, monospace", "usage": "ASCII Studio content and controls only." }
   },
   "colors": {
-    "background": {
-      "app": "#09090B",
-      "card": "#18181B",
-      "hover": "#27272A",
-      "header": "#09090B"
-    },
-    "text": {
-      "primary": "#F4F4F5",
-      "secondary": "#A1A1AA",
-      "muted": "#71717A"
-    },
-    "accents": {
-      "brand": "#F97316",
-      "brand_hover": "#EA580C",
-      "brand_muted": "#FFF7ED",
-      "danger": "#EF4444",
-      "warning": "#F59E0B",
-      "success": "#10B981"
-    },
-    "domain_valorant": {
-      "iron": "#5A5751",
-      "bronze": "#BB8F5A",
-      "silver": "#AEB2B2",
-      "gold": "#C5BA3F",
-      "platinum": "#18A7B9",
-      "diamond": "#D864C7",
-      "ascendant": "#189452",
-      "immortal": "#DD4444",
-      "radiant": "#FFFDCD",
-      "victory": "#10B981",
-      "defeat": "#EF4444",
-      "party_1": "#3B82F6",
-      "party_2": "#8B5CF6",
-      "party_3": "#EC4899"
-    }
+    "background": { "app": "#0A0D12", "panel": "rgba(18, 23, 32, 0.95)", "modal": "rgba(22, 28, 38, 0.95)", "popover": "rgba(24, 30, 41, 0.95)" },
+    "text": { "primary": "rgba(255,255,255,0.90)", "secondary": "rgba(255,255,255,0.60)", "muted": "rgba(255,255,255,0.40)" },
+    "accents": { "brand": "#F5A623", "brand_hover": "#D98B12", "danger": "#FB7185", "warning": "#FBBF24", "success": "#34D399" }
   },
   "visual_enhancers": {
-    "borders": "1px solid border-zinc-800. Use exposed skeleton grids for technical aesthetic.",
-    "shadows": "Minimal to none. Rely on 1px solid strokes or subtle inner glows for definition, avoiding soft muddy shadows.",
-    "textures": "Flat, matte finish. Avoid glassmorphism as it detracts from data legibility.",
-    "radius": "Strict 4px (rounded-sm or rounded-md) for sharp, precise desktop feel."
-  },
-  "layouts": {
-    "app_shell": "Flex layout: Left Sidebar Navigation (w-64 or w-16 collapsed) + Main Content (flex-1). Fixed Bottom Status Bar (h-10).",
-    "live_match": "High-density Grid. Two-column split (grid-cols-1 xl:grid-cols-2) for Ally vs Enemy teams. Highly compressed table rows for players.",
-    "competitive": "Bento Grid Pattern. Top span for the RR line chart and Current Rank card. Bottom for dense stat split tables.",
-    "spacing": "Tight spacing (gap-2 to gap-4) within data tables. Generous padding (p-6) around major container edges.",
-    "alignment": "Left-align text columns, right-align numeric metrics (KD, Win %, RR). Never center-align tabular data."
+    "borders": "Use border-white/10 for shared surfaces and list rows.",
+    "shadows": "Use shadow-panel for drawers, popovers, and tooltips; shadow-modal for modal dialogs.",
+    "translucency": "In-app translucency is allowed. Never enable OS-level window transparency.",
+    "blur": "Use backdrop-blur-panel on panels, drawers, popovers, and tooltips; backdrop-blur-modal on modals. Never use backdrop blur on list rows.",
+    "radius": "Use rounded-xl for overlays and rounded-lg or rounded-md for controls and rows."
   },
   "component_guidance": {
-    "navigation": "Persistent left sidebar. Highlight active route with brand accent left-border and lighter background. Include clear labels.",
-    "status_bar": "Fixed at window bottom. Display client states (Offline, Lobby, Agent Select, In Game). Use bright badging (Red/Green/Yellow) to indicate status.",
-    "tables": "Zebra striping (subtle bg-zinc-900/50) or border-b for row separation. Use explicit width for metric columns to maintain alignment.",
-    "player_row": "Complex component: Agent avatar (left), Stacked Name/Rank, K/D, Headshot %, Win Rate, Smurf warning flag, Party color vertical bar indicator on the left edge.",
-    "badges": "Sharp edges, uppercase (tracking-wider), distinct high-contrast colors. Prominently highlight 'Stale Data' and 'Smurf' indicators.",
-    "charts": "Minimal axes lines, vibrant stroke for the primary line chart (RR progression), detailed custom tooltip. OPD1 currently renders charts as inline SVG (see `frontend/src/views/competitive/RRChart.tsx`); keep the visual language consistent if a new chart surface is added."
+    "list_rows": "min-h-[88px], border-white/10, translucent surface without backdrop blur.",
+    "drawer": "bg-surface-panel/95, shadow-panel, backdrop-blur-panel.",
+    "modal": "bg-surface-modal/95, shadow-modal, backdrop-blur-modal.",
+    "outcomes": "Keep win, loss, draw, and unresolved distinct. Use OutcomeBadge sizes consistently.",
+    "player_names": "Constrain live player names to 160px and frequent teammate names to 180px; use Truncate tooltips.",
+    "alerts": "Use a yellow warning pill and AlertTriangle for smurf or boosting signals; put detailed reasons in tooltips."
   },
-  "motion": {
-    "hover": "Instant background shift (bg-zinc-800), subtle border highlight.",
-    "transitions": "Use transition-colors transition-transform duration-200. Do NOT use 'transition-all'.",
-    "lists": "Minimal motion on desktop to preserve snappy, native application feel."
-  },
-  "accessibility": {
-    "contrast": "Ensure text over domain colors (especially bright ones like Radiant or Platinum) uses proper contrast (e.g., black text over Radiant yellow).",
-    "interactive": "Clear focus rings (ring-brand) on all inputs, tabs, and buttons."
-  },
-  "media": {
-    "offline_hero": "OPD1 ships a custom in-app OfflineHero component (`frontend/src/views/live/OfflineHero.tsx`). The previous external Unsplash hero image is not used.",
-    "valorant_assets": "Fetch all external imagery (agents, ranks, maps, skins, cards) strictly from media.valorant-api.com."
-  },
+  "motion": { "hover": "Use transition-colors duration-200.", "lists": "Keep list motion minimal.", "reduced_motion": "Respect motion-reduce utilities." },
+  "accessibility": { "interactive": "Provide visible focus rings, collision-aware overlays, Escape/outside-click closing, and focus restoration.", "html": "Never nest interactive elements." },
+  "media": { "valorant_assets": "Load VALORANT imagery only from media.valorant-api.com.", "fonts": "All fonts are packaged locally; no external font requests." },
   "design_notes_for_agents": [
-    "This file describes how OPD1 should look and feel. It is not a license to change the stack.",
-    "Do NOT switch the frontend language, UI library, icon set, or chart library just to satisfy this file. Match what is already in `frontend/package.json` and the source tree.",
-    "Do NOT introduce new UI dependencies (Shadcn, Phosphor, Recharts, charting libraries, icon packs, etc.) unless the project has explicitly adopted them. The current OPD1 stack uses React + TypeScript, Tailwind CSS, custom UI primitives in `frontend/src/components/ui/`, and `lucide-react` for icons.",
-    "Use TypeScript (.ts/.tsx) and React 18 patterns consistent with the rest of the codebase. Do NOT introduce JavaScript (.js/.jsx) source files into the frontend.",
-    "Implement layout strictly with Tailwind CSS using Grid and Flexbox for the high-density tracker layouts.",
-    "DO NOT use generic centered text alignments. Left-align data/labels, right-align numbers.",
-    "Every interactive element and key informational wrapper MUST have a `data-testid` attribute (e.g., `data-testid=\"live-match-ally-table\"`).",
-    "DO NOT use completely transparent backgrounds where text overlays images/content. Always use a solid background or a heavy backdrop filter.",
-    "Ensure 'Smurf' flags and 'Stale Data' badges are highly visible and visually alarming.",
-    "Do NOT use glassmorphism, cyberpunk, or retro terminal styles. Stick to a solid, flat, tactical 'Performance Pro' aesthetic designed for pure usability and readability.",
-    "Handle all 'Loading' and 'Empty/Offline' states elegantly. When VALORANT is not running, surface the in-app OfflineHero rather than rendering empty tables.",
-    "Real data only. The UI must never present demo/generated data as real. Backend demo payloads are marked `source:\"demo\"` / `demo:true`; gate live rendering on `source === \"local\"`."
+    "Do not change the Flask backend for visual redesign work.",
+    "Every interactive element and key informational wrapper must have a data-testid.",
+    "Design Mode must remain guarded by import.meta.env.DEV.",
+    "Real data only; demo payloads must never be presented as live data."
   ]
 }

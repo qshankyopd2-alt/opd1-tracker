@@ -57,7 +57,7 @@ export function TextGeneratorPanel() {
                   key={glyph}
                   type="button"
                   onClick={() => setDraw(glyph)}
-                  className={`grid h-8 w-8 place-items-center rounded-sm border font-mono text-sm transition-colors ${
+                  className={`grid h-8 w-8 place-items-center rounded-sm border font-code text-sm transition-colors ${
                     draw === glyph
                       ? "border-brand bg-brand text-ink"
                       : "border-edge bg-panel text-zinc-300 hover:border-brand/40"
@@ -80,7 +80,7 @@ export function TextGeneratorPanel() {
                     key={glyph}
                     type="button"
                     onClick={() => setBackground(glyph)}
-                    className={`grid h-8 w-8 place-items-center rounded-sm border font-mono text-sm transition-colors ${
+                    className={`grid h-8 w-8 place-items-center rounded-sm border font-code text-sm transition-colors ${
                       background === glyph
                         ? "border-brand bg-brand text-ink"
                         : "border-edge bg-panel text-zinc-300 hover:border-brand/40"
@@ -119,7 +119,7 @@ export function TextGeneratorPanel() {
           </div>
           <div className="overflow-auto rounded-sm border border-edge bg-ink/80 p-4">
             {rows.length > 0 ? (
-              <pre className="min-w-max whitespace-pre font-mono text-[12px] leading-[1.08] text-zinc-100">
+              <pre className="min-w-max whitespace-pre font-code text-[12px] leading-[1.08] text-zinc-100">
                 {preview}
               </pre>
             ) : (

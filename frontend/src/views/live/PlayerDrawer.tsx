@@ -1,11 +1,11 @@
 import { useEffect, useRef, useState } from "react";
-import { AlertTriangle, Bookmark, Flame, X } from "lucide-react";
+import { AlertTriangle, Bookmark, X } from "lucide-react";
+import * as Dialog from "@radix-ui/react-dialog";
 import { ApiError, backend } from "../../api/client";
 import type { Career, LivePlayer, MatchMeta } from "../../api/types";
 import { AgentAvatar } from "../../components/domain/AgentAvatar";
 import { Badge } from "../../components/ui/Badge";
-import { ModalLayer } from "../../components/ui/ModalLayer";
-import { useDialogFocusTrap } from "../../hooks/useDialogFocusTrap";
+import { StreakBadge } from "../../components/ui/StreakBadge";
 import { RANKS } from "../../lib/ranks";
 import { MatchDetailModal } from "../history/MatchDetailModal";
 import { CareerSection } from "./drawer/CareerSection";
@@ -29,16 +29,18 @@ export function PlayerDrawer({
   accountPuuid,
   onSavedChange,
   onClose,
+  restoreFocus,
 }: {
   player: LivePlayer;
   accountPuuid: string | null;
   onSavedChange: (saved: boolean, note: string) => void;
   onClose: () => void;
+  restoreFocus?: HTMLElement | null;
 }) {
   const [career, setCareer] = useState<Career | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
-  const [openMatch, setOpenMatch] = useState<string | null>(null);
+  const [openMatch, setOpenMatch] = useState<{ id: string; opener: HTMLElement } | null>(null);
   const [metaOverrides, setMetaOverrides] = useState<Record<string, MatchMeta>>({});
   const [saved, setSaved] = useState(Boolean(player.saved));
   const [note, setNote] = useState(player.savedNote ?? "");
@@ -48,7 +50,6 @@ export function PlayerDrawer({
   const [noteExpanded, setNoteExpanded] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
   const tabRefs = useRef<Array<HTMLButtonElement | null>>([]);
-  const { dialogRef, onKeyDown: handleKeyDown } = useDialogFocusTrap(onClose);
 
   useEffect(() => {
     let alive = true;
@@ -135,18 +136,9 @@ export function PlayerDrawer({
   const hasDrawerAlerts = player.smurf || boostingReasons.length > 0 || Boolean(player.streak && player.streak.count >= 3);
 
   return (
-    <ModalLayer><div className="fixed inset-0 z-[60]" data-testid="player-drawer">
-      <div className="absolute inset-0 bg-black/70" onClick={onClose} data-testid="player-drawer-backdrop" />
-      <div
-        className="drawer-slide absolute right-0 top-0 flex h-full w-[640px] max-w-full flex-col overflow-hidden border-l border-edge bg-panel"
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby="player-drawer-title"
-        ref={dialogRef}
-        tabIndex={-1}
-        onKeyDown={handleKeyDown}
-        {...(openMatch ? { inert: "", "aria-hidden": true } : {})}
-      >
+    <Dialog.Root open onOpenChange={(open) => { if (!open) onClose(); }}><Dialog.Portal><div className="fixed inset-0 z-[60]" data-testid="player-drawer">
+      <Dialog.Overlay className="absolute inset-0 bg-black/70" data-testid="player-drawer-backdrop" />
+      <Dialog.Content onCloseAutoFocus={(event) => { event.preventDefault(); if (restoreFocus?.isConnected) restoreFocus.focus(); }} className="drawer-slide absolute right-0 top-0 flex h-full w-[640px] max-w-full flex-col overflow-hidden border-l border-white/10 bg-surface-panel/95 shadow-panel backdrop-blur-panel" {...(openMatch ? { inert: "", "aria-hidden": true } : {})}>
         <header className="relative flex h-24 shrink-0 items-center gap-3 overflow-hidden border-b border-edge bg-panel px-4" data-testid="drawer-header">
           {profileBackdrop && (
             <img src={profileBackdrop} alt="" className="absolute inset-0 h-full w-full object-cover object-center opacity-[0.14]" draggable={false} onError={(event) => { event.currentTarget.style.display = "none"; }} />
@@ -157,7 +149,7 @@ export function PlayerDrawer({
             <AgentAvatar portrait={player.agentPortrait} name={player.agent ?? player.name} color={player.agentColor} size={54} />
           </span>
           <div className="relative min-w-0 flex-1">
-            <h2 id="player-drawer-title" dir="auto" className="truncate font-display text-[24px] font-black leading-none text-zinc-100">{player.name}</h2>
+            <Dialog.Title id="player-drawer-title" dir="auto" className="truncate font-display text-[24px] font-bold leading-none text-zinc-100">{player.name}</Dialog.Title>
             {player.title && <div className="mt-1 truncate text-[11px] italic text-zinc-500">{player.title}</div>}
             <div className="mt-1 truncate text-[11px] text-zinc-400">
               {player.agent ?? "Unpicked"}{player.levelHidden ? " · Level hidden" : ` · Level ${player.level || "?"}`}
@@ -175,7 +167,7 @@ export function PlayerDrawer({
             <div className="min-w-0 text-right">
               <div className="text-[10px] font-semibold text-zinc-500">Current</div>
               <div className="whitespace-nowrap font-display text-[15px] font-black leading-tight" style={{ color: player.rankColor }}>{player.rank}</div>
-              {player.rankTier > 2 && <div className="font-mono text-[11px] text-zinc-400 num">{player.rr} RR</div>}
+              {player.rankTier > 2 && <div className="text-[11px] text-zinc-400 tabular-nums">{player.rr} RR</div>}
             </div>
             {player.rankIcon && <img src={player.rankIcon} alt="" className="h-10 w-10 shrink-0" loading="lazy" onError={(event) => { event.currentTarget.style.display = "none"; }} />}
           </div>
@@ -209,7 +201,7 @@ export function PlayerDrawer({
                 className={`relative flex min-w-28 items-center justify-center gap-2 px-4 text-[12px] font-semibold transition-colors ${selectedTab ? "text-zinc-100" : "text-zinc-500 hover:text-zinc-300"}`}
               >
                 {label}
-                {tab === "matches" && <span className="rounded-full bg-zinc-800 px-1.5 py-0.5 font-mono text-[10px] text-zinc-400 num">{matchCount}</span>}
+                {tab === "matches" && <span className="rounded-full bg-zinc-800 px-1.5 py-0.5 text-[10px] text-zinc-400 tabular-nums">{matchCount}</span>}
                 {selectedTab && <span className="absolute inset-x-3 bottom-0 h-0.5 bg-brand" aria-hidden="true" />}
               </button>
             );
@@ -224,7 +216,7 @@ export function PlayerDrawer({
                   <div className="flex flex-wrap items-center gap-1.5">
                     {player.smurf && <span className="live-alert-badge live-alert-smurf inline-flex items-center gap-1 rounded-sm border px-2 py-1 text-[10px] font-black uppercase tracking-wider text-white"><AlertTriangle size={11} strokeWidth={3} />Smurf</span>}
                     {boostingReasons.length > 0 && <span className="live-alert-badge live-alert-boosting inline-flex items-center gap-1 rounded-sm border px-2 py-1 text-[10px] font-black uppercase tracking-wider text-white"><AlertTriangle size={11} strokeWidth={3} />Boosting</span>}
-                    {player.streak && player.streak.count >= 3 && <span className="live-signal-streak inline-flex items-center gap-1 rounded-sm border px-2 py-1 text-[10px] font-black uppercase tracking-wider"><Flame size={10} fill="currentColor" />{player.streak.count}{player.streak.type} streak</span>}
+                    {player.streak && player.streak.count >= 3 && <StreakBadge type={player.streak.type} count={player.streak.count} />}
                   </div>
                   {hasThreatAlerts && player.smurfReasons.length > 0 && <p className="mt-1.5 text-[11px] font-medium leading-relaxed text-zinc-300">{player.smurfReasons.join(" · ")}</p>}
                 </section>
@@ -255,22 +247,23 @@ export function PlayerDrawer({
             </div>
           ) : (
             <div id="drawer-panel-matches" role="tabpanel" aria-labelledby="drawer-tab-matches" className="flex h-full min-h-0 flex-col p-3" data-testid="drawer-matches-panel">
-              <MatchesSection career={career} careerUsable={careerUsable} loading={loading} error={error} onOpenMatch={setOpenMatch} />
+              <MatchesSection career={career} careerUsable={careerUsable} loading={loading} error={error} onOpenMatch={(id, opener) => setOpenMatch({ id, opener })} />
             </div>
           )}
         </div>
-      </div>
+      </Dialog.Content>
 
       {openMatch && (
         <MatchDetailModal
-          matchId={openMatch}
+          matchId={openMatch.id}
           subject={player.puuid}
-          expected={career?.matches.find((match) => match.matchId === openMatch)}
-          meta={metaOverrides[openMatch]}
+          expected={career?.matches.find((match) => match.matchId === openMatch.id)}
+          meta={metaOverrides[openMatch.id]}
+          restoreFocus={openMatch.opener}
           onMetaSaved={(id, meta) => setMetaOverrides((previous) => ({ ...previous, [id]: meta }))}
           onClose={() => setOpenMatch(null)}
         />
       )}
-    </div></ModalLayer>
+    </div></Dialog.Portal></Dialog.Root>
   );
 }
