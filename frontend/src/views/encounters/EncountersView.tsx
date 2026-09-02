@@ -67,7 +67,8 @@ export function EncountersView() {
             value={query}
             onChange={(event) => setQuery(event.target.value)}
             placeholder="Search name or note…"
-            className="w-56 rounded-sm border border-edge bg-panel py-1.5 pl-7 pr-2 text-[12px] text-zinc-200 placeholder:text-zinc-600"
+            aria-label="Search name or note"
+            className="w-56 rounded-sm border border-edge bg-panel py-1.5 pl-7 pr-2 text-[12px] text-zinc-200 placeholder:text-zinc-600 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-brand"
           />
         </label>
         <button
@@ -147,20 +148,23 @@ export function EncountersView() {
                             autoFocus
                             value={draft}
                             maxLength={500}
+                            aria-label={`Editing note for ${player.name ?? player.puuid.slice(0, 8)}`}
                             onChange={(event) => setDraft(event.target.value)}
-                            className="min-h-16 w-full resize-y rounded-sm border border-amber-400/40 bg-zinc-900 px-2.5 py-1.5 text-[11px] text-zinc-200 focus-visible:ring-1 focus-visible:ring-amber-400/60"
+                            className="min-h-16 w-full resize-y rounded-sm border border-amber-400/40 bg-zinc-900 px-2.5 py-1.5 text-[11px] text-zinc-200 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-amber-400/60"
                           />
                         ) : (
-                          <div
+                          <button
+                            type="button"
                             onClick={() => { setEditing(player.puuid); setDraft(player.note); }}
-                            className="group/note cursor-pointer rounded-sm px-2 py-1.5 hover:bg-zinc-800/50 min-h-10 relative"
+                            aria-label={player.note ? `Edit note for ${player.name ?? "player"}: ${player.note}` : `Add a note for ${player.name ?? "player"}`}
                             title="Click to edit note"
+                            className="group/note w-full text-left cursor-pointer rounded-sm px-2 py-1.5 hover:bg-zinc-800/50 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-brand min-h-10 relative transition-colors"
                           >
                             <span className="block text-zinc-400 text-[11px] leading-relaxed pr-6 line-clamp-3">
                               {player.note || <span className="text-zinc-600 italic">Add a note...</span>}
                             </span>
-                            <Pencil size={10} className="absolute right-2 top-2 text-zinc-500 opacity-0 group-hover/note:opacity-100 transition-opacity" />
-                          </div>
+                            <Pencil size={10} className="absolute right-2 top-2 text-zinc-500 opacity-0 group-hover/note:opacity-100 group-focus-visible/note:opacity-100 transition-opacity" />
+                          </button>
                         )}
                       </td>
                       <td className="text-right num text-[11px] text-zinc-400 py-2 align-middle">
