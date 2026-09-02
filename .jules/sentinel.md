@@ -1,0 +1,4 @@
+## 2024-05-18 - Information Leakage via Raw Exception Strings in API Responses
+**Vulnerability:** API endpoints were returning raw exception strings (`str(e)`) and interpolating exception strings into responses, which can leak sensitive internal state, file paths, or structural logic to clients if unexpected errors occur.
+**Learning:** Python exception serialization into JSON directly leaks unhandled stack contexts to frontends. Relying entirely on generic catch-all `except Exception as e:` blocks and passing `e` verbatim to `jsonify` is a pervasive anti-pattern.
+**Prevention:** Catch specific exceptions if you need them. For generic catch-all blocks (`Exception`), only log the raw error `e` internally (e.g. `app.logger.exception()`) and return generic safe messages (e.g., "An unexpected error occurred") to clients.

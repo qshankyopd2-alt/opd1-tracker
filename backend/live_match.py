@@ -1083,7 +1083,7 @@ class LiveMatch:
                         "level": (pl or {}).get("accountLevel"),
                     })
             except Exception as e:
-                entry["error"] = str(e)
+                entry["error"] = "An unexpected error occurred while fetching match details."
             entry["nameEverPresent"] = any(x["namePresent"] for x in entry["matches"])
             report.append(entry)
 
