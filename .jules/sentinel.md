@@ -1,0 +1,4 @@
+## 2026-09-03 - Fix Exception Leaks & Suppress Bandit Warnings
+**Vulnerability:** The backend exposed raw internal exception details via `str(e)` in JSON API responses. In addition, the static analysis tool Bandit incorrectly flagged secure local requests using `verify=False` as high-severity risks.
+**Learning:** Returning unhandled exception strings directly to clients can reveal sensitive application logic or state. Locally routed HTTP traffic over `127.0.0.1` to self-signed TLS endpoints requires disabling `verify`, necessitating static-analysis overrides to prevent false positives.
+**Prevention:** Always catch exceptions and return generic, safe error messages to clients. Suppress false-positive TLS warnings with `# nosec` comments on internal requests where verification must intentionally be bypassed.
