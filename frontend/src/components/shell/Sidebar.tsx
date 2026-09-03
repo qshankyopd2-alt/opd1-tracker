@@ -29,7 +29,7 @@ export function Sidebar() {
         <div className="text-[10px] uppercase tracking-[0.35em] text-zinc-500 mt-1.5 ml-[38px] font-bold">Tracker</div>
       </div>
 
-      <nav className="flex-1 py-3 px-2 space-y-0.5">
+      <nav aria-label="Main navigation" className="flex-1 py-3 px-2 space-y-0.5">
         {NAV.map(({ id, label, icon: Icon }) => {
           const active = view === id;
           return (
@@ -37,7 +37,8 @@ export function Sidebar() {
               key={id}
               data-testid={`nav-${id}`}
               onClick={() => setView(id)}
-              className={`flex w-full items-center gap-3 border-l-2 px-3 py-2.5 text-[13px] font-semibold transition-colors duration-200 ${
+              aria-current={active ? "page" : undefined}
+              className={`flex w-full items-center gap-3 border-l-2 px-3 py-2.5 text-[13px] font-semibold transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-inset ${
                 active
                   ? "border-brand bg-zinc-800/70 text-zinc-100"
                   : "border-transparent text-zinc-400 hover:bg-zinc-800/50 hover:text-zinc-200"
