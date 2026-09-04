@@ -29,7 +29,7 @@ export function Sidebar() {
         <div className="text-[10px] uppercase tracking-[0.35em] text-zinc-500 mt-1.5 ml-[38px] font-bold">Tracker</div>
       </div>
 
-      <nav className="flex-1 py-3 px-2 space-y-0.5">
+      <nav className="flex-1 py-3 px-2 space-y-0.5" aria-label="Main navigation">
         {NAV.map(({ id, label, icon: Icon }) => {
           const active = view === id;
           return (
@@ -37,13 +37,14 @@ export function Sidebar() {
               key={id}
               data-testid={`nav-${id}`}
               onClick={() => setView(id)}
-              className={`flex w-full items-center gap-3 border-l-2 px-3 py-2.5 text-[13px] font-semibold transition-colors duration-200 ${
+              aria-current={active ? "page" : undefined}
+              className={`flex w-full items-center gap-3 border-l-2 px-3 py-2.5 text-[13px] font-semibold transition-colors duration-200 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-brand ${
                 active
                   ? "border-brand bg-zinc-800/70 text-zinc-100"
                   : "border-transparent text-zinc-400 hover:bg-zinc-800/50 hover:text-zinc-200"
               }`}
             >
-              <Icon size={16} className={active ? "text-brand" : "text-zinc-500"} />
+              <Icon size={16} className={active ? "text-brand" : "text-zinc-500"} aria-hidden="true" />
               {label}
             </button>
           );
@@ -53,6 +54,7 @@ export function Sidebar() {
       <div className="p-3 border-t border-edge">
         <div
           data-testid="sidebar-client-status"
+          role="status"
           className={`flex items-center gap-2 text-[10px] font-bold uppercase tracking-wider px-2 py-1.5 rounded-sm border ${
             clientOk
               ? "bg-victory/10 text-victory border-victory/20"
@@ -61,6 +63,7 @@ export function Sidebar() {
         >
           <span
             className={`w-1.5 h-1.5 rounded-full ${clientOk ? "bg-victory pulse-dot" : "bg-defeat"}`}
+            aria-hidden="true"
           />
           {clientOk ? "CLIENT DETECTED" : "CLIENT OFFLINE"}
         </div>
