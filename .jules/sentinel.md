@@ -1,0 +1,4 @@
+## 2026-09-05 - Information Exposure (Exception Leakage) in API Responses
+**Vulnerability:** Raw exception strings (like `str(e)`) were being returned directly in HTTP JSON responses to the client across `backend/app.py` and `backend/live_match.py`.
+**Learning:** Returning unhandled exception strings can inadvertently leak sensitive system details, internal file paths, API structure, or network details to users, violating the "fail securely" principle. This occurred due to capturing `Exception as e` and directly embedding `str(e)` in `jsonify` responses.
+**Prevention:** Always use generic, safe error messages for client-facing API responses (e.g., "An internal error occurred"). Log the actual raw exception and stack trace server-side (using `app.logger.exception` or `logging.exception`) so that developers can still debug issues without exposing information to users.
