@@ -1083,7 +1083,9 @@ class LiveMatch:
                         "level": (pl or {}).get("accountLevel"),
                     })
             except Exception as e:
-                entry["error"] = str(e)
+                import logging
+                logging.getLogger("backend").exception("Failed to process match history for reveal diagnostic")
+                entry["error"] = "Failed to process match history."
             entry["nameEverPresent"] = any(x["namePresent"] for x in entry["matches"])
             report.append(entry)
 

@@ -194,7 +194,7 @@ def settings_post():
             _save_settings(merged)
         except Exception as e:
             app.logger.exception("settings save failed")
-            return jsonify({"ok": False, "message": str(e),
+            return jsonify({"ok": False, "message": "An error occurred while saving settings.",
                             "settings": merged}), 200
     return jsonify({"ok": True, "settings": merged})
 
@@ -278,8 +278,9 @@ def build_live(seed: int = 7, want_state: str | None = None) -> dict:
                     return _LAST_GOOD["board"]
                 notice = _client_notice()
                 if client.source_pref == "local":
+                    app.logger.exception("Failed to build live scoreboard")
                     return {"state": "OFFLINE", "stateLabel": "Offline", "source": "local",
-                            "error": str(e), "players": [], "teams": {}, "parties": [],
+                            "error": "Failed to connect to local client.", "players": [], "teams": {}, "parties": [],
                             "notice": notice, "appVersion": APP_VERSION}
     elif client.source_pref != "demo" and not LocalAuth.available():
 
@@ -303,8 +304,9 @@ def state():
             st = lm.game_state(lm._presences())
             return jsonify({"state": st, "stateLabel": STATES.get(st, st), "source": "local"})
         except Exception as e:
+            app.logger.exception("game state check failed")
             return jsonify({"state": "OFFLINE", "stateLabel": "Offline",
-                            "source": "local", "error": str(e)})
+                            "source": "local", "error": "Failed to connect to local client."})
     return jsonify({"state": "INGAME", "stateLabel": "In Game", "source": "demo"})
 
 @app.get("/api/live")
@@ -562,7 +564,7 @@ def debug_reveal():
         return jsonify(live_match.LiveMatch(LocalAuth()).diagnose_reveal())
     except Exception as e:
         app.logger.exception("debug reveal failed")
-        return jsonify({"error": str(e)}), 500
+        return jsonify({"error": "An internal error occurred during debug reveal."}), 500
 
 @app.get("/api/profile/<puuid>")
 def profile(puuid: str):
@@ -606,7 +608,7 @@ def player(puuid: str):
         payload = build_player_payload(puuid)
     except Exception as e:
         app.logger.exception("player payload failed")
-        return jsonify({"error": f"Failed to build player profile: {e}"}), 500
+        return jsonify({"error": "Failed to build player profile."}), 500
 
     _CACHE[puuid] = (now, payload)
     return jsonify(payload)
