@@ -397,7 +397,7 @@ function makeCareer(): Career {
       kills: 14 + (i * 3) % 12,
       deaths: 10 + (i * 4) % 9,
       assists: 4 + (i * 5) % 11,
-      kd: 0.9 + (i % 5) * 0.18,
+      kd: +((14 + (i * 3) % 12) / (10 + (i * 4) % 9)).toFixed(2),
       acs: 180 + (i * 11) % 90,
       hsPct: 22 + (i * 3) % 28,
       partySize: 1 + (i % 3),
@@ -411,40 +411,72 @@ function makeCareer(): Career {
       rankIcon: SAMPLE_RANK_ICONS[22 - (i % 3)] ?? null,
     });
   }
+  const totalGames = matches.length;
+  const wins = matches.filter((m) => m.result === "Victory").length;
+  const kills = matches.reduce((sum, m) => sum + m.kills, 0);
+  const deaths = matches.reduce((sum, m) => sum + m.deaths, 0);
+  const assists = matches.reduce((sum, m) => sum + m.assists, 0);
+  const hsPctSum = matches.reduce((sum, m) => sum + (m.hsPct ?? 0), 0);
+
   const averages: Career["averages"] = {
-    games: matches.length,
-    wins: matches.filter((m) => m.result === "Victory").length,
-    winRate: 55,
-    kills: 19.4,
-    deaths: 13.6,
-    assists: 7.5,
-    kd: 1.42,
-    hsPct: 31,
+    games: totalGames,
+    wins,
+    winRate: totalGames > 0 ? Math.round(100 * wins / totalGames) : 0,
+    kills: totalGames > 0 ? +(kills / totalGames).toFixed(1) : 0,
+    deaths: totalGames > 0 ? +(deaths / totalGames).toFixed(1) : 0,
+    assists: totalGames > 0 ? +(assists / totalGames).toFixed(1) : 0,
+    kd: deaths > 0 ? +(kills / deaths).toFixed(2) : (kills > 0 ? kills : 0),
+    hsPct: totalGames > 0 ? Math.round(hsPctSum / totalGames) : 0,
   };
+
+  const agentMap = new Map<string, { games: number; wins: number; portrait: string; color: string }>();
+  for (const m of matches) {
+    const stat = agentMap.get(m.agent) || { games: 0, wins: 0, portrait: m.agentPortrait ?? "", color: m.agentColor ?? "" };
+    stat.games++;
+    if (m.result === "Victory") stat.wins++;
+    agentMap.set(m.agent, stat);
+  }
+  const agentPool = Array.from(agentMap.entries())
+    .map(([agent, stat]) => ({
+      agent,
+      games: stat.games,
+      winRate: Math.round(100 * stat.wins / stat.games),
+      portrait: stat.portrait,
+      color: stat.color,
+    }))
+    .sort((a, b) => b.games - a.games);
+
+  const mapMap = new Map<string, { games: number; wins: number }>();
+  for (const m of matches) {
+    const stat = mapMap.get(m.map) || { games: 0, wins: 0 };
+    stat.games++;
+    if (m.result === "Victory") stat.wins++;
+    mapMap.set(m.map, stat);
+  }
+  const mapStats = Array.from(mapMap.entries())
+    .map(([map, stat]) => ({
+      map,
+      games: stat.games,
+      wins: stat.wins,
+      winRate: Math.round(100 * stat.wins / stat.games),
+    }))
+    .sort((a, b) => b.games - a.games);
+
   return {
     source: "local",
     puuid: "preview-self",
     matches,
     averages,
     coPlayers: [
-      { puuid: "teammate-1", name: "NovaFlux", sharedMatches: 6, agents: ["Jett", "Raze"], isParty: true },
+      { puuid: "teammate-1", name: "PixelRift", sharedMatches: 6, agents: ["Jett", "Raze"], isParty: true },
       { puuid: "teammate-2", name: "MakoLine", sharedMatches: 4, agents: ["Killjoy", "Cypher"], isParty: false },
       { puuid: "teammate-3", name: "VexOrbit", sharedMatches: 3, agents: ["Omen"], isParty: false },
       { puuid: "teammate-4", name: "A Very Long Teammate Name That Must Truncate", sharedMatches: 3, agents: ["Sova", "Fade"], isParty: true },
       { puuid: "8f1c2a7e9d4b6083f761c5aa21bb94de", name: null, sharedMatches: 2, agents: ["Sage"], isParty: false },
       { puuid: "teammate-6", name: "QuietOrbit", sharedMatches: 1, agents: [], isParty: false },
     ],
-    agentPool: [
-      { agent: "Jett", games: 28, winRate: 64, portrait: AGENT_ROSTER[0].portrait, color: AGENT_ROSTER[0].color },
-      { agent: "Reyna", games: 14, winRate: 51, portrait: AGENT_ROSTER[1].portrait, color: AGENT_ROSTER[1].color },
-      { agent: "Omen", games: 9, winRate: 44, portrait: AGENT_ROSTER[7].portrait, color: AGENT_ROSTER[7].color },
-    ],
-    mapStats: maps.slice(0, 5).map((m, i) => ({
-      map: m.name,
-      games: 6 + i,
-      wins: 4 - (i % 2),
-      winRate: 50 + (i * 7) % 30,
-    })),
+    agentPool,
+    mapStats,
   };
 }
 
@@ -476,7 +508,7 @@ function makePerformance(): PerformancePayload {
       kills: 14 + (i * 3) % 12,
       deaths: 10 + (i * 4) % 9,
       assists: 4 + (i * 5) % 11,
-      kd: 0.9 + (i % 5) * 0.18,
+      kd: +((14 + (i * 3) % 12) / (10 + (i * 4) % 9)).toFixed(2),
       acs: 180 + (i * 11) % 90,
       hsPct: 22 + (i * 3) % 28,
       source: "career",
@@ -488,10 +520,10 @@ function makePerformance(): PerformancePayload {
     matches: points.length,
     wins: points.filter((p) => p.result === "Victory").length,
     losses: points.filter((p) => p.result === "Defeat").length,
-    winRate: 55,
-    net: 42,
-    avgWin: 23,
-    avgLoss: -19,
+    winRate: Math.round(100 * points.filter((p) => p.result === "Victory").length / points.length),
+    net: points.reduce((sum, p) => sum + (p.delta ?? 0), 0),
+    avgWin: points.filter((p) => p.result === "Victory").reduce((sum, p) => sum + (p.delta ?? 0), 0) / points.filter((p) => p.result === "Victory").length,
+    avgLoss: points.filter((p) => p.result === "Defeat").reduce((sum, p) => sum + (p.delta ?? 0), 0) / points.filter((p) => p.result === "Defeat").length,
     current: { ...current, rr: 78, tier: 23 },
     next: { ...next, rrNeeded: 22, progress: 78 },
     exactResults: points.length,
@@ -755,10 +787,16 @@ function makeMatchDetail(): MatchDetail {
       level: p.level,
       playerCard: p.playerCard,
       isSubject: p.isSelf,
-      isMatchMvp: i === 0,
-      isTeamMvp: i % 2 === 0,
+      isMatchMvp: false,
+      isTeamMvp: false,
     };
   });
+  const matchMvp = detailPlayers.reduce((best, player) => player.acs > best.acs ? player : best);
+  for (const team of new Set(detailPlayers.map((player) => player.team))) {
+    const teamMvp = detailPlayers.filter((player) => player.team === team).reduce((best, player) => player.acs > best.acs ? player : best);
+    teamMvp.isTeamMvp = true;
+  }
+  matchMvp.isMatchMvp = true;
   return {
     matchId: "preview-match-1",
     map: "Haven",

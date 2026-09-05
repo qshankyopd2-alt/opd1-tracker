@@ -4,8 +4,6 @@ import { makeSnapshot } from "../../../../dev/previewFixtures";
 import { CareerSection, connectionSummary } from "../CareerSection";
 import { FrequentTeammates } from "../FrequentTeammates";
 import { MatchesSection } from "../MatchesSection";
-import careerSectionSource from "../CareerSection.tsx?raw";
-import matchesSectionSource from "../MatchesSection.tsx?raw";
 
 describe("Player Drawer sections", () => {
   it("keeps connection totals consistent for draw, pending, and legacy data", () => {
@@ -32,25 +30,25 @@ describe("Player Drawer sections", () => {
       />,
     );
 
-    expect(html).toContain("Rank history");
-    expect(html).toContain("Performance");
-    expect(html).toContain("Last 8 matches");
+    expect(html).toContain("Recent performance");
     expect(html).toContain("This act");
+    expect(html).toContain("Rank history");
     expect(html).toContain("Most played agents");
     expect(html).toContain("Most played maps");
+    expect(html).toContain("Frequent teammates");
     expect(html).toContain("Connections");
-    expect(html).toContain("Standard");
+    expect(html).toContain("Together");
+    expect(html).toContain("Against");
+    expect(html).toContain("Loadout");
     expect(html).toContain("Unavailable");
-    expect(html.indexOf("Rank history")).toBeLessThan(html.indexOf("Frequent teammates"));
-    expect(html.indexOf("Frequent teammates")).toBeLessThan(html.indexOf("Performance"));
-    expect(html.indexOf("Connections")).toBeLessThan(html.indexOf("Loadout"));
-    expect(careerSectionSource).not.toContain("grid-cols-[88px_minmax(0,1fr)]");
-    expect(careerSectionSource).toContain("grid-cols-[72px_minmax(0,1fr)]");
-    expect(careerSectionSource).toContain("Average K/D/A");
-    expect(careerSectionSource).not.toContain("backdrop-blur-sm");
-    expect(careerSectionSource).toContain("profile-dossier-grid");
-    expect(careerSectionSource).toContain("gap-px overflow-hidden rounded-md bg-edge");
-    expect(careerSectionSource).not.toContain("rounded-md border border-edge/60 bg-card/40");
+    expect(html).not.toContain("Standard");
+
+    expect(html.indexOf("Recent performance")).toBeLessThan(html.indexOf("This act"));
+    expect(html.indexOf("This act")).toBeLessThan(html.indexOf("Rank history"));
+    expect(html.indexOf("Rank history")).toBeLessThan(html.indexOf("Most played agents"));
+    expect(html.indexOf("Most played agents")).toBeLessThan(html.indexOf("Frequent teammates"));
+    expect(html.indexOf("Frequent teammates")).toBeLessThan(html.indexOf("Connections"));
+    expect(html.indexOf("Loadout")).toBeLessThan(html.indexOf("Recent performance"));
   });
 
   it("renders aligned teammate names, fallbacks, agents, and party state", () => {
@@ -83,9 +81,33 @@ describe("Player Drawer sections", () => {
     expect(populated).toContain("/splash.png");
     expect(populated).toContain('title="Ascendant 2 · 30 RR"');
     expect(populated).toContain('aria-label="Ending rank Ascendant 2 · 30 RR"');
-    expect(populated).toContain("auto-rows-[68px]");
-    expect(populated).toContain("h-[68px]");
-    expect(populated).toContain("opacity-20");
-    expect(matchesSectionSource).not.toContain("minmax(66px, 1fr)");
+    expect(populated).not.toContain("grayscale");
+    expect(populated).toContain("recent-map-art");
+  });
+
+  it("renders Avg K/D/A using career.averages (3 numbers) with W/L record above the bar", () => {
+    const snapshot = makeSnapshot("INGAME", 1);
+    const player = snapshot.board.players[0];
+    const html = renderToStaticMarkup(
+      <CareerSection
+        player={player}
+        career={snapshot.career}
+        careerUsable
+        loading={false}
+        error={null}
+        mapSplashes={new Map()}
+        previousRankIcon={null}
+        previousRankColor="#A1A1AA"
+      />,
+    );
+
+    expect(html).toContain("Recent performance");
+    expect(html).toContain('aria-label="Average K/D/A"');
+    for (const [field, label] of [["kills", "Avg kills"], ["deaths", "Avg deaths"], ["assists", "Avg assists"]] as const) {
+      expect(html).toContain(`<strong>${snapshot.career.averages[field].toFixed(1)}</strong><span>${label}</span>`);
+    }
+    // W/L record stays above the bar
+    expect(html).toContain("Last 8 matches");
+    expect(html).toContain("4W – 4L");
   });
 });

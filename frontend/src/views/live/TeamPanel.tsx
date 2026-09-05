@@ -15,7 +15,6 @@ export function TeamPanel({
   savedOverrides,
   pregame,
   onSelect,
-  onBookmark,
   recentDetailsByPlayer,
   onRequestRecentDetails,
   testId,
@@ -29,7 +28,6 @@ export function TeamPanel({
   savedOverrides: Record<string, { saved: boolean; note: string }>;
   pregame: boolean;
   onSelect: (p: LivePlayer, opener: HTMLElement) => void;
-  onBookmark?: (p: LivePlayer) => void;
   recentDetailsByPlayer: RecentDetailsByPlayer;
   onRequestRecentDetails: (puuid: string) => void;
   testId: string;
@@ -139,7 +137,6 @@ export function TeamPanel({
               } : p}
               pregame={pregame}
               onSelect={onSelect}
-              onBookmark={onBookmark}
               recentDetails={recentDetailsByPlayer[p.puuid]}
               onRequestRecentDetails={onRequestRecentDetails}
             />

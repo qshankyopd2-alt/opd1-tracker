@@ -11,7 +11,6 @@ import { RecapCard } from "./RecapCard";
 import { TeamPanel } from "./TeamPanel";
 import { splitTeams } from "./teamSplit";
 import { useRecentFormDetails } from "../../hooks/useRecentFormDetails";
-import { backend } from "../../api/client";
 
 const designModeEnabled = import.meta.env.DEV && import.meta.env.VITE_DESIGN_MODE === "true";
 
@@ -87,12 +86,7 @@ export function LiveView() {
   const pregame = board.state === "PREGAME";
   const menus = board.state === "MENUS";
   const { allyId, enemyId, ally, enemy } = splitTeams(board);
-  const bookmarkPlayer = async (player: LivePlayer) => {
-    if (!accountPuuid || player.isSelf) return;
-    const next = !Boolean(player.saved);
-    const result = await backend.updateSavedPlayer(player.puuid, { accountPuuid, saved: next, note: next ? player.savedNote ?? "" : "" });
-    setSavedOverrides((current) => ({ ...current, [player.puuid]: { saved: result.saved, note: result.saved ? player.savedNote ?? "" : "" } }));
-  };
+
 
   return (
     <div
@@ -114,7 +108,6 @@ export function LiveView() {
           savedOverrides={savedOverrides}
           pregame={pregame}
           onSelect={(player, restoreFocus) => setSelected({ player, accountPuuid, restoreFocus })}
-          onBookmark={(player) => void bookmarkPlayer(player)}
           recentDetailsByPlayer={recentDetailsByPlayer}
           onRequestRecentDetails={onRequestRecentDetails}
           testId="ally-team-panel"
@@ -130,7 +123,6 @@ export function LiveView() {
             savedOverrides={savedOverrides}
             pregame={pregame}
             onSelect={(player, restoreFocus) => setSelected({ player, accountPuuid, restoreFocus })}
-            onBookmark={(player) => void bookmarkPlayer(player)}
             recentDetailsByPlayer={recentDetailsByPlayer}
             onRequestRecentDetails={onRequestRecentDetails}
             testId="enemy-team-panel"
@@ -151,6 +143,7 @@ export function LiveView() {
 
       {selected && (
         <PlayerDrawer
+          key={`${selected.accountPuuid}:${selected.player.puuid}`}
           player={selected.player}
           accountPuuid={selected.accountPuuid}
           restoreFocus={selected.restoreFocus}

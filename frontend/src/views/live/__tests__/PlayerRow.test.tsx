@@ -10,18 +10,27 @@ function renderPlayerRow(playerIndex = 0) {
 }
 
 describe("PlayerRow hierarchy", () => {
+  it("shows four real featured skins without inventing a standard skin", () => {
+    const html = renderPlayerRow();
+    expect(html.match(/data-testid="weapon-slot-/g)).toHaveLength(4);
+    expect(html).toContain('alt="Vandal: Araxys Vandal"');
+    const player = { ...makeSnapshot("INGAME", 1).board.players[0], weapons: [] };
+    const missing = renderToStaticMarkup(<PlayerRow player={player} pregame={false} onSelect={() => undefined} />);
+    expect(missing).not.toContain("Standard");
+    expect(missing).toContain("Unavailable");
+  });
   it("keeps two rosters of horizontal player rows with responsive secondary statistics", () => {
     expect(styles).toContain(".player-row");
     expect(styles).toContain('"avatar identity rank stats"');
     expect(styles).toContain('"avatar alerts detail detail"');
     expect(styles).toContain("background: var(--bg-card);");
     expect(styles).not.toContain('[data-team-tone="defeat"] .player-row');
-    expect(styles).toContain("grid-template-rows: repeat(var(--live-player-count), minmax(0, 1fr));");
+    expect(styles).toContain("grid-template-rows: repeat(var(--live-player-count), minmax(96px, 1fr));");
     expect(styles).toContain(".matchup-board { grid-template-columns: repeat(2, minmax(0, 1fr));");
     expect(styles).toContain("@container (max-width: 520px)");
     expect(styles).toContain("@container (max-width: 440px)");
-    expect(styles).toContain('[data-testid="player-row-kd"]');
-    expect(styles).toContain('[data-testid="player-row-hs"]');
+    expect(renderPlayerRow()).toContain('data-testid="player-row-kd"');
+    expect(renderPlayerRow()).toContain('data-testid="player-row-hs"');
     expect(styles).toContain(".match-chip");
     expect(styles).toContain(".match-chip.win");
     expect(styles).toContain(".match-chip.loss");

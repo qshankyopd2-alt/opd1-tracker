@@ -1,57 +1,22 @@
 import { AlertTriangle, Bookmark, Check, Eye, EyeOff } from "lucide-react";
-import type { LivePlayer, WeaponLoadout } from "../../api/types";
+import type { LivePlayer } from "../../api/types";
+import { WeaponLoadoutStrip } from "../../components/domain/WeaponLoadoutStrip";
 import { AgentAvatar } from "../../components/domain/AgentAvatar";
 import { RecentFormTiles, type RecentFormDetail } from "../../components/domain/RecentFormTiles";
 import { StreakBadge } from "../../components/ui/StreakBadge";
 import { Truncate } from "../../components/ui/Truncate";
 import { fmtNum, fmtPct } from "../../lib/format";
 
-const FEATURED_WEAPONS = ["Vandal", "Phantom", "Operator", "Melee"] as const;
-
-function FeaturedLoadout({ weapons }: { weapons: WeaponLoadout[] }) {
-  const byWeapon = new Map(weapons.map((item) => [item.weapon, item]));
-  return (
-    <div className="live-player-loadout grid w-full grid-cols-4 gap-1">
-      {FEATURED_WEAPONS.map((weapon) => {
-        const item = byWeapon.get(weapon);
-        const label = weapon === "Melee" ? "K" : weapon[0];
-        return (
-          <span
-            key={weapon}
-            title={`${weapon === "Melee" ? "Knife" : weapon}: ${item?.skin?.name ?? (item ? "Standard" : "Unavailable")}`}
-            className="live-weapon-slot flex h-8 min-w-0 items-center justify-center overflow-hidden border border-[var(--border-subtle)] bg-[var(--bg-app)] p-1"
-          >
-            {item?.skin?.icon ? (
-              <img
-                src={item.skin.icon}
-                alt=""
-                draggable={false}
-                className={`h-6 max-h-6 w-full object-contain ${weapon === "Melee" ? "scale-110" : ""}`}
-                loading="lazy"
-                onError={(event) => { event.currentTarget.style.display = "none"; }}
-              />
-            ) : (
-              <span className="font-mono text-[11px] font-bold text-[var(--text-muted)]">{label}</span>
-            )}
-          </span>
-        );
-      })}
-    </div>
-  );
-}
-
 export function PlayerRow({
   player,
   pregame,
   onSelect,
-  onBookmark: _onBookmark,
   recentDetails,
   onRequestRecentDetails,
 }: {
   player: LivePlayer;
   pregame: boolean;
   onSelect: (p: LivePlayer, opener: HTMLElement) => void;
-  onBookmark?: (p: LivePlayer) => void;
   recentDetails?: RecentFormDetail[];
   onRequestRecentDetails?: (puuid: string) => void;
 }) {
@@ -273,7 +238,7 @@ export function PlayerRow({
             />
           </div>
         </div>
-        <FeaturedLoadout weapons={player.weapons} />
+        <div className="live-player-loadout"><WeaponLoadoutStrip weapons={player.weapons} compact /></div>
       </div>
     </div>
   );

@@ -75,16 +75,17 @@ body {
 .player-row {
   display: grid;
   grid-template-columns: 44px minmax(130px, 1fr) 144px 140px;
-  grid-template-rows: minmax(42px, 1fr) 24px;
+  grid-template-rows: minmax(42px, 1fr) 18px 20px;
   grid-template-areas:
     "avatar identity rank stats"
-    "avatar alerts detail detail";
+    "avatar alerts detail detail"
+    "loadout loadout loadout loadout";
   align-items: center;
-  gap: 4px 8px;
+  gap: 2px 8px;
   width: 100%;
   height: 100%;
   min-width: 0;
-  padding: 10px;
+  padding: 4px 10px;
   overflow: hidden;
   background: var(--bg-card);
   border: 1px solid var(--border-subtle);
@@ -127,7 +128,9 @@ body {
 .live-player-stats > div { align-items: flex-end; }
 .live-player-alerts { min-height: 22px; }
 .live-player-form-line { width: 100%; }
-.live-player-loadout { display: none; }
+.live-player-loadout { display: grid; position: relative; z-index: 2; grid-area: loadout; }
+.tier-3-detail { display: contents; }
+.live-player-form-line { grid-area: detail; position: relative; z-index: 2; }
 .live-current-rank-icon { order: -1; }
 .live-current-rank-name { color: var(--text-primary); }
 
@@ -136,7 +139,7 @@ body {
 .live-roster {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
-  grid-template-rows: repeat(var(--live-player-count), minmax(0, 1fr));
+  grid-template-rows: repeat(var(--live-player-count), minmax(96px, 1fr));
   gap: 8px;
   padding: 8px;
 }
@@ -149,10 +152,9 @@ body {
 .match-chip.loss { background: var(--accent-team-b); }
 
 @container (max-width: 520px) {
-  .player-row { grid-template-columns: 40px minmax(130px, 1fr) 140px 102px; gap: 4px 8px; padding-inline: 10px; }
+  .player-row { grid-template-columns: 40px minmax(100px, 1fr) 120px 120px; gap: 2px 8px; padding-inline: 10px; }
   .player-row-self { padding-left: 8px; }
-  .live-player-stats { grid-template-columns: 56px 42px; }
-  [data-testid="player-row-hs"] { display: none; }
+  .live-player-stats { grid-template-columns: 42px 36px 34px; }
   .live-player-rank { padding-left: 8px; }
   .live-player-avatar, .live-player-avatar > img, .live-player-avatar > span:first-child { width: 40px !important; height: 40px !important; }
 
@@ -160,13 +162,11 @@ body {
 }
 
 @container (max-width: 440px) {
-  .player-row { grid-template-columns: 36px minmax(110px, 1fr) 136px 56px; }
-  .live-player-stats { grid-template-columns: 56px; }
-  [data-testid="player-row-kd"] { display: none; }
+  .player-row { grid-template-columns: 36px minmax(80px, 1fr) 106px 108px; }
+  .live-player-stats { grid-template-columns: 38px 32px 30px; }
   .live-player-rank { padding-left: 6px; }
   .live-player-peak { display: none; }
   .live-player-form-line { justify-content: flex-end; }
-  .live-party-badge { display: none; }
 }
 
 @container (min-width: 760px) {
@@ -174,11 +174,9 @@ body {
   .live-player-stats { grid-template-columns: 64px 52px 52px; }
   .live-current-rank-icon { width: 36px; height: 36px; }
   .live-player-rank { justify-content: flex-start; gap: 10px; }
-  .player-row { grid-template-rows: minmax(48px, 1fr) 24px 32px; grid-template-areas: "avatar identity rank stats" "avatar alerts detail detail" "loadout loadout loadout loadout"; }
+  .player-row { grid-template-rows: minmax(48px, 1fr) 24px 42px; grid-template-areas: "avatar identity rank stats" "avatar alerts detail detail" "loadout loadout loadout loadout"; }
   .tier-3-detail { display: contents; }
   .live-player-form-line { grid-area: detail; position: relative; z-index: 2; }
-  .live-player-loadout { display: grid; position: relative; z-index: 2; grid-area: loadout; grid-template-columns: repeat(4, 1fr); }
-  .live-player-loadout .live-weapon-slot { border: 0; background: transparent; }
   .live-player-loadout img { max-width: 96px; }
 }
 
@@ -199,26 +197,60 @@ body {
   background: var(--bg-panel);
   border-radius: 6px;
   border: 1px solid var(--border-strong);
-  border-top: 3px solid var(--text-primary);
+  border-top: 3px solid var(--accent-info);
 }
 
 .player-profile-layer {
-  align-items: stretch;
-  justify-content: flex-end;
+  align-items: center;
+  justify-content: center;
 }
 .player-profile-layer .modal {
-  width: min(640px, 100vw);
-  height: 100%;
-  max-height: 100%;
-  border: 0;
-  border-left: 1px solid var(--border-strong);
-  border-radius: 0;
+  width: min(1120px, calc(100vw - 32px));
+  height: calc(100vh - 32px);
+  max-height: 960px;
+  border: 1px solid var(--border-strong);
+  border-radius: 10px;
   box-shadow: -24px 0 64px #0008;
 }
-.drawer-player-card-art { opacity: 0.24; filter: saturate(0.65); }
-.drawer-player-card-matte { background: linear-gradient(90deg, var(--bg-panel) 10%, transparent 100%); }
-.profile-dossier-grid { display: grid; grid-template-columns: minmax(0, 1fr); }
+.drawer-profile-header { background: var(--bg-panel); }
+.drawer-player-card-art { position: absolute; right: 23%; top: 22px; width: 150px; height: 100px; object-fit: cover; border-radius: 4px; border: 1px solid var(--border-strong); }
+.drawer-player-card-matte { background: linear-gradient(90deg, var(--bg-panel) 0%, var(--bg-panel) 35%, transparent 58%, transparent 79%, var(--bg-panel) 81%); }
+.drawer-profile-header > .relative { text-shadow: 0 2px 5px #000; }
+.profile-dossier-grid { display: grid; grid-template-columns: 1.05fr 1fr; gap: 12px 24px; }
 .profile-dossier-column { min-width: 0; }
+.match-detail-teams { display: grid; gap: 12px; }
+.player-profile-layer .match-detail-teams { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.profile-dossier-loadout { grid-row: 1; grid-column: 1 / -1; }
+.profile-kda { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+.profile-kda > div, .profile-metrics > div { background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: 5px; padding: 12px; }
+.profile-kda strong, .profile-metrics strong { display: block; font-size: 24px; font-weight: 600; line-height: 1.25; }
+.profile-kda span, .profile-metrics span { display: block; font-size: 13px; color: var(--text-secondary); margin-top: 4px; }
+.profile-metrics { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+
+.weapon-loadout { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; }
+.weapon-slot { display: flex; flex-direction: column; align-items: center; min-width: 0; border: 1px solid var(--border-subtle); border-radius: 4px; padding: 8px; background: var(--bg-app); }
+.weapon-image { display: flex; align-items: center; justify-content: center; min-width: 0; width: 100%; height: 58px; overflow: hidden; }
+.weapon-image img { width: 100%; height: 100%; object-fit: contain; }
+.weapon-name { font-size: 12px; color: var(--text-secondary); }
+.weapon-skin-name { max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 13px; color: var(--text-primary); }
+.weapon-unavailable { color: var(--text-muted); font-size: 11px; text-align: center; }
+.weapon-loadout-compact { gap: 6px; height: 100%; }
+.weapon-loadout-compact .weapon-slot { position: relative; min-height: 0; overflow: hidden; padding: 0 6px; flex-direction: row; gap: 4px; background: var(--bg-panel); }
+.weapon-loadout-compact .weapon-image { height: 18px; min-height: 0; }
+.weapon-loadout-compact .weapon-image img { max-height: 18px; }
+.weapon-loadout-compact .weapon-name { font-size: 10px; }
+.weapon-loadout-compact .weapon-skin-name { display: none; }
+.weapon-loadout-compact .weapon-unavailable { font-size: 10px; }
+.recent-match-row { display: grid; grid-template-columns: 150px minmax(150px, 1fr) 110px 70px 172px; gap: 16px; align-items: center; }
+.recent-map-art { position: relative; width: 150px; height: 70px; overflow: hidden; border-radius: 4px; background: var(--bg-app); }
+.recent-map-art > img { width: 100%; height: 100%; object-fit: cover; }
+.recent-map-art > span { position: absolute; bottom: 3px; right: 3px; }
+
+@container (min-width: 760px) {
+  .weapon-loadout-compact .weapon-image { height: 40px; }
+  .weapon-loadout-compact .weapon-image img { max-height: 40px; }
+  .weapon-loadout-compact .weapon-name { font-size: 12px; }
+}
 
 @keyframes rise {
   from {
@@ -268,21 +300,18 @@ body {
   animation: drawer-in 160ms ease-out both;
 }
 
-.live-team-panel,
-.live-roster {
-  overflow: hidden;
-}
+.live-team-panel { overflow: hidden; }
+.live-roster { overflow-y: auto; }
 
 .live-alert-badge { border: 1px solid var(--accent-gold); }
 .live-alert-smurf, .live-alert-boosting { background: var(--accent-gold); color: #ffffff; }
 .live-alert-reason { display: inline-flex; align-items: center; gap: 0.25rem; }
-.live-weapon-slot img { max-width: 100%; flex-shrink: 0; }
 
 @media (max-height: 740px) {
   .live-view { gap: 8px; padding: 8px; }
   .live-match-header { height: 40px; min-height: 40px; }
   .live-roster { gap: 6px; padding: 6px; }
-  .player-row { padding-block: 7px; }
+  .player-row { padding-block: 4px; }
   .live-player-art { opacity: 0.14; }
 }
 
@@ -299,3 +328,6 @@ body {
     scroll-behavior: auto !important;
   }
 }
+
+.player-profile-layer .modal { font-family: Bahnschrift, "Segoe UI", sans-serif; }
+.player-profile-layer .font-display, .player-profile-layer .font-mono { font-family: inherit; }

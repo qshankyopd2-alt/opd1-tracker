@@ -19,10 +19,9 @@ describe("PlayerDrawer tab navigation", () => {
 });
 
 describe("shared modal behavior", () => {
-  it("keeps the drawer below match detail and makes the drawer inert while nested", () => {
+  it("keeps the drawer below match detail", () => {
     expect(playerDrawerSource).toContain("<Dialog.Root");
     expect(playerDrawerSource).toContain("z-[60]");
-    expect(playerDrawerSource).toContain('openMatch ? { inert: "", "aria-hidden": true }');
     expect(matchModalSource).toContain("<Dialog.Root");
     expect(matchModalSource).toContain("z-[70]");
     expect(playerDrawerSource).toContain("bg-black/70");
@@ -35,14 +34,28 @@ describe("shared modal behavior", () => {
     expect(matchModalSource).toContain("onCloseAutoFocus");
   });
 
-  it("opens the profile as a full-height 640px side drawer without squeezing the roster", () => {
+  it("opens a wide profile workspace over the unchanged roster", () => {
     expect(playerDrawerSource).toContain("modal-backdrop player-profile-layer");
     expect(playerDrawerSource).toContain("modal drawer-slide");
     expect(styles).toContain(".player-profile-layer .modal");
-    expect(styles).toContain("width: min(640px, 100vw);");
-    expect(styles).toContain("max-height: 100%;");
-    expect(styles).toContain("justify-content: flex-end;");
+    expect(styles).toContain("width: min(1120px, calc(100vw - 32px));");
+    expect(styles).toContain("max-height: 960px;");
+    expect(styles).toContain("justify-content: center;");
     expect(playerDrawerSource).toContain("drawer-player-card-art");
+  });
+
+  it("sets explicit aria-labelledby and unsets aria-describedby on Dialog.Content", () => {
+    expect(playerDrawerSource).toContain('aria-labelledby={openMatch ? "match-detail-title" : "player-drawer-title"}');
+    expect(playerDrawerSource).toContain("aria-describedby={undefined}");
+    expect(matchModalSource).toContain('aria-labelledby="match-detail-title"');
+    expect(matchModalSource).toContain("aria-describedby={undefined}");
+  });
+
+  it("handles remote playerCard loading failure with reset on player/card change", () => {
+    expect(playerDrawerSource).toContain("cardFailed");
+    expect(playerDrawerSource).toContain("setCardFailed(false)");
+    expect(playerDrawerSource).toContain("contourTexture");
+    expect(playerDrawerSource).toContain("[player.puuid, player.playerCard]");
   });
 });
 

@@ -33,11 +33,13 @@ export function MatchesSection({
 
   return (
     <section aria-label="Recent matches" data-testid="drawer-match-list">
-      <div className="flex shrink-0 items-center justify-between border-y border-edge bg-panel px-3 py-2 text-[12px] font-semibold text-zinc-400" aria-hidden="true">
-        <span>Recent matches</span>
-        <span className="text-zinc-400">K/D/A · ACS · RR · Ending rank</span>
+      <div className="recent-match-row border-y border-edge bg-panel px-3 py-2 text-[12px] font-semibold text-text-secondary" aria-hidden="true">
+        <span className="col-span-2">Recent matches</span>
+        <span>K / D / A</span>
+        <span>ACS</span>
+        <span>Rank & RR</span>
       </div>
-      <div className="grid auto-rows-[68px] border-x border-b border-edge [&>*:last-child]:border-b-0">
+      <div className="grid auto-rows-[90px] border-x border-b border-edge [&>*:last-child]:border-b-0">
         {[...career.matches].sort((a, b) => b.startMillis - a.startMillis).map((match) => (
           <RecentMatchCard key={match.matchId} match={match} onOpen={(opener) => onOpenMatch(match.matchId, opener)} />
         ))}

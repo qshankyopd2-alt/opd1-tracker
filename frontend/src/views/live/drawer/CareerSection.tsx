@@ -5,7 +5,7 @@ import { fmtNum, fmtPct } from "../../../lib/format";
 import { FrequentTeammates } from "./FrequentTeammates";
 import { MapStatCard } from "./MapStatCard";
 
-const FEATURED_WEAPONS = ["Vandal", "Phantom", "Operator", "Melee"] as const;
+import { WeaponLoadoutStrip } from "../../../components/domain/WeaponLoadoutStrip";
 
 export function connectionSummary(
   total: number,
@@ -20,6 +20,41 @@ export function connectionSummary(
   return `${displayTotal} matches · ${wins}W–${losses}L–${draws}D${
     pending ? ` · ${pending} result${pending === 1 ? "" : "s"} unavailable` : ""
   }`;
+}
+
+function ConnectionLine({
+  total,
+  wins,
+  losses,
+  draws = 0,
+  pending: explicitPending,
+}: {
+  total: number;
+  wins: number;
+  losses: number;
+  draws?: number;
+  pending?: number;
+}) {
+  const resolved = wins + losses + draws;
+  const pending = explicitPending ?? Math.max(0, total - resolved);
+  const displayTotal = Math.max(total, resolved + pending);
+
+  return (
+    <div className="mt-1 flex flex-wrap items-baseline gap-x-2 text-[12px] font-semibold num">
+      <span className="text-zinc-200 font-semibold">{displayTotal} matches</span>
+      <span className="text-victory font-semibold">{wins}W</span>
+      <span className="text-defeat font-semibold">{losses}L</span>
+      <span className="text-zinc-400 font-semibold">{draws}D</span>
+      {pending > 0 && (
+        <>
+          <span className="text-zinc-600">·</span>
+          <span className="font-medium text-zinc-400 text-[12px]">
+            {pending} result{pending === 1 ? "" : "s"} unavailable
+          </span>
+        </>
+      )}
+    </div>
+  );
 }
 
 function SectionHeading({ label }: { label: string }) {
@@ -95,40 +130,6 @@ function RankEntry({
   );
 }
 
-function ConnectionLine({
-  total,
-  wins,
-  losses,
-  draws = 0,
-  pending: explicitPending,
-}: {
-  total: number;
-  wins: number;
-  losses: number;
-  draws?: number;
-  pending?: number;
-}) {
-  const resolved = wins + losses + draws;
-  const pending = explicitPending ?? Math.max(0, total - resolved);
-  const displayTotal = Math.max(total, resolved + pending);
-
-  return (
-    <div className="mt-1 flex flex-wrap items-baseline gap-x-2 text-[12px] font-semibold num">
-      <span className="text-zinc-200 font-semibold">{displayTotal} matches</span>
-      <span className="text-victory font-semibold">{wins}W</span>
-      <span className="text-defeat font-semibold">{losses}L</span>
-      <span className="text-zinc-400 font-semibold">{draws}D</span>
-      {pending > 0 && (
-        <>
-          <span className="text-zinc-600">·</span>
-          <span className="font-medium text-zinc-400 text-[12px]">
-            {pending} result{pending === 1 ? "" : "s"} unavailable
-          </span>
-        </>
-      )}
-    </div>
-  );
-}
 
 export function CareerSection({
   player,
@@ -155,43 +156,20 @@ export function CareerSection({
   const draws = matches.filter((match) => match.result === "Draw").length;
 
 
-  const featuredWeapons = FEATURED_WEAPONS.map((weapon) => ({
-    weapon,
-    item: player.weapons.find((item) => item.weapon === weapon),
-  }));
   const encounter = player.encounter;
 
   return (
     <div className="profile-dossier-grid" data-testid="drawer-career">
-      <div className="profile-dossier-column">
-      {/* 1. Rank History */}
-      <OverviewSection label="Rank history" testId="drawer-rank-chips">
-        <div className="grid grid-cols-2 gap-2">
-          <RankEntry
-            label="Peak"
-            name={player.peakRank || "Unknown"}
-            icon={player.peakIcon}
-            color={player.peakColor}
-            detail={player.peakAct}
-          />
-          <RankEntry
-            label="Previous"
-            name={player.previousRank || "Unknown"}
-            icon={previousRankIcon}
-            color={previousRankColor}
-          />
-        </div>
-      </OverviewSection>
-
-      {/* 2. Frequent Teammates */}
-      {careerUsable && career && career.coPlayers.length > 0 && (
-        <OverviewSection label="Frequent teammates" testId="drawer-frequent-connections">
-          <FrequentTeammates teammates={career.coPlayers} embedded />
+      {/* 7. Loadout */}
+      <div className="profile-dossier-loadout">
+        <OverviewSection label="Loadout" testId="drawer-loadout">
+          <WeaponLoadoutStrip weapons={player.weapons} />
         </OverviewSection>
-      )}
+      </div>
+      <div className="profile-dossier-column">
 
-      {/* 3. Performance */}
-      <OverviewSection label="Performance" testId="drawer-performance-grid">
+      {/* 1. Recent Performance */}
+      <OverviewSection label="Recent performance" testId="drawer-performance-grid">
         {loading ? (
           <div className="space-y-2 py-2">
             <Skeleton className="h-12 w-full" />
@@ -232,109 +210,61 @@ export function CareerSection({
               )}
             </div>
 
-            {/* Metrics Grid */}
-            <div className="grid grid-cols-4 divide-x divide-edge overflow-hidden rounded-md border border-edge bg-card">
-              <div className="p-2 text-center">
-                <span className="block font-display text-[20px] font-semibold leading-none text-zinc-100 num">
-                  {wins}W–{losses}L{draws > 0 ? ` · ${draws}D` : ""}
-                </span>
-                <span className="mt-1.5 block text-[12px] font-semibold text-zinc-400">
-                  Record
-                </span>
-              </div>
-              <div className="p-2 text-center">
-                <span className="block font-display text-[18px] font-semibold leading-none text-victory num">
-                  {fmtPct(career.averages.winRate)}
-                </span>
-                <span className="mt-1.5 block text-[12px] font-semibold text-zinc-400">
-                  Win rate
-                </span>
-              </div>
-              <div className="p-2 text-center">
-                <span className="block font-mono text-[16px] font-semibold leading-none text-zinc-300 num">
-                  {fmtNum(career.averages.kd, 2)}
-                </span>
-                <span className="mt-1.5 block text-[12px] font-semibold text-zinc-400">
-                  K/D
-                </span>
-              </div>
-              <div className="p-2 text-center">
-                <span className="block font-mono text-[16px] font-semibold leading-none text-zinc-300 num">
-                  {fmtPct(career.averages.hsPct)}
-                </span>
-                <span className="mt-1.5 block text-[12px] font-semibold text-zinc-400">
-                  Headshots
-                </span>
-              </div>
+            <div className="profile-kda num" aria-label="Average K/D/A" data-testid="average-kda">
+              <div><strong>{fmtNum(career.averages.kills, 1)}</strong><span>Avg kills</span></div>
+              <div><strong>{fmtNum(career.averages.deaths, 1)}</strong><span>Avg deaths</span></div>
+              <div><strong>{fmtNum(career.averages.assists, 1)}</strong><span>Avg assists</span></div>
+            </div>
+            <div className="profile-metrics num">
+              <div><strong className="text-victory">{fmtPct(career.averages.winRate)}</strong><span>Win rate</span></div>
+              <div><strong>{fmtNum(career.averages.kd, 2)}</strong><span>K/D ratio</span></div>
+              <div><strong>{fmtPct(career.averages.hsPct)}</strong><span>Headshots</span></div>
             </div>
 
-            {/* Season Summary Strip */}
-            <div className="grid grid-cols-[72px_minmax(0,1fr)] items-stretch overflow-hidden rounded-md border border-edge bg-card num">
-              <span className="flex items-center border-r border-edge px-3 text-[12px] font-semibold text-zinc-300">
-                This act
-              </span>
-              <div className="grid min-w-0 grid-cols-[0.75fr_0.8fr_1.45fr] divide-x divide-edge">
-                <span className="min-w-0 px-3 py-2">
-                  <strong className="block text-[14px] font-semibold leading-tight text-zinc-100">{player.games}</strong>
-                  <span className="mt-0.5 block text-[12px] text-zinc-400">Matches</span>
-                </span>
-                <span className="min-w-0 px-3 py-2">
-                  <strong className="block text-[14px] font-semibold leading-tight text-zinc-100">{fmtPct(player.winRate)}</strong>
-                  <span className="mt-0.5 block text-[12px] text-zinc-400">Win rate</span>
-                </span>
-                <span className="min-w-0 px-3 py-2">
-                  <strong className="block truncate text-[14px] font-semibold leading-tight text-zinc-100">
-                    {fmtNum(career.averages.kills, 1)} / {fmtNum(career.averages.deaths, 1)} / {fmtNum(career.averages.assists, 1)}
-                  </strong>
-                  <span className="mt-0.5 block text-[12px] text-zinc-400">Average K/D/A</span>
-                </span>
-              </div>
-            </div>
           </div>
         )}
+      </OverviewSection>
+
+      {/* 2. THIS ACT true act-only metrics */}
+      <OverviewSection label="This act" testId="drawer-this-act">
+        <div className="grid grid-cols-2 overflow-hidden rounded-md border border-edge bg-card num divide-x divide-edge">
+          <span className="min-w-0 px-3 py-2 text-center">
+            <strong className="block text-[14px] font-semibold leading-tight text-zinc-100">{player.games}</strong>
+            <span className="mt-0.5 block text-[12px] text-zinc-400">Matches</span>
+          </span>
+          <span className="min-w-0 px-3 py-2 text-center">
+            <strong className="block text-[14px] font-semibold leading-tight text-zinc-100">{fmtPct(player.winRate)}</strong>
+            <span className="mt-0.5 block text-[12px] text-zinc-400">Win rate</span>
+          </span>
+        </div>
+      </OverviewSection>
+
+      {/* 3. Rank History */}
+      <OverviewSection label="Rank history" testId="drawer-rank-chips">
+        <div className="grid grid-cols-2 gap-2">
+          <RankEntry
+            label="Peak"
+            name={player.peakRank || "Unknown"}
+            icon={player.peakIcon}
+            color={player.peakColor}
+            detail={player.peakAct}
+          />
+          <RankEntry
+            label="Previous"
+            name={player.previousRank || "Unknown"}
+            icon={previousRankIcon}
+            color={previousRankColor}
+          />
+        </div>
       </OverviewSection>
 
       </div>
       <div className="profile-dossier-column">
 
-      {/* 4. Most Played Agents */}
-      {careerUsable && career && career.agentPool.length > 0 && (
-        <OverviewSection label="Most played agents" testId="drawer-agent-pool">
-          <div className="grid grid-cols-2 gap-px overflow-hidden rounded-md bg-edge [&>*:last-child:nth-child(odd)]:col-span-2">
-            {career.agentPool.map((agent) => (
-              <div
-                key={agent.agent}
-                className="flex min-w-0 items-center gap-2.5 bg-panel p-2"
-              >
-                <AgentAvatar
-                  portrait={agent.portrait}
-                  name={agent.agent}
-                  color={agent.color}
-                  size={32}
-                />
-                <div className="min-w-0 flex-1">
-                  <div className="flex items-center justify-between gap-1">
-                    <span className="truncate font-display text-[14px] font-semibold text-zinc-100">
-                      {agent.agent}
-                    </span>
-                    <span className="shrink-0 text-[12px] font-semibold text-victory num">
-                      {agent.winRate}% WR
-                    </span>
-                  </div>
-                  <div className="mt-0.5 truncate text-[12px] text-zinc-400 num">
-                    {agent.games} {agent.games === 1 ? "match" : "matches"}
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </OverviewSection>
-      )}
-
       {/* 5. Most Played Maps */}
       {careerUsable && career && career.mapStats.length > 0 && (
         <OverviewSection label="Most played maps" testId="drawer-maps">
-          <div className="grid grid-cols-2 gap-px overflow-hidden rounded-md bg-edge [&>*:last-child:nth-child(odd)]:col-span-2">
+          <div className="flex flex-col gap-px overflow-hidden rounded-md bg-edge">
             {career.mapStats.map((map) => (
               <MapStatCard
                 key={map.map}
@@ -348,7 +278,41 @@ export function CareerSection({
         </OverviewSection>
       )}
 
-      {/* 6. Connections (Encounter History) */}
+      {/* 4. Most Played Agents */}
+      {careerUsable && career && career.agentPool.length > 0 && (
+        <OverviewSection label="Most played agents" testId="drawer-agent-pool">
+          <div className="flex flex-col gap-px overflow-hidden rounded-md bg-edge">
+            {career.agentPool.map((agent) => (
+              <div
+                key={agent.agent}
+                className="flex min-w-0 items-center gap-3 bg-panel px-3 py-2"
+              >
+                <AgentAvatar
+                  portrait={agent.portrait}
+                  name={agent.agent}
+                  color={agent.color}
+                  size={24}
+                />
+                <span className="flex-1 truncate font-display text-[14px] font-semibold text-zinc-100">
+                  {agent.agent}
+                </span>
+                <span className="shrink-0 text-[12px] font-medium text-zinc-400 num">
+                  {agent.games} {agent.games === 1 ? "match" : "matches"} · <span className="text-victory font-semibold">{agent.winRate}%</span> win rate
+                </span>
+              </div>
+            ))}
+          </div>
+        </OverviewSection>
+      )}
+
+      {/* 6. Frequent Teammates */}
+      {careerUsable && career && career.coPlayers.length > 0 && (
+        <OverviewSection label="Frequent teammates" testId="drawer-frequent-connections">
+          <FrequentTeammates teammates={career.coPlayers} embedded />
+        </OverviewSection>
+      )}
+
+      {/* 7. Connections (Encounter History) */}
       {encounter && (encounter.withCount > 0 || encounter.againstCount > 0) && (
         <OverviewSection label="Connections" testId="drawer-encounter">
           <div className="grid grid-cols-2 gap-2">
@@ -382,46 +346,7 @@ export function CareerSection({
 
       </div>
 
-      {/* 7. Loadout */}
-      <div className="profile-dossier-loadout">
-        <OverviewSection label="Loadout" testId="drawer-loadout">
-          <div className="grid grid-cols-4 gap-1.5 overflow-hidden">
-          {featuredWeapons.map(({ weapon, item }) => (
-            <div
-              key={weapon}
-              className="flex min-w-0 flex-col items-center justify-between rounded-md border border-edge bg-card p-2 text-center"
-            >
-              <div className="flex h-7 w-full items-center justify-center">
-                {item?.skin?.icon ? (
-                  <img
-                    src={item.skin.icon}
-                    alt=""
-                    className={`h-7 max-h-7 w-full object-contain ${
-                      weapon === "Melee" ? "scale-110" : ""
-                    }`}
-                    loading="lazy"
-                    onError={(event) => {
-                      event.currentTarget.style.display = "none";
-                    }}
-                  />
-                ) : (
-                  <span className="text-[12px] text-zinc-600">—</span>
-                )}
-              </div>
-              <div
-                className="mt-1.5 w-full truncate text-[12px] font-semibold text-zinc-300"
-                title={item?.skin?.name ?? undefined}
-              >
-                {item ? item.skin?.name ?? "Standard" : "Unavailable"}
-              </div>
-              <div className="text-[12px] font-semibold text-zinc-400">
-                {weapon === "Melee" ? "Knife" : weapon}
-              </div>
-            </div>
-          ))}
-          </div>
-        </OverviewSection>
-      </div>
+
     </div>
   );
 }

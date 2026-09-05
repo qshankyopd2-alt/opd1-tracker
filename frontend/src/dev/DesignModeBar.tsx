@@ -37,7 +37,6 @@ export function DesignModeBar() {
     <div
       data-testid="design-mode-bar"
       className="fixed bottom-1 right-2 z-50 flex flex-col items-end gap-2"
-      style={{ fontFamily: "IBM Plex Sans, sans-serif" }}
     >
       {open && (
         <div
@@ -82,10 +81,11 @@ export function DesignModeBar() {
       )}
       <button
         type="button"
+        data-testid="design-mode-toggle"
         onClick={() => setOpen((o) => !o)}
         className="rounded-sm border border-brand bg-panel px-3 py-1.5 text-[10px] uppercase tracking-wider font-bold text-brand hover:bg-brand/15 transition-colors"
       >
-        {open ? "×" : "D"} Design · {view}
+        {open ? "×" : "D"} Design · Synthetic data
       </button>
     </div>
   );

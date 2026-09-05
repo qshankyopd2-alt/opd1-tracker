@@ -8,7 +8,7 @@
 // still gates rendering on `source === "local"`, so the dev harness cannot
 // accidentally present fixtures as Riot data in a production build.
 
-import type { Health } from "../api/types";
+import type { Health, MatchMeta } from "../api/types";
 import { makeSnapshot, type PreviewSnapshot } from "./previewFixtures";
 
 export interface BackendConnection {
@@ -168,11 +168,24 @@ export function designConnection(): BackendConnection {
   return { url: "design://preview", token: "", version: "design" };
 }
 
-export async function designApi<T>(kind: string): Promise<T> {
+export async function designApi<T>(kind: string, path: string, init?: RequestInit): Promise<T> {
   await sleep(80 + Math.random() * 60);
   if (errorOverride) throw new Error(errorOverride.error);
   const snap = snapshot;
   switch (kind) {
+    case "matchMeta": {
+      const matchId = decodeURIComponent(path.split("/")[3]);
+      if (init?.method !== "PUT" || typeof init.body !== "string") throw new Error("Invalid preview save request.");
+      const body = JSON.parse(init.body) as Partial<MatchMeta>;
+      const meta: MatchMeta = {
+        note: (body.note ?? "").trim().slice(0, 500),
+        tags: (body.tags ?? []).map((tag) => tag.trim()).filter(Boolean),
+        bookmarked: Boolean(body.bookmarked),
+        updatedAt: Date.now(),
+      };
+      snap.performance.matchMeta = { ...snap.performance.matchMeta, [matchId]: meta };
+      return { ok: true, meta } as T;
+    }
     case "health":
       return (healthOverride ?? snap.health) as unknown as T;
     case "state":
@@ -187,8 +200,97 @@ export async function designApi<T>(kind: string): Promise<T> {
       return snap.inventory as unknown as T;
     case "profile":
       return snap.career as unknown as T;
-    case "match":
-      return snap.matchDetail as unknown as T;
+    case "match": {
+      const url = new URL(path, "http://localhost");
+      const matchId = url.pathname.split("/")[3]?.split("?")[0] || "preview-match-1";
+      const requestedSubject = url.searchParams.get("subject");
+      const matchInCareer = snap.career.matches.find((m) => m.matchId === matchId) || snap.performance.points.find((p) => p.matchId === matchId);
+      const md = structuredClone(snap.matchDetail);
+      md.matchId = matchId;
+
+      if (matchInCareer) {
+        md.map = matchInCareer.map || md.map;
+        md.mapSplash = matchInCareer.mapSplash || md.mapSplash;
+        md.mode = ("mode" in matchInCareer && matchInCareer.mode) || md.mode || "Competitive";
+        const result = matchInCareer.result || "Unresolved";
+        md.result = result;
+
+        if ("scores" in matchInCareer && matchInCareer.scores && Object.keys(matchInCareer.scores).length > 0) {
+          md.scores = { ...matchInCareer.scores };
+        } else if (result === "Victory") {
+          md.scores = { Blue: 13, Red: 9 };
+        } else if (result === "Defeat") {
+          md.scores = { Blue: 9, Red: 13 };
+        } else if (result === "Draw") {
+          md.scores = { Blue: 12, Red: 12 };
+        } else {
+          md.scores = {};
+        }
+
+        const targetSubjectPuuid = requestedSubject || snap.board.selfPuuid || "preview-self";
+        const targetBoardPlayer = snap.board.players.find((p) => p.puuid === targetSubjectPuuid);
+
+        const existingSubjectIndex = md.players.findIndex((p) => p.puuid === targetSubjectPuuid);
+        const subjectIndex = existingSubjectIndex >= 0 ? existingSubjectIndex : Math.max(0, md.players.findIndex((p) => p.isSubject));
+        md.players = md.players.map((p, idx) => {
+          if (idx === subjectIndex) {
+            const kills = matchInCareer.kills ?? p.kills;
+            const deaths = matchInCareer.deaths ?? p.deaths;
+            const assists = matchInCareer.assists ?? p.assists;
+            const acs = matchInCareer.acs ?? p.acs;
+            const kd = deaths > 0 ? +(kills / deaths).toFixed(2) : kills;
+
+            return {
+              ...p,
+              puuid: targetSubjectPuuid,
+              name: targetBoardPlayer?.name ?? p.name,
+              isSubject: true,
+              agent: matchInCareer.agent || (targetBoardPlayer?.agent ?? p.agent),
+              agentPortrait: matchInCareer.agentPortrait || (targetBoardPlayer?.agentPortrait ?? p.agentPortrait),
+              agentColor: matchInCareer.agentColor || (targetBoardPlayer?.agentColor ?? p.agentColor),
+              kills,
+              deaths,
+              assists,
+              kd,
+              acs,
+              hsPct: matchInCareer.hsPct ?? p.hsPct,
+            };
+          }
+          return {
+            ...p,
+            isSubject: false,
+          };
+        });
+
+        // Fixture scores are generated from Blue's perspective; the result belongs to the requested player.
+        if (md.players[subjectIndex]?.team === "Red" && md.scores.Blue !== undefined && md.scores.Red !== undefined) {
+          md.scores = { ...md.scores, Blue: md.scores.Red, Red: md.scores.Blue };
+        }
+
+        // Recalculate MVP using ACS after override
+        let maxAcs = -1;
+        let maxAcsPlayerId: string | null = null;
+        const teamMaxAcs: Record<string, { id: string; acs: number }> = {};
+
+        for (const player of md.players) {
+          if (player.acs > maxAcs) {
+            maxAcs = player.acs;
+            maxAcsPlayerId = player.puuid;
+          }
+          const currentTeamMax = teamMaxAcs[player.team];
+          if (!currentTeamMax || player.acs > currentTeamMax.acs) {
+            teamMaxAcs[player.team] = { id: player.puuid, acs: player.acs };
+          }
+        }
+
+        md.players = md.players.map((player) => ({
+          ...player,
+          isMatchMvp: player.puuid === maxAcsPlayerId,
+          isTeamMvp: player.puuid === teamMaxAcs[player.team]?.id,
+        }));
+      }
+      return md as unknown as T;
+    }
     default:
       throw new Error(`Unknown design api kind: ${kind}`);
   }
