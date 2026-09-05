@@ -35,7 +35,7 @@ export function TextGeneratorPanel() {
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(340px,420px)]">
         <div className="space-y-5 rounded-md border border-edge bg-card p-4">
           <label className="block">
-            <span className="mb-1.5 block text-[10px] font-semibold uppercase tracking-[0.2em] text-zinc-500">
+            <span className="mb-1.5 block text-[12px] font-semibold text-zinc-400">
               Your text
             </span>
             <input
@@ -43,12 +43,12 @@ export function TextGeneratorPanel() {
               onChange={(event) => setText(event.target.value)}
               placeholder="Type up to 16 characters…"
               maxLength={16}
-              className="h-11 w-full rounded-sm border border-edge bg-ink px-3 text-sm text-zinc-100 placeholder:text-zinc-600"
+              className="h-11 w-full rounded-sm border border-edge bg-ink px-3 text-sm text-zinc-100 placeholder:text-zinc-500"
             />
           </label>
 
           <div>
-            <span className="mb-2 block text-[10px] font-semibold uppercase tracking-[0.2em] text-zinc-500">
+            <span className="mb-2 block text-[12px] font-semibold text-zinc-400">
               Letter glyph
             </span>
             <div className="flex flex-wrap gap-1.5">
@@ -71,7 +71,7 @@ export function TextGeneratorPanel() {
 
           <div className="grid gap-4 sm:grid-cols-[1fr_180px]">
             <div>
-              <span className="mb-2 block text-[10px] font-semibold uppercase tracking-[0.2em] text-zinc-500">
+              <span className="mb-2 block text-[12px] font-semibold text-zinc-400">
                 Background glyph
               </span>
               <div className="flex gap-1.5">
@@ -93,7 +93,7 @@ export function TextGeneratorPanel() {
             </div>
 
             <label className="block">
-              <span className="mb-2 block text-[10px] font-semibold uppercase tracking-[0.2em] text-zinc-500">
+              <span className="mb-2 block text-[12px] font-semibold text-zinc-400">
                 Letter gap — {gap}
               </span>
               <input
@@ -110,9 +110,9 @@ export function TextGeneratorPanel() {
 
         <div className="rounded-md border border-brand/20 bg-card p-4">
           <div className="mb-2 flex items-center justify-between">
-            <span className="text-[10px] font-semibold uppercase tracking-[0.2em] text-brand">Preview</span>
+            <span className="text-[12px] font-semibold text-brand">Preview</span>
             {rows.length > 0 ? (
-              <span className="rounded-sm bg-victory/15 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-victory">
+              <span className="rounded-sm bg-victory/15 px-2 py-0.5 text-[12px] font-semibold text-victory">
                 Chat ready
               </span>
             ) : null}
@@ -123,24 +123,24 @@ export function TextGeneratorPanel() {
                 {preview}
               </pre>
             ) : (
-              <p className="py-8 text-center text-[12px] text-zinc-600">Type something to see its banner.</p>
+              <p className="py-8 text-center text-[12px] text-zinc-400">Enter text to preview your banner.</p>
             )}
           </div>
           <button
             type="button"
             disabled={rows.length === 0}
             onClick={() => void onCopy()}
-            className={`mt-3 flex w-full items-center justify-center gap-1.5 rounded-sm px-4 py-2.5 text-[12px] font-semibold uppercase tracking-wider transition-colors disabled:opacity-40 ${
+            className={`mt-3 flex w-full items-center justify-center gap-1.5 rounded-sm px-4 py-2.5 text-[12px] font-semibold transition-colors disabled:opacity-40 ${
               copied ? "bg-victory text-ink" : "bg-brand text-ink hover:bg-brand-hover"
             }`}
           >
-            <Copy size={13} /> {copied ? "Copied" : "Copy paste-ready art"}
+            <Copy size={13} /> {copied ? "Copied" : "Copy art"}
           </button>
         </div>
       </div>
 
-      <p className="text-[12px] leading-relaxed text-zinc-500">
-        Each row is exactly 26 cells. Rows are joined with chat-safe wrap points when copied.
+      <p className="text-[12px] leading-relaxed text-zinc-400">
+        Copy your banner, then paste it into VALORANT chat.
       </p>
     </section>
   );

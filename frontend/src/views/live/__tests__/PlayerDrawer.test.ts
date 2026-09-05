@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import matchModalSource from "../../history/MatchDetailModal.tsx?raw";
+import styles from "../../../styles/index.css?raw";
 import { nextDrawerTabIndex } from "../PlayerDrawer";
 import playerDrawerSource from "../PlayerDrawer.tsx?raw";
 
@@ -33,6 +34,16 @@ describe("shared modal behavior", () => {
     expect(playerDrawerSource).toContain("restoreFocus.focus()");
     expect(matchModalSource).toContain("onCloseAutoFocus");
   });
+
+  it("opens the profile as a full-height 640px side drawer without squeezing the roster", () => {
+    expect(playerDrawerSource).toContain("modal-backdrop player-profile-layer");
+    expect(playerDrawerSource).toContain("modal drawer-slide");
+    expect(styles).toContain(".player-profile-layer .modal");
+    expect(styles).toContain("width: min(640px, 100vw);");
+    expect(styles).toContain("max-height: 100%;");
+    expect(styles).toContain("justify-content: flex-end;");
+    expect(playerDrawerSource).toContain("drawer-player-card-art");
+  });
 });
 
 describe("PlayerDrawer alert hierarchy", () => {
@@ -43,8 +54,8 @@ describe("PlayerDrawer alert hierarchy", () => {
     expect(playerDrawerSource).toContain('data-alert-kind={hasThreatAlerts ? "threat" : "streak"}');
   });
 
-  it("uses an amber compact callout when streak is the only signal", () => {
-    expect(playerDrawerSource).toContain("border-amber-400/45");
-    expect(playerDrawerSource).toContain("border-rose-400/50");
+  it("uses no callout surface when streak is the only signal", () => {
+    expect(playerDrawerSource).toContain('hasThreatAlerts ? "mb-2.5 border-l-[3px] border-rose-500 bg-[#241217] px-3 py-2" : "mb-2.5"');
+    expect(playerDrawerSource).not.toContain("border-amber-400/45");
   });
 });

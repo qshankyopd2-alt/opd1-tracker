@@ -20,7 +20,7 @@ export function Badge({
     <span
       data-testid={testId}
       style={style}
-      className={`inline-flex items-center gap-1 border rounded-sm px-1.5 py-px text-[10px] font-semibold uppercase tracking-wider whitespace-nowrap ${className}`}
+      className={`inline-flex items-center gap-1 border rounded-sm px-1.5 py-px text-[12px] font-semibold whitespace-nowrap ${className}`}
     >
       {children}
     </span>

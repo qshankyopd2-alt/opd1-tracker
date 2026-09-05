@@ -156,7 +156,7 @@ export function DrawStudioPanel() {
 
           <div className="mb-4 grid gap-4 sm:grid-cols-[1fr_1fr_150px]">
             <div>
-              <span className="mb-2 block text-[10px] font-semibold uppercase tracking-[0.2em] text-zinc-500">
+              <span className="mb-2 block text-[12px] font-semibold text-zinc-400">
                 Brush glyph
               </span>
               <div className="flex flex-wrap gap-1.5">
@@ -169,13 +169,13 @@ export function DrawStudioPanel() {
                   maxLength={2}
                   aria-label="Custom brush glyph"
                   placeholder="+"
-                  className="h-8 w-10 rounded-sm border border-edge bg-panel text-center font-code text-sm text-zinc-200 placeholder:text-zinc-600"
+                  className="h-8 w-10 rounded-sm border border-edge bg-panel text-center font-code text-sm text-zinc-200 placeholder:text-zinc-500"
                 />
               </div>
             </div>
 
             <div>
-              <span className="mb-2 block text-[10px] font-semibold uppercase tracking-[0.2em] text-zinc-500">
+              <span className="mb-2 block text-[12px] font-semibold text-zinc-400">
                 Background glyph
               </span>
               <div className="flex gap-1.5">
@@ -191,7 +191,7 @@ export function DrawStudioPanel() {
             </div>
 
             <label className="block">
-              <span className="mb-2 block text-[10px] font-semibold uppercase tracking-[0.2em] text-zinc-500">
+              <span className="mb-2 block text-[12px] font-semibold text-zinc-400">
                 Height — {height}
               </span>
               <input
@@ -224,20 +224,20 @@ export function DrawStudioPanel() {
                     onPointerDown={() => beginPaint(rowIndex, columnIndex)}
                     onPointerEnter={() => continuePaint(rowIndex, columnIndex)}
                     className={`aspect-square w-full rounded-[2px] border border-white/[0.04] transition-colors ${
-                      cell ? "bg-brand shadow-[0_0_5px_rgba(249,115,22,0.45)]" : "bg-zinc-800 hover:bg-zinc-700"
+                      cell ? "bg-brand" : "bg-zinc-800 hover:bg-zinc-700"
                     }`}
                   />
                 )),
               )}
             </div>
           </div>
-          <p className="mt-2 text-[12px] text-zinc-500">Drag to paint. Start on a filled cell to erase.</p>
+          <p className="mt-2 text-[12px] text-zinc-400">Drag to paint. Start on a filled cell to erase.</p>
         </div>
 
         <div className="rounded-md border border-brand/20 bg-card p-4">
           <div className="mb-2 flex items-center justify-between">
-            <span className="text-[10px] font-semibold uppercase tracking-[0.2em] text-brand">Preview</span>
-            <span className="rounded-sm bg-victory/15 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-victory">
+            <span className="text-[12px] font-semibold text-brand">Preview</span>
+            <span className="rounded-sm bg-victory/15 px-2 py-0.5 text-[12px] font-semibold text-victory">
               Chat ready
             </span>
           </div>
@@ -249,14 +249,14 @@ export function DrawStudioPanel() {
           <button
             type="button"
             onClick={() => void onCopy()}
-            className={`mt-3 flex w-full items-center justify-center gap-1.5 rounded-sm px-4 py-2.5 text-[12px] font-semibold uppercase tracking-wider transition-colors ${
+            className={`mt-3 flex w-full items-center justify-center gap-1.5 rounded-sm px-4 py-2.5 text-[12px] font-semibold transition-colors ${
               copied ? "bg-victory text-ink" : "bg-brand text-ink hover:bg-brand-hover"
             }`}
           >
-            <Copy size={13} /> {copied ? "Copied" : "Copy paste-ready art"}
+            <Copy size={13} /> {copied ? "Copied" : "Copy art"}
           </button>
-          <p className="mt-3 text-[12px] leading-relaxed text-zinc-500">
-            Empty cells are filled and rows are joined at VALORANT's 26-cell wrap boundary.
+          <p className="mt-3 text-[12px] leading-relaxed text-zinc-400">
+            Copy your art, then paste it into VALORANT chat.
           </p>
         </div>
       </div>
@@ -277,7 +277,7 @@ function ToolButton({ label, icon: Icon, onClick, disabled = false }: ToolButton
       type="button"
       disabled={disabled}
       onClick={onClick}
-      className="rounded-sm border border-edge bg-panel px-2.5 py-1.5 text-[11px] font-semibold uppercase tracking-wider text-zinc-300 transition-colors hover:text-zinc-100 disabled:cursor-not-allowed disabled:opacity-30"
+      className="rounded-sm border border-edge bg-panel px-2.5 py-1.5 text-[12px] font-semibold text-zinc-300 transition-colors hover:text-zinc-100 disabled:cursor-not-allowed disabled:opacity-30"
     >
       <span className="inline-flex items-center gap-1.5">
         <Icon size={12} /> {label}

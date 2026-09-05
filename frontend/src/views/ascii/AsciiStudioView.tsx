@@ -18,7 +18,7 @@ export function AsciiStudioView() {
 
   return (
     <div className="p-5 space-y-4" data-testid="ascii-studio-view">
-      <PageHeader title="ASCII Studio" />
+      <PageHeader title="ASCII studio" />
 
       <nav
         aria-label="ASCII Studio mode"
@@ -31,6 +31,7 @@ export function AsciiStudioView() {
             <button
               key={id}
               data-testid={`ascii-tab-${id}`}
+              aria-pressed={active}
               onClick={() => setTab(id)}
               className={`flex items-center gap-3 rounded-sm border px-4 py-3 text-left transition-colors ${
                 active
@@ -45,7 +46,7 @@ export function AsciiStudioView() {
               >
                 <Icon size={17} />
               </span>
-              <span className="font-display font-bold uppercase tracking-wide text-sm">{label}</span>
+              <span className="font-display font-semibold text-sm">{label}</span>
             </button>
           );
         })}

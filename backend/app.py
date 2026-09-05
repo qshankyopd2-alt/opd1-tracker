@@ -17,10 +17,8 @@ except Exception:
 
 import encounter_log
 import opd1log
-import pick_advisor
 import live_match
 import party_detector
-import sample_match
 import session_tracker
 import history
 import inventory
@@ -66,8 +64,7 @@ _ENCOUNTER_BACKFILL_LOCK = threading.Lock()
 _SETTINGS_PATH = os.path.join(str(data_dir()), "settings.json")
 _SETTINGS_LOCK = threading.Lock()
 
-_SETTINGS_KEYS = {"region", "agent", "mode", "delay", "dryRun", "perMap",
-                  "autoRefresh"}
+_SETTINGS_KEYS = {"region", "autoRefresh"}
 
 def _load_settings() -> dict:
     try:
@@ -108,7 +105,7 @@ def _summarize(matches: list[dict]) -> dict:
         "losses": losses,
     }
 
-def _decorate_match(m: dict, suggestion: dict) -> dict:
+def _decorate_match(m: dict) -> dict:
     meta = resolve_agent(m.get("agent")) or {}
     st = m["stats"]
     kda = round((st["kills"] + st["assists"]) / st["deaths"], 2) if st["deaths"] else float(st["kills"] + st["assists"])
@@ -121,11 +118,6 @@ def _decorate_match(m: dict, suggestion: dict) -> dict:
         "portrait": meta.get("portrait"),
     }
     out["stats"] = {**st, "kda": kda}
-
-    out["pickSuggestion"] = {
-        "agent": suggestion.get("agent"),
-        "times": suggestion.get("times", 0),
-    }
     return out
 
 def build_player_payload(puuid: str) -> dict:
@@ -133,11 +125,10 @@ def build_player_payload(puuid: str) -> dict:
     matches = raw.get("matches", [])
 
     party = party_detector.analyze(matches, top_n=5)
-    suggestion = pick_advisor.recommend(matches)
     rank = rank_from_tier(raw.get("rankTier"))
     peak = rank_from_tier(raw.get("peakTier"))
 
-    decorated = [_decorate_match(m, suggestion) for m in party["matches"]]
+    decorated = [_decorate_match(m) for m in party["matches"]]
 
     for dm, pm in zip(decorated, party["matches"]):
         dm["partyMembers"] = pm.get("partyMembers", [])
@@ -152,10 +143,9 @@ def build_player_payload(puuid: str) -> dict:
         "rr": raw.get("rr", 0),
         "peakRank": peak["name"],
         "peakColor": peak["color"],
-        "source": raw.get("source", "demo"),
+        "source": raw.get("source", "unavailable"),
         "sourceDetail": raw.get("sourceDetail", ""),
         "averages": _summarize(matches),
-        "pickSuggestion": suggestion,
         "coPlayers": party["coPlayers"],
         "partyCount": party["partyCount"],
         "matches": decorated,
@@ -178,13 +168,11 @@ def agents():
 
 @app.get("/api/settings")
 def settings_get():
-    pass
     with _SETTINGS_LOCK:
         return jsonify(_load_settings())
 
 @app.post("/api/settings")
 def settings_post():
-    pass
     body = request.get_json(silent=True) or {}
     incoming = {k: v for k, v in body.items() if k in _SETTINGS_KEYS}
     with _SETTINGS_LOCK:
@@ -199,10 +187,9 @@ def settings_post():
     return jsonify({"ok": True, "settings": merged})
 
 def _live_enabled() -> bool:
-    return client.source_pref != "demo" and LocalAuth.available()
+    return LocalAuth.available()
 
 def _attach_encounters(board: dict) -> dict:
-    pass
     is_live = board.get("source") == "local"
     self_team = board.get("selfTeam")
     for p in board.get("players") or []:
@@ -222,7 +209,6 @@ def _attach_encounters(board: dict) -> dict:
     return board
 
 def _client_notice() -> dict:
-    pass
     if not LocalAuth.available():
         return {"level": "info", "action": "open_game",
                 "message": "Open VALORANT to see live ranks, parties and stats."}
@@ -237,7 +223,6 @@ _BUILD_LOCK = threading.Lock()
 _BUILD_FRESH = 3.5
 
 def build_live(seed: int = 7, want_state: str | None = None) -> dict:
-    pass
     notice = None
     if _live_enabled():
         with _BUILD_LOCK:
@@ -277,26 +262,18 @@ def build_live(seed: int = 7, want_state: str | None = None) -> dict:
                 if _LAST_GOOD["board"] and time.time() - _LAST_GOOD["at"] < _HOLD_SECS:
                     return _LAST_GOOD["board"]
                 notice = _client_notice()
-                if client.source_pref == "local":
-                    return {"state": "OFFLINE", "stateLabel": "Offline", "source": "local",
-                            "error": str(e), "players": [], "teams": {}, "parties": [],
-                            "notice": notice, "appVersion": APP_VERSION}
-    elif client.source_pref != "demo" and not LocalAuth.available():
+                return {"state": "OFFLINE", "stateLabel": "Offline", "source": "local",
+                        "error": str(e), "players": [], "teams": {}, "parties": [],
+                        "notice": notice, "appVersion": APP_VERSION}
 
-        notice = _client_notice()
+    notice = _client_notice()
+    return {"state": "OFFLINE", "stateLabel": "Offline", "source": "local",
+            "players": [], "teams": {}, "parties": [],
+            "notice": notice, "appVersion": APP_VERSION}
 
-    board = (sample_match.generate_lobby(seed)
-             if (want_state or "").lower() == "menus"
-             else sample_match.generate(seed))
-    board = _attach_encounters(board)
-    if notice:
-        board["notice"] = notice
-    board["appVersion"] = APP_VERSION
-    return board
 
 @app.get("/api/state")
 def state():
-    pass
     if _live_enabled():
         try:
             lm = live_match.LiveMatch(LocalAuth())
@@ -305,7 +282,7 @@ def state():
         except Exception as e:
             return jsonify({"state": "OFFLINE", "stateLabel": "Offline",
                             "source": "local", "error": str(e)})
-    return jsonify({"state": "INGAME", "stateLabel": "In Game", "source": "demo"})
+    return jsonify({"state": "OFFLINE", "stateLabel": "Offline", "source": "local"})
 
 @app.get("/api/live")
 def live():
@@ -367,10 +344,6 @@ def _refresh_encounter_history(owner: str | None) -> None:
 
 @app.get("/api/encounters")
 def encounters():
-    pass
-    if client.source_pref == "demo":
-        return jsonify({"players": sample_match.encounters(), "accountCount": 1,
-                        "scope": request.args.get("scope", "current")})
     owner = _current_puuid()
     _refresh_encounter_history(owner)
     scope = "all" if request.args.get("scope") == "all" else "current"
@@ -403,13 +376,8 @@ def saved_players_put(puuid: str):
 
 @app.get("/api/recap")
 def recap():
-    pass
     live_recap = session_tracker.current_recap() if _live_enabled() else None
-    try:
-        seed = int(request.args.get("seed", 7))
-    except (TypeError, ValueError):
-        seed = 7
-    return jsonify(live_recap or sample_match.recap(seed))
+    return jsonify(live_recap or None)
 
 
 def _current_puuid() -> str | None:
@@ -501,7 +469,7 @@ def _inventory_payload() -> dict:
     if not _live_enabled():
         return {
             "available": False,
-            "retryable": client.source_pref != "demo",
+            "retryable": True,
             "error": "Live client not available.",
         }
     auth = LocalAuth()
@@ -532,7 +500,6 @@ def inventory_route():
 
 @app.get("/api/encounters/<puuid>")
 def encounter(puuid: str):
-    pass
     return jsonify(encounter_log.get_one(_current_puuid(), puuid.strip()))
 
 
@@ -542,7 +509,6 @@ def match_meta_update(match_id: str):
 
 @app.get("/api/match/<match_id>")
 def match(match_id: str):
-    pass
     subject = request.args.get("subject")
     if _live_enabled():
         try:
@@ -551,11 +517,10 @@ def match(match_id: str):
                 return jsonify(data)
         except Exception:
             app.logger.exception("match detail failed")
-    return jsonify(sample_match.match_detail(match_id, subject))
+    return jsonify({"error": "Match detail requires VALORANT to be running.", "matchId": match_id}), 503
 
 @app.get("/api/debug/reveal")
 def debug_reveal():
-    pass
     if not _live_enabled():
         return jsonify({"error": "Live client not available — open VALORANT."}), 400
     try:
@@ -566,7 +531,6 @@ def debug_reveal():
 
 @app.get("/api/profile/<puuid>")
 def profile(puuid: str):
-    pass
     puuid = puuid.strip()
     if not puuid:
         return jsonify({"error": "puuid required"}), 400
@@ -586,7 +550,8 @@ def profile(puuid: str):
             app.logger.exception("live profile failed")
             data = None
     if data is None:
-        data = sample_match.career(puuid)
+        data = {"puuid": puuid, "matches": [], "source": "unavailable",
+                "sourceDetail": "VALORANT is not running."}
 
     _CACHE[f"profile:{puuid}"] = (now, data)
     return jsonify(data)
@@ -613,7 +578,6 @@ def player(puuid: str):
 
 @app.get("/api/region")
 def region():
-    pass
     detected = None
     if LocalAuth.available():
         try:
@@ -624,27 +588,15 @@ def region():
 
 @app.get("/api/queue")
 def queue_get():
-    pass
     return jsonify(client.party_state())
 
 @app.post("/api/queue")
 def queue_post():
-    pass
-    body = request.get_json(silent=True) or {}
-    action = (body.get("action") or "").lower()
-    dry = bool(body.get("dryRun", True))
-    region = body.get("region")
-    if action == "select":
-        result = client.set_queue(body.get("queueId"), dry_run=dry, region=region)
-    elif action == "start":
-        result = client.start_queue(dry_run=dry, region=region)
-    elif action == "stop":
-        result = client.stop_queue(dry_run=dry, region=region)
-    else:
-        return jsonify({"ok": False,
-                        "message": "action must be start|stop|select"}), 400
-    result["queue"] = client.party_state(region)
-    return jsonify(result), (200 if result.get("ok") else 400)
+    # Queue-control actions (set_queue, start_queue, stop_queue) were removed
+    # from riot_client.py as part of the pick-advisor/queue-controls removal.
+    # Per AGENTS.md, queue controls UI is a postponed feature.
+    return jsonify({"ok": False,
+                    "message": "Queue control is not available in this version."}), 501
 
 @app.get("/")
 def index():

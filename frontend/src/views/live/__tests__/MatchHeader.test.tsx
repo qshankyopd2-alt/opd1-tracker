@@ -5,9 +5,9 @@ import { MatchHeader, probabilityTone } from "../MatchHeader";
 
 describe("MatchHeader", () => {
   it.each([
-    { value: 58, color: "#10B981" },
-    { value: 50, color: "#F59E0B" },
-    { value: 40, color: "#EF4444" },
+    { value: 58, color: "var(--accent-team-a)" },
+    { value: 50, color: "var(--text-secondary)" },
+    { value: 40, color: "var(--accent-team-b)" },
   ])("renders the in-game probability instrument for $value", ({ value, color }) => {
     const board = { ...makeSnapshot("INGAME", 1).board, winProb: value };
     const html = renderToStaticMarkup(<MatchHeader board={board} />);

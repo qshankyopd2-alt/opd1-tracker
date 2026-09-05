@@ -24,23 +24,20 @@ export function MatchesSection({
   }
 
   if (error || !careerUsable || !career) {
-    return <p className="border border-edge px-3 py-3 text-[12px] text-zinc-500" data-testid="drawer-matches-unavailable">Match history is unavailable right now.</p>;
+    return <p className="border border-edge px-3 py-3 text-[12px] text-zinc-400" data-testid="drawer-matches-unavailable">Match history is unavailable right now.</p>;
   }
 
   if (career.matches.length === 0) {
-    return <p className="border border-edge px-3 py-3 text-[12px] text-zinc-500" data-testid="drawer-matches-empty">No recent matches available.</p>;
+    return <p className="border border-edge px-3 py-3 text-[12px] text-zinc-400" data-testid="drawer-matches-empty">No recent matches available.</p>;
   }
 
   return (
     <section aria-label="Recent matches" data-testid="drawer-match-list">
-      <div className="grid shrink-0 grid-cols-[3px_28px_minmax(0,1fr)_auto_auto_auto_minmax(96px,116px)] gap-2 border-y border-edge bg-ink/90 px-3 py-2 text-[10px] font-semibold text-zinc-400" aria-hidden="true">
-        <span className="col-span-3">Match</span>
-        <span>K/D/A</span>
-        <span>ACS</span>
-        <span>RR</span>
-        <span className="text-right">Ending rank</span>
+      <div className="flex shrink-0 items-center justify-between border-y border-edge bg-panel px-3 py-2 text-[12px] font-semibold text-zinc-400" aria-hidden="true">
+        <span>Recent matches</span>
+        <span className="text-zinc-400">K/D/A · ACS · RR · Ending rank</span>
       </div>
-      <div className="grid auto-rows-[minmax(88px,auto)] border-x border-b border-edge [&>*:last-child]:border-b-0">
+      <div className="grid auto-rows-[68px] border-x border-b border-edge [&>*:last-child]:border-b-0">
         {[...career.matches].sort((a, b) => b.startMillis - a.startMillis).map((match) => (
           <RecentMatchCard key={match.matchId} match={match} onOpen={(opener) => onOpenMatch(match.matchId, opener)} />
         ))}

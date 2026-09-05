@@ -97,16 +97,16 @@ export function LiveView() {
   return (
     <div
       data-testid="live-view"
-      className={menus ? "space-y-4 p-5" : "live-view flex h-full min-h-0 flex-col gap-2 overflow-hidden p-2"}
+      className={menus ? "w-full space-y-4 p-5" : "live-view flex h-full min-h-0 w-full flex-col gap-2 overflow-hidden p-2"}
     >
       <MatchHeader board={board} />
 
       {menus && board.recap && <RecapCard recap={board.recap} />}
 
-      <div className={`grid items-stretch gap-2 ${menus ? "" : "min-h-0 flex-1"} ${enemy.length > 0 ? "grid-cols-2" : "grid-cols-1"}`}>
+      <div className={`matchup-board grid min-w-0 items-stretch gap-2 ${menus ? "" : "min-h-0 flex-1"} ${enemy.length > 0 || pregame ? "grid-cols-2" : "grid-cols-1"}`}>
         <TeamPanel
-          label={menus ? "Your Party" : "Your Team"}
-          accent="#10B981"
+          label={menus ? "Your party" : "Your team"}
+          accent="victory"
           players={ally}
           stats={allyId ? board.teamStats?.[allyId] : undefined}
           parties={board.parties ?? []}
@@ -121,8 +121,8 @@ export function LiveView() {
         />
         {enemy.length > 0 ? (
           <TeamPanel
-            label="Enemy Team"
-            accent="#EF4444"
+            label="Enemy team"
+            accent="defeat"
             players={enemy}
             stats={enemyId ? board.teamStats?.[enemyId] : undefined}
             parties={board.parties ?? []}
@@ -139,11 +139,11 @@ export function LiveView() {
           pregame && (
             <div
               data-testid="enemy-hidden-panel"
-              className="flex min-h-[120px] flex-col items-center justify-center gap-2 rounded-md border border-dashed border-edge bg-panel/30 text-zinc-500"
+              className="flex min-h-[120px] flex-1 flex-col items-center justify-center gap-2 rounded-xl border border-dashed border-edge bg-panel/30 text-zinc-500"
             >
               <EyeOff size={24} className="text-zinc-600 mb-1" />
-              <div className="text-[13px] font-semibold uppercase tracking-wider text-zinc-400">Enemy Team Hidden</div>
-              <div className="text-[11px]">Revealed once the match starts</div>
+              <div className="text-[14px] font-semibold text-[var(--text-primary)]">Enemy team hidden</div>
+              <div className="text-[12px] text-[var(--text-secondary)]">Revealed once the match starts</div>
             </div>
           )
         )}

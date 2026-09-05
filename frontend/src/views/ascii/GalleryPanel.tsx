@@ -36,12 +36,12 @@ export function GalleryPanel() {
       <div className="flex flex-col gap-3 rounded-md border border-edge bg-panel p-3 sm:flex-row sm:items-center">
         <label className="relative min-w-0 flex-1">
           <span className="sr-only">Search chat art</span>
-          <Search size={15} className="pointer-events-none absolute left-2.5 top-1/2 -translate-y-1/2 text-zinc-500" />
+          <Search size={15} className="pointer-events-none absolute left-2.5 top-1/2 -translate-y-1/2 text-zinc-400" />
           <input
             value={query}
             onChange={(event) => setQuery(event.target.value)}
             placeholder="Search pieces by name or category…"
-            className="h-9 w-full rounded-sm border border-edge bg-ink pl-8 pr-3 text-[13px] text-zinc-100 placeholder:text-zinc-600"
+            className="h-9 w-full rounded-sm border border-edge bg-ink pl-8 pr-3 text-[13px] text-zinc-100 placeholder:text-zinc-500"
           />
         </label>
       </div>
@@ -52,21 +52,23 @@ export function GalleryPanel() {
           return (
             <button
               key={cat}
+              aria-pressed={active}
+              data-testid={`ascii-category-${cat.toLowerCase()}`}
               onClick={() => setCategory(cat)}
-              className={`shrink-0 rounded-full border px-3 py-1 text-[11px] font-semibold uppercase tracking-wider transition-colors ${
+              className={`shrink-0 rounded-full border px-3 py-1 text-[12px] font-semibold transition-colors ${
                 active
                   ? "border-brand bg-brand text-ink"
                   : "border-edge bg-card text-zinc-400 hover:text-zinc-100"
               }`}
             >
-              {cat} <span className={active ? "text-ink/65" : "text-zinc-600"}>{categoryCount(cat)}</span>
+              {cat} <span className={active ? "text-ink/65" : "text-zinc-400"}>{categoryCount(cat)}</span>
             </button>
           );
         })}
       </div>
 
       {rows.length === 0 ? (
-        <p className="py-10 text-center text-[12px] text-zinc-500">No chat art matches your search.</p>
+        <p className="py-10 text-center text-[12px] text-zinc-400">No chat art matches your search.</p>
       ) : (
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3 stagger">
           {rows.map((piece) => {
@@ -80,10 +82,10 @@ export function GalleryPanel() {
               >
                 <div className="flex items-center justify-between gap-3 px-3 pb-2 pt-3">
                   <div className="min-w-0">
-                    <h3 className="truncate font-display font-bold uppercase tracking-wide text-sm" title={piece.name}>
+                    <h3 className="truncate font-display font-semibold text-sm" title={piece.name}>
                       {piece.name}
                     </h3>
-                    <div className="mt-0.5 text-[10px] uppercase tracking-[0.11em] text-zinc-500">{piece.category}</div>
+                    <div className="mt-0.5 text-[12px] text-zinc-400">{piece.category}</div>
                   </div>
                 </div>
                 <button
@@ -101,7 +103,7 @@ export function GalleryPanel() {
                     type="button"
                     onClick={() => void onCopy(piece.id, piece.content)}
                     data-testid={`copy-${piece.id}`}
-                    className={`inline-flex min-w-[104px] items-center justify-center gap-1.5 rounded-sm px-3 py-2 text-[11px] font-semibold uppercase tracking-wider transition-colors ${
+                    className={`inline-flex min-w-[104px] items-center justify-center gap-1.5 rounded-sm px-3 py-2 text-[12px] font-semibold transition-colors ${
                       isCopied
                         ? "bg-victory text-ink"
                         : "bg-brand text-ink hover:bg-brand-hover"

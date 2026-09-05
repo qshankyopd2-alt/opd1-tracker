@@ -32,7 +32,7 @@ function MatchRow({
     <button
       data-testid={`history-row-${point.matchId}`}
       onClick={(event) => onOpen(event.currentTarget)}
-      className="group relative min-h-[88px] w-full overflow-hidden rounded-lg border border-white/10 bg-card/80 text-left transition-colors hover:border-white/20"
+      className="group relative min-h-[92px] w-full overflow-hidden rounded-md border border-white/10 bg-card text-left transition-colors hover:border-white/20 hover:bg-card-hover"
     >
       {splash && (
         <span className="absolute inset-y-0 left-0 w-[300px] overflow-hidden">
@@ -41,56 +41,56 @@ function MatchRow({
         </span>
       )}
       <div className="absolute inset-y-0 left-0 w-1" style={{ backgroundColor: resultColor(point.result) }} />
-      <div className="relative grid grid-cols-[minmax(150px,1.25fr)_70px_minmax(125px,1fr)_112px_92px_82px_48px] items-center gap-3 px-4 py-2.5">
+      <div className="relative grid grid-cols-[minmax(160px,1.25fr)_76px_minmax(130px,1fr)_126px_104px_92px_48px] items-center gap-4 px-4 py-3">
         <span className="min-w-0">
-          <span className="font-display font-bold text-[15px] truncate block">{point.map ?? "Unknown"}</span>
-          <span className="text-[10px] text-zinc-500">
+          <span className="block truncate font-display text-[17px] font-semibold leading-tight">{point.map ?? "Unknown"}</span>
+          <span className="mt-1 block text-[12px] font-medium text-zinc-400">
             {point.mode ?? "Competitive"} · {timeAgo(point.ts)}
           </span>
         </span>
 
-        <span><OutcomeBadge size="sm" outcome={normalizeOutcome(point.result)} /><span className="mt-1 block text-[10px] text-white/40 tabular-nums">{scoreline(point.scores, null, point.result)}</span></span>
+        <span><OutcomeBadge size="sm" outcome={normalizeOutcome(point.result)} /><span className="mt-1.5 block text-[12px] font-medium text-zinc-400 tabular-nums">{scoreline(point.scores, null, point.result)}</span></span>
 
         <span className="flex min-w-0 items-center gap-2.5">
           {point.agent ? (
             <>
               <AgentAvatar portrait={point.agentPortrait} name={point.agent} color={point.agentColor} size={36} />
-              <span className="truncate text-[13px] font-semibold text-zinc-200">{point.agent}</span>
+              <span className="truncate text-[14px] font-semibold text-zinc-100">{point.agent}</span>
             </>
           ) : (
-            <span className="text-[11px] text-zinc-600">—</span>
+            <span className="text-[12px] text-zinc-600">—</span>
           )}
         </span>
 
         <span className="text-right text-zinc-300">
-          <span className="block text-[8px] font-semibold uppercase tracking-wider text-zinc-600">K/D/A · K/D</span>
-          <span className="text-[12px] tabular-nums">
+          <span className="mb-1 block text-[12px] font-semibold text-zinc-400">K/D/A · K/D</span>
+          <span className="text-[14px] font-semibold tabular-nums">
             {point.kills !== undefined
               ? `${point.kills}/${point.deaths}/${point.assists}${point.kd !== undefined ? ` · ${fmtNum(point.kd, 2)}` : ""}`
               : "—"}
           </span>
         </span>
         <span className="text-right text-zinc-300">
-          <span className="block text-[8px] font-semibold uppercase tracking-wider text-zinc-600">ACS · HS%</span>
-          <span className="text-[12px] tabular-nums">{point.acs ?? "—"}{point.hsPct !== null && point.hsPct !== undefined ? ` · ${fmtPct(point.hsPct)}` : ""}</span>
+          <span className="mb-1 block text-[12px] font-semibold text-zinc-400">ACS · HS%</span>
+          <span className="text-[14px] font-semibold tabular-nums">{point.acs ?? "—"}{point.hsPct !== null && point.hsPct !== undefined ? ` · ${fmtPct(point.hsPct)}` : ""}</span>
         </span>
 
         <span className="text-right">
-          <span className="block text-[8px] font-semibold uppercase tracking-wider text-zinc-600">Rank change</span>
+          <span className="mb-1 block text-[12px] font-semibold text-zinc-400">Rank change</span>
           {typeof point.delta === "number" ? (
-            <span className={`num text-[13px] font-bold ${point.delta >= 0 ? "text-victory" : "text-defeat"}`}>
+            <span className={`num text-[15px] font-semibold ${point.delta >= 0 ? "text-victory" : "text-defeat"}`}>
               {fmtDelta(point.delta)}
             </span>
           ) : (
-            <span className="text-zinc-600 text-[11px]">—</span>
+            <span className="text-zinc-600 text-[12px]">—</span>
           )}
           {rankIcon && <img src={rankIcon} alt="" className="ml-1.5 inline-block h-5 w-5 align-middle" loading="lazy" onError={(event) => { event.currentTarget.style.display = "none"; }} />}
         </span>
 
-        <span className="flex items-center justify-end gap-1.5 text-zinc-500">
+        <span className="flex items-center justify-end gap-1.5 text-zinc-400">
           {meta?.bookmarked && <Bookmark size={12} className="text-amber-300" />}
           {meta?.note && <StickyNote size={12} />}
-          {point.partySize && point.partySize > 1 && <span className="text-[10px] num">×{point.partySize}</span>}
+          {point.partySize && point.partySize > 1 && <span className="text-[12px] num">×{point.partySize}</span>}
         </span>
       </div>
     </button>
@@ -194,7 +194,7 @@ export function HistoryView() {
   const allMeta = { ...(data?.matchMeta ?? {}), ...metaOverrides };
   return (
     <div className="p-5 space-y-4" data-testid="history-view">
-      <PageHeader title="Match History">
+      <PageHeader title="Match history">
         <div className="flex border border-edge rounded-sm" data-testid="history-filter">
           {(["all", "wins", "losses", "bookmarked"] as Filter[]).map((f) => (
             <button
@@ -202,8 +202,8 @@ export function HistoryView() {
               data-testid={`history-filter-${f}`}
               aria-pressed={filter === f}
               onClick={() => setFilter(f)}
-              className={`px-2.5 py-1 text-[11px] uppercase tracking-wider font-semibold transition-colors ${
-                filter === f ? "bg-zinc-800 text-zinc-100" : "text-zinc-500 hover:text-zinc-300"
+              className={`px-3 py-1.5 text-[12px] font-semibold capitalize transition-colors ${
+                filter === f ? "bg-zinc-800 text-zinc-100" : "text-zinc-400 hover:text-zinc-300"
               }`}
             >
               {f}
@@ -212,13 +212,13 @@ export function HistoryView() {
         </div>
         {stale && (
           <Badge color="#F59E0B" testId="history-stale-badge">
-            saved data · VALORANT offline
+            Saved data · VALORANT offline
           </Badge>
         )}
         <button
           data-testid="history-refresh-button"
           onClick={refresh}
-          className="ml-auto inline-flex items-center gap-1.5 border border-edge rounded-sm px-2.5 py-1.5 text-[11px] uppercase tracking-wider font-semibold text-zinc-400 hover:bg-zinc-800 transition-colors"
+          className="ml-auto inline-flex items-center gap-1.5 rounded-sm border border-edge px-3 py-1.5 text-[12px] font-semibold text-zinc-300 transition-colors hover:bg-zinc-800"
         >
           <RotateCw size={12} /> Refresh
         </button>

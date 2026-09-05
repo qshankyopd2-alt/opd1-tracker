@@ -12,7 +12,7 @@ describe("redesign badges", () => {
     expect(normalizeOutcome("Defeat")).toBe("loss");
   });
 
-  it("uses IBM Plex Mono only for the large score", () => {
+  it("uses the telemetry mono face only for the large score", () => {
     const large = renderToStaticMarkup(<OutcomeBadge outcome="draw" size="lg" score="13–13" />);
     const small = renderToStaticMarkup(<OutcomeBadge outcome="unresolved" size="sm" />);
     expect(large).toContain("font-mono");
@@ -20,9 +20,14 @@ describe("redesign badges", () => {
     expect(small).not.toContain("font-mono");
   });
 
-  it("distinguishes win and loss streaks", () => {
-    expect(renderToStaticMarkup(<StreakBadge type="W" count={4} />)).toContain("text-win");
-    expect(renderToStaticMarkup(<StreakBadge type="L" count={3} />)).toContain("text-loss");
+  it("keeps streaks neutral and separate from threat and outcome colors", () => {
+    const win = renderToStaticMarkup(<StreakBadge type="W" count={4} />);
+    const loss = renderToStaticMarkup(<StreakBadge type="L" count={3} />);
+    expect(win).toContain("text-text-secondary");
+    expect(loss).toContain("text-text-secondary");
+    expect(win).toContain('data-testid="streak-w"');
+    expect(loss).toContain('data-testid="streak-l"');
+    expect(`${win}${loss}`).not.toContain("live-alert-");
   });
 
   it("constrains long names", () => {

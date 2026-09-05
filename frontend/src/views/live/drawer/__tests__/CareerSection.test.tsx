@@ -45,7 +45,12 @@ describe("Player Drawer sections", () => {
     expect(html.indexOf("Frequent teammates")).toBeLessThan(html.indexOf("Performance"));
     expect(html.indexOf("Connections")).toBeLessThan(html.indexOf("Loadout"));
     expect(careerSectionSource).not.toContain("grid-cols-[88px_minmax(0,1fr)]");
-    expect(careerSectionSource).toContain("border-y border-edge/70");
+    expect(careerSectionSource).toContain("grid-cols-[72px_minmax(0,1fr)]");
+    expect(careerSectionSource).toContain("Average K/D/A");
+    expect(careerSectionSource).not.toContain("backdrop-blur-sm");
+    expect(careerSectionSource).toContain("profile-dossier-grid");
+    expect(careerSectionSource).toContain("gap-px overflow-hidden rounded-md bg-edge");
+    expect(careerSectionSource).not.toContain("rounded-md border border-edge/60 bg-card/40");
   });
 
   it("renders aligned teammate names, fallbacks, agents, and party state", () => {
@@ -78,9 +83,9 @@ describe("Player Drawer sections", () => {
     expect(populated).toContain("/splash.png");
     expect(populated).toContain('title="Ascendant 2 · 30 RR"');
     expect(populated).toContain('aria-label="Ending rank Ascendant 2 · 30 RR"');
-    expect(populated).toContain("auto-rows-[minmax(88px,auto)]");
-    expect(populated).toContain("min-h-[88px]");
-    expect(populated).toContain("opacity-[0.28]");
+    expect(populated).toContain("auto-rows-[68px]");
+    expect(populated).toContain("h-[68px]");
+    expect(populated).toContain("opacity-20");
     expect(matchesSectionSource).not.toContain("minmax(66px, 1fr)");
   });
 });

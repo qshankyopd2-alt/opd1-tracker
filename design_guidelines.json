@@ -2,33 +2,76 @@
   "theme": "dark",
   "purpose": "Visual and UX reference for OPD1 Tracker. Stack, API contracts, and repository architecture remain governed by AGENTS.md and the source.",
   "typography": {
-    "ui": { "fontFamily": "IBM Plex Sans, sans-serif", "weights": ["400", "500", "600", "700"], "usage": "All application UI." },
-    "outcome_score": { "fontFamily": "IBM Plex Mono, monospace", "weight": "700", "usage": "Only the large score inside OutcomeBadge." },
-    "ascii": { "fontFamily": "Cascadia Mono, Consolas, ui-monospace, monospace", "usage": "ASCII Studio content and controls only." }
+    "ui": {
+      "fontFamily": "Segoe UI Variable Text, Segoe UI, system-ui, sans-serif",
+      "weights": [
+        "400",
+        "500",
+        "600",
+        "700"
+      ],
+      "usage": "Readable system UI; 17px player names, 14px rank, 20px primary metric, 17px secondary metrics, 12px metadata, 11px compact metric labels. Use tabular numerals."
+    },
+    "outcome_score": {
+      "fontFamily": "Segoe UI Variable Text, Segoe UI, system-ui, sans-serif",
+      "weight": "600",
+      "usage": "Tabular numerals for scores and telemetry."
+    },
+    "ascii": {
+      "fontFamily": "Cascadia Mono, Consolas, ui-monospace, monospace",
+      "usage": "ASCII Studio content and controls only."
+    }
   },
   "colors": {
-    "background": { "app": "#0A0D12", "panel": "rgba(18, 23, 32, 0.95)", "modal": "rgba(22, 28, 38, 0.95)", "popover": "rgba(24, 30, 41, 0.95)" },
-    "text": { "primary": "rgba(255,255,255,0.90)", "secondary": "rgba(255,255,255,0.60)", "muted": "rgba(255,255,255,0.40)" },
-    "accents": { "brand": "#F5A623", "brand_hover": "#D98B12", "danger": "#FB7185", "warning": "#FBBF24", "success": "#34D399" }
+    "background": {
+      "app": "#111111",
+      "panel": "#181818",
+      "card": "#202020",
+      "hover": "#292929",
+      "modal": "#181818",
+      "popover": "#202020"
+    },
+    "text": {
+      "primary": "#f2f2f2",
+      "secondary": "#bdbdbd",
+      "muted": "#999999"
+    },
+    "accents": {
+      "brand": "#eeeeee",
+      "brand_hover": "#ffffff",
+      "danger": "#ed8793",
+      "warning": "#bb3650",
+      "success": "#76c9a5"
+    }
   },
   "visual_enhancers": {
-    "borders": "Use border-white/10 for shared surfaces and list rows.",
-    "shadows": "Use shadow-panel for drawers, popovers, and tooltips; shadow-modal for modal dialogs.",
-    "translucency": "In-app translucency is allowed. Never enable OS-level window transparency.",
-    "blur": "Use backdrop-blur-panel on panels, drawers, popovers, and tooltips; backdrop-blur-modal on modals. Never use backdrop blur on list rows.",
-    "radius": "Use rounded-xl for overlays and rounded-lg or rounded-md for controls and rows."
+    "borders": "Use border-edge; stronger borders for focused surfaces.",
+    "shadows": "Reserve shadows for overlays.",
+    "translucency": "Opaque neutral surfaces. Player Card artwork may use subdued opacity; no OS transparency.",
+    "blur": "No backdrop blur.",
+    "radius": "4px controls, 6px rows, 8px panels."
   },
   "component_guidance": {
-    "list_rows": "min-h-[88px], border-white/10, translucent surface without backdrop blur.",
-    "drawer": "bg-surface-panel/95, shadow-panel, backdrop-blur-panel.",
-    "modal": "bg-surface-modal/95, shadow-modal, backdrop-blur-modal.",
+    "list_rows": "Two side-by-side teams, each with five aligned horizontal rows. Fit 1200x700; expand proportionally at maximized sizes.",
+    "drawer": "Right-side 640px drawer, full height, opaque panel, independent body scroll.",
+    "modal": "Centered opaque match detail modal above the drawer.",
     "outcomes": "Keep win, loss, draw, and unresolved distinct. Use OutcomeBadge sizes consistently.",
-    "player_names": "Constrain live player names to 160px and frequent teammate names to 180px; use Truncate tooltips.",
-    "alerts": "Use a yellow warning pill and AlertTriangle for smurf or boosting signals; put detailed reasons in tooltips."
+    "player_names": "Use available identity width and Truncate title for long names.",
+    "alerts": "Subdued neutral streaks; rose threat badges with reasons in tooltips. Preserve actual party and rank colors in small indicators."
   },
-  "motion": { "hover": "Use transition-colors duration-200.", "lists": "Keep list motion minimal.", "reduced_motion": "Respect motion-reduce utilities." },
-  "accessibility": { "interactive": "Provide visible focus rings, collision-aware overlays, Escape/outside-click closing, and focus restoration.", "html": "Never nest interactive elements." },
-  "media": { "valorant_assets": "Load VALORANT imagery only from media.valorant-api.com.", "fonts": "All fonts are packaged locally; no external font requests." },
+  "motion": {
+    "hover": "Use transition-colors duration-200.",
+    "lists": "Keep list motion minimal.",
+    "reduced_motion": "Respect motion-reduce utilities."
+  },
+  "accessibility": {
+    "interactive": "Provide visible focus rings, collision-aware overlays, Escape/outside-click closing, and focus restoration.",
+    "html": "Never nest interactive elements."
+  },
+  "media": {
+    "valorant_assets": "Load VALORANT imagery only from media.valorant-api.com.",
+    "fonts": "Use installed Windows system fonts; no external font requests."
+  },
   "design_notes_for_agents": [
     "Do not change the Flask backend for visual redesign work.",
     "Every interactive element and key informational wrapper must have a data-testid.",

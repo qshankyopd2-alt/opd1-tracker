@@ -35,9 +35,11 @@ export function RecentFormTiles({
       <span aria-hidden="true" className="relative z-[1] flex w-full flex-row-reverse items-center justify-between gap-0.5">
         {slots.map((result, index) => {
           const detail = recentDetails?.[index];
-          const rr = detail?.rrDelta ?? (index === 0 ? latestRr : null);
+          const detailResult = detail?.result === "Victory" ? "W" : detail?.result === "Defeat" ? "L" : detail?.result;
+          const normalized = result ?? detailResult;
+          const detailRr = detailResult === normalized ? detail?.rrDelta : null;
+          const rr = detailRr ?? (index === 0 ? latestRr : null);
           const age = detail?.startMillis ? matchAgeLabel(detail.startMillis) : "Match age unavailable";
-          const normalized = detail?.result === "Victory" ? "W" : detail?.result === "Defeat" ? "L" : result;
           return (
             <span
               key={index}
@@ -45,22 +47,22 @@ export function RecentFormTiles({
               data-recency={index === 0 ? "current" : "past"}
               data-size={20 - index}
               style={{ width: 20 - index, height: 20 - index }}
-              className={`recent-form-tile group/form-tile relative flex shrink-0 items-center justify-center ${index === 0 ? "ring-1 ring-zinc-300/80" : ""}`}
+              className={`recent-form-tile match-chip group/form-tile relative flex shrink-0 items-center justify-center ${index === 0 ? "ring-1 ring-zinc-300/80" : ""}`}
             >
               <OutcomeBadge size="xs" outcome={normalized === "W" ? "win" : normalized === "L" ? "loss" : "unresolved"} className="h-full w-full px-0 [&>svg]:hidden" />
               {normalized && (
                 <span
                   id={`${testId}-tooltip-${index}`}
                   role="tooltip"
-                  className={`pointer-events-none absolute bottom-[calc(100%+6px)] right-0 z-30 w-max max-w-[140px] rounded-sm border border-zinc-700 bg-zinc-950 px-2 py-1.5 text-left font-body normal-case tracking-normal text-zinc-100 opacity-0 shadow-[0_6px_18px_rgba(0,0,0,0.45)] transition-opacity duration-150 motion-reduce:transition-none group-hover/form-tile:opacity-100 ${index === 0 ? "group-focus-visible/card:opacity-100" : ""}`}
+                  className={`pointer-events-none absolute bottom-[calc(100%+6px)] right-0 z-30 w-max max-w-[140px] rounded-sm border border-zinc-700 bg-zinc-950 px-2 py-1.5 text-left font-body normal-case tracking-normal text-zinc-100 opacity-0 shadow-[0_6px_18px_rgba(0,0,0,0.45)] transition-opacity duration-150 motion-reduce:transition-none group-hover/form-tile:opacity-100 ${index === 0 ? "group-focus-within/row:opacity-100" : ""}`}
                 >
-                  <span className={`block text-[11px] font-bold ${normalized === "W" ? "text-victory" : "text-defeat"}`}>
+                  <span className={`block text-[12px] font-bold ${normalized === "W" ? "text-victory" : "text-defeat"}`}>
                     {normalized === "W" ? "Victory" : "Defeat"}
                   </span>
                   {rr !== null && rr !== undefined
-                    ? <span className={`block text-[10px] font-bold num ${rr >= 0 ? "text-victory" : "text-defeat"}`}>{fmtDelta(rr)} RR</span>
-                    : <span className="block text-[10px] text-zinc-500">RR unavailable</span>}
-                  <span className="block text-[10px] text-zinc-400">{age}</span>
+                    ? <span className={`block text-[12px] font-bold num ${rr >= 0 ? "text-victory" : "text-defeat"}`}>{fmtDelta(rr)} RR</span>
+                    : <span className="block text-[12px] text-zinc-500">RR unavailable</span>}
+                  <span className="block text-[12px] text-zinc-400">{age}</span>
                 </span>
               )}
             </span>

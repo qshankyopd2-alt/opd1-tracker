@@ -40,6 +40,8 @@ describe("RecentFormTiles", () => {
     expect(html).toContain('data-size="16"');
     expect(html).not.toContain("live-alert-badge");
     expect(html).toContain("motion-reduce:transition-none");
+    expect(html).toContain("group-focus-within/row:opacity-100");
+    expect(html).not.toContain("group-focus-visible/card");
     expect(html.indexOf('data-testid="recent-tile-0"')).toBeLessThan(html.indexOf('data-testid="recent-tile-4"'));
     expect(html.indexOf("+24 RR")).toBeLessThan(html.indexOf('id="recent-tooltip-1"'));
     expect(html.lastIndexOf("+24 RR")).toBeLessThan(html.indexOf('id="recent-tooltip-1"'));
@@ -84,5 +86,15 @@ describe("RecentFormTiles", () => {
     expect(html).toContain("26 hours ago");
     expect(html).toContain("4 days ago");
     expect(html).not.toContain("matches ago");
+  });
+
+  it("keeps the live form authoritative when delayed career details belong to a different result", () => {
+    const html = render(["L"], -18, [
+      { result: "W", rrDelta: 22, startMillis: Date.now() - 3_600_000 },
+    ]);
+
+    expect(html).toContain("Defeat");
+    expect(html).toContain("-18 RR");
+    expect(html).not.toContain("+22 RR");
   });
 });

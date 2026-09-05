@@ -2,7 +2,7 @@ export function MapStatCard({
   map,
   games,
   winRate,
-  splash,
+  splash: _splash,
 }: {
   map: string;
   games: number;
@@ -10,12 +10,10 @@ export function MapStatCard({
   splash: string | null;
 }) {
   return (
-    <div className="relative min-h-11 overflow-hidden border-b border-r border-edge/60 bg-card/35 px-2.5 py-2 even:border-r-0">
-      {splash && <img src={splash} alt="" className="absolute right-0 top-0 h-full w-1/2 object-cover opacity-[0.16]" loading="lazy" draggable={false} />}
-      <span className="absolute inset-0 bg-gradient-to-r from-card via-card/90 to-transparent" />
-      <span className="relative flex items-center justify-between gap-3">
-        <span className="truncate text-[12px] font-semibold text-zinc-100">{map}</span>
-        <span className="shrink-0 text-[10px] text-zinc-400 num">{games} matches · {winRate}% win rate</span>
+    <div className="min-h-12 bg-card px-3 py-2.5">
+      <span className="flex items-center justify-between gap-3">
+        <span className="truncate text-[14px] font-semibold text-zinc-100">{map}</span>
+        <span className="shrink-0 text-[12px] font-medium text-zinc-400 num">{games} matches · {winRate}% win rate</span>
       </span>
     </div>
   );

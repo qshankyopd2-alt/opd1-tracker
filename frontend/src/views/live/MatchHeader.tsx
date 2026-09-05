@@ -1,9 +1,9 @@
 import type { LiveBoard } from "../../api/types";
 
 export function probabilityTone(value: number): string {
-  if (value >= 55) return "#10B981";
-  if (value <= 45) return "#EF4444";
-  return "#F59E0B";
+  if (value >= 55) return "var(--accent-team-a)";
+  if (value <= 45) return "var(--accent-team-b)";
+  return "var(--text-secondary)";
 }
 
 export function MatchHeader({ board }: { board: LiveBoard }) {
@@ -12,8 +12,8 @@ export function MatchHeader({ board }: { board: LiveBoard }) {
     const probability = Math.max(0, Math.min(100, board.winProb));
 
     return (
-      <section data-testid="match-header" className="live-match-header flex min-h-11 shrink-0 items-center gap-3 rounded-sm border border-edge bg-panel px-3">
-        <span className="shrink-0 text-[11px] font-semibold text-zinc-300">Win chance</span>
+      <section data-testid="match-header" className="live-match-header flex h-10 min-h-[40px] shrink-0 items-center gap-3 rounded-[var(--radius-md)] border border-edge px-3">
+        <span className="shrink-0 text-[12px] font-medium text-[var(--text-secondary)]">Win chance</span>
         <div
           role="meter"
           aria-label="Your team win chance"
@@ -21,25 +21,25 @@ export function MatchHeader({ board }: { board: LiveBoard }) {
           aria-valuemax={100}
           aria-valuenow={probability}
           aria-valuetext={`${probability} percent`}
-          className="relative h-2 flex-1 overflow-hidden rounded-full border border-zinc-800 bg-zinc-900"
+          className="win-chance-track relative h-2 flex-1 overflow-hidden border"
           data-testid="win-probability"
         >
-          <span className="absolute inset-y-0 left-1/2 z-10 w-px bg-zinc-400/55" aria-hidden="true" />
+          <span className="absolute inset-y-0 left-1/2 z-10 w-px bg-[var(--text-secondary)]" aria-hidden="true" />
           <span
-            className="block h-full rounded-full transition-[width] duration-200 motion-reduce:transition-none"
+            className="block h-full transition-[width] duration-200 motion-reduce:transition-none"
             style={{ width: `${probability}%`, backgroundColor: probabilityTone(probability) }}
           />
         </div>
-        <span className="w-11 shrink-0 text-right text-[14px] font-bold text-zinc-100 num">{probability}%</span>
+        <span className="num w-12 shrink-0 text-right text-[18px] font-semibold text-[var(--text-primary)]">{probability}%</span>
       </section>
     );
   }
 
   if (board.state === "PREGAME" && board.lockProgress) {
     return (
-      <section data-testid="match-header" className="live-match-header flex min-h-11 shrink-0 items-center rounded-sm border border-edge bg-panel px-3">
-        <span className="text-[11px] font-semibold text-zinc-300">Agents locked</span>
-        <span className="ml-auto text-[14px] font-bold text-brand num" data-testid="lock-progress">
+      <section data-testid="match-header" className="live-match-header flex h-9 min-h-[36px] shrink-0 items-center rounded-lg border border-edge bg-panel px-3">
+        <span className="text-[12px] font-medium text-[var(--text-secondary)]">Agents locked</span>
+        <span className="num ml-auto text-[14px] font-semibold text-[var(--text-primary)]" data-testid="lock-progress">
           {board.lockProgress.locked}/{board.lockProgress.total}
         </span>
       </section>
@@ -48,11 +48,11 @@ export function MatchHeader({ board }: { board: LiveBoard }) {
 
   if (board.state === "MENUS" && board.queue?.available) {
     return (
-      <section data-testid="match-header" className="live-match-header flex min-h-11 shrink-0 items-center rounded-sm border border-edge bg-panel px-3">
-        <span className="text-[11px] font-semibold text-zinc-300" data-testid="queue-info">
+      <section data-testid="match-header" className="live-match-header flex h-9 min-h-[36px] shrink-0 items-center rounded-lg border border-edge bg-panel px-3">
+        <span className="text-[12px] font-medium text-[var(--text-primary)]" data-testid="queue-info">
           {board.queue.queueName ?? "No queue selected"}
         </span>
-        <span className="ml-auto text-[11px] text-zinc-500">
+        <span className="ml-auto text-[12px] text-[var(--text-secondary)]">
           {board.queue.inQueue ? "In queue" : `Party of ${board.queue.partySize ?? 1}`}
         </span>
       </section>

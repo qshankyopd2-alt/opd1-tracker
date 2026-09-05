@@ -10,7 +10,6 @@ from datetime import datetime, timezone
 import requests
 import urllib3
 
-import sample_data
 from agents import UUID_TO_NAME
 from vconstants import GAMEMODES, map_name_from_path, rank_from_tier
 
@@ -226,11 +225,6 @@ class LocalAuth:
         }
         return self._headers
 
-    def glz_post(self, endpoint: str, json: dict | None = None) -> requests.Response:
-        _riot_throttle()
-        self.req_count += 1
-        return requests.post(self.glz_url + endpoint, headers=self.headers(),
-                             json=json, verify=True, timeout=8)
 
     @staticmethod
     def _json(resp):
@@ -285,42 +279,11 @@ class LocalAuth:
             headers=local, verify=False, timeout=5).json()
 
 
-def _offline_presence_private() -> dict | None:
-    return None
-
-
 def chat_presences(auth: LocalAuth) -> list[dict]:
     data = auth.local_get("/chat/v4/presences")
-    presences = [dict(p) for p in ((data or {}).get("presences", []) or [])
-                 if isinstance(p, dict)]
-    private = _offline_presence_private()
-    if not private:
-        return presences
+    return [dict(p) for p in ((data or {}).get("presences", []) or [])
+            if isinstance(p, dict)]
 
-    encoded = base64.b64encode(
-        json.dumps(private, separators=(",", ":")).encode("utf-8")
-    ).decode("ascii")
-    replaced = False
-    replaced_at = None
-    for index, presence in enumerate(presences):
-        if presence.get("puuid") != auth.puuid:
-            continue
-        if presence.get("product") not in (None, "valorant"):
-            continue
-        presence["product"] = "valorant"
-        presence["private"] = encoded
-        replaced = True
-        replaced_at = index
-        break
-    if replaced_at not in (None, 0):
-        presences.insert(0, presences.pop(replaced_at))
-    if not replaced:
-        presences.insert(0, {
-            "puuid": auth.puuid,
-            "product": "valorant",
-            "private": encoded,
-        })
-    return presences
 
 
 def _iso_to_epoch(s: str | None) -> float | None:
@@ -428,48 +391,37 @@ class RiotClient:
         self.api_key = os.getenv("RIOT_API_KEY", "").strip()
         self.region = os.getenv("RIOT_REGION", "na").strip().lower()
         self.source_pref = os.getenv("DATA_SOURCE", "auto").strip().lower()
-        self._valclient = None
+        if self.source_pref == "demo":
+            self.source_pref = "auto"
 
     def get_player_overview(self, puuid: str) -> dict:
-        pass
         order = {
-            "auto": ["local", "official", "demo"],
+            "auto": ["local", "official"],
             "local": ["local"],
             "official": ["official"],
-            "demo": ["demo"],
-        }.get(self.source_pref, ["local", "official", "demo"])
+        }.get(self.source_pref, ["local", "official"])
 
         last_err = None
         for src in order:
             try:
                 if src == "local" and self._local_ready():
-                    data = self._local_overview(puuid)
+                    from live_match import LiveMatch
+                    lm = LiveMatch(LocalAuth())
+                    data = lm.player_career(puuid)
                     if data and data.get("matches"):
                         return data
                 elif src == "official" and self.api_key:
                     data = self._official_overview(puuid)
                     if data and data.get("matches"):
                         return data
-                elif src == "demo":
-                    return self._demo_overview(puuid)
             except Exception as e:
                 last_err = e
                 _log(f"source '{src}' failed: {e}")
 
-        _log(f"falling back to demo (last error: {last_err})")
-        return self._demo_overview(puuid)
+        return {"puuid": puuid, "matches": [], "source": "unavailable",
+                "sourceDetail": f"No data source available ({last_err})" if last_err
+                else "No data source available"}
 
-    def _demo_overview(self, puuid: str) -> dict:
-        data = sample_data.generate_player(puuid)
-
-        real_id = self._official_riot_id(puuid) if self.api_key else None
-        if real_id:
-            data["riotId"] = real_id
-            data["source"] = "demo"
-            data["sourceDetail"] = "Generated matches • Riot ID verified via account-v1"
-        else:
-            data["sourceDetail"] = "Generated sample career (no live source reachable)"
-        return data
 
     def _official_headers(self) -> dict:
         return {"X-Riot-Token": self.api_key}
@@ -524,67 +476,6 @@ class RiotClient:
             return False
         return LocalAuth.available()
 
-    def _get_valclient(self):
-        if self._valclient is not None:
-            return self._valclient
-        try:
-            from valclient.client import Client
-            client = Client(region=self.region)
-            client.activate()
-            self._valclient = client
-            return client
-        except Exception as e:
-            _log(f"valclient unavailable: {e}")
-            self._valclient = False
-            return None
-
-    def _local_overview(self, puuid: str) -> dict | None:
-        client = self._get_valclient()
-        if not client:
-            return None
-        hist = client.fetch_match_history(puuid, start_index=0, end_index=20)
-        matches = []
-        for h in (hist or {}).get("History", [])[:20]:
-            try:
-                details = client.fetch_match_details(h["MatchID"])
-                norm = self._normalize_match(details, puuid)
-                if norm:
-                    matches.append(norm)
-            except Exception as e:
-                _log(f"match detail fetch failed: {e}")
-        if not matches:
-            return None
-        tier, rr = self._local_rank(client, puuid, matches)
-        return {
-            "puuid": puuid,
-            "riotId": self._local_name(client, puuid),
-            "rankTier": tier,
-            "rr": rr,
-            "peakTier": tier,
-            "matches": matches,
-            "source": "local",
-            "sourceDetail": "Local VALORANT client API",
-        }
-
-    def _local_name(self, client, puuid: str) -> str:
-        try:
-            names = client.put_name_service(player_ids=[puuid])
-            if names:
-                n = names[0]
-                return f"{n.get('GameName')}#{n.get('TagLine')}"
-        except Exception:
-            pass
-        return "You"
-
-    def _local_rank(self, client, puuid: str, matches):
-        try:
-            updates = client.fetch_competitive_updates(puuid)
-            mt = (updates or {}).get("Matches", [])
-            if mt:
-                return mt[0].get("TierAfterUpdate", 0), mt[0].get("RankedRatingAfterUpdate", 0)
-        except Exception as e:
-            _log(f"competitive updates failed: {e}")
-        return self._latest_tier(matches), 0
 
     def _normalize_match(self, raw: dict, subject: str) -> dict | None:
         info = raw.get("matchInfo", raw)
@@ -661,15 +552,9 @@ class RiotClient:
                 return t
         return 0
 
-    def _party_live(self) -> bool:
-        pass
-        return self.source_pref != "demo" and LocalAuth.available()
-
     def party_state(self, region: str | None = None) -> dict:
-        pass
-        if not self._party_live():
-            import sample_match
-            return sample_match.demo_queue_state()
+        if not LocalAuth.available():
+            return {"available": False, "message": "VALORANT is not running."}
         try:
             auth = LocalAuth(region)
             auth.headers()
@@ -677,96 +562,3 @@ class RiotClient:
         except Exception as e:
             return {"available": False, "message": str(e)}
 
-    def set_queue(self, queue_id: str, dry_run: bool = True,
-                  region: str | None = None) -> dict:
-        pass
-        qid = (queue_id or "").strip().lower()
-        if not qid or qid == "custom":
-            return {"ok": False, "message": f"Unknown gamemode '{queue_id}'."}
-        label = GAMEMODES.get(qid, qid.replace("_", " ").title())
-        if not self._party_live():
-            import sample_match
-            if qid not in GAMEMODES:
-                return {"ok": False, "message": f"Unknown gamemode '{queue_id}'."}
-            return sample_match.demo_queue_set(qid)
-        if dry_run:
-            return {"ok": True, "status": "dry-run",
-                    "message": f"DRY-RUN: would switch to {label}. "
-                               f"Turn dry-run OFF to actually switch."}
-        try:
-            auth = LocalAuth(region)
-            auth.headers()
-            snap = party_snapshot(auth)
-            if not snap.get("available"):
-                return {"ok": False, "message": "Not in a party — is VALORANT "
-                                                "fully loaded into the menus?"}
-            elig = {e["id"] for e in snap.get("eligible") or []}
-            if elig and qid not in elig:
-                return {"ok": False,
-                        "message": f"{label} isn't selectable right now."}
-            r = auth.glz_post(f"/parties/v1/parties/{snap['partyId']}/queue",
-                              json={"queueID": qid})
-            if r.status_code >= 400:
-                return {"ok": False,
-                        "message": f"Riot refused the change (HTTP {r.status_code})."}
-            return {"ok": True, "status": "selected", "queueId": qid,
-                    "message": f"Gamemode set to {label}."}
-        except Exception as e:
-            return {"ok": False, "message": f"Change gamemode failed: {e}"}
-
-    def start_queue(self, dry_run: bool = True, region: str | None = None) -> dict:
-        pass
-        if not self._party_live():
-            import sample_match
-            return sample_match.demo_queue_start()
-        if dry_run:
-            return {"ok": True, "status": "dry-run",
-                    "message": "DRY-RUN: would start the queue. "
-                               "Turn dry-run OFF to actually queue."}
-        try:
-            auth = LocalAuth(region)
-            auth.headers()
-            snap = party_snapshot(auth)
-            if not snap.get("available"):
-                return {"ok": False, "message": "Not in a party — is VALORANT "
-                                                "fully loaded into the menus?"}
-            if snap.get("inQueue"):
-                return {"ok": True, "status": "queued", "inQueue": True,
-                        "message": "Already in queue."}
-            if not snap.get("isOwner"):
-                return {"ok": False, "message": "Only the party owner can start the queue."}
-            if not snap.get("allReady"):
-                return {"ok": False, "message": "Not everyone in the party is ready."}
-            r = auth.glz_post(f"/parties/v1/parties/{snap['partyId']}/matchmaking/join")
-            if r.status_code >= 400:
-                return {"ok": False,
-                        "message": f"Riot refused the queue (HTTP {r.status_code})."}
-            return {"ok": True, "status": "queued", "inQueue": True,
-                    "message": f"Queue started — {snap.get('queueName') or 'matchmaking'}."}
-        except Exception as e:
-            return {"ok": False, "message": f"Start queue failed: {e}"}
-
-    def stop_queue(self, dry_run: bool = True, region: str | None = None) -> dict:
-        pass
-        if not self._party_live():
-            import sample_match
-            return sample_match.demo_queue_stop()
-        if dry_run:
-            return {"ok": True, "status": "dry-run",
-                    "message": "DRY-RUN: would cancel the queue. "
-                               "Turn dry-run OFF to actually cancel."}
-        try:
-            auth = LocalAuth(region)
-            auth.headers()
-            snap = party_snapshot(auth)
-            if not snap.get("available") or not snap.get("inQueue"):
-                return {"ok": True, "status": "idle", "inQueue": False,
-                        "message": "Not in a queue."}
-            r = auth.glz_post(f"/parties/v1/parties/{snap['partyId']}/matchmaking/leave")
-            if r.status_code >= 400:
-                return {"ok": False,
-                        "message": f"Riot refused the cancel (HTTP {r.status_code})."}
-            return {"ok": True, "status": "idle", "inQueue": False,
-                    "message": "Queue cancelled."}
-        except Exception as e:
-            return {"ok": False, "message": f"Cancel queue failed: {e}"}

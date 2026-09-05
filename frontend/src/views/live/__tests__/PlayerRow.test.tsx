@@ -3,7 +3,6 @@ import { describe, expect, it } from "vitest";
 import { makeSnapshot } from "../../../dev/previewFixtures";
 import styles from "../../../styles/index.css?raw";
 import { PlayerRow } from "../PlayerRow";
-import teamPanelSource from "../TeamPanel.tsx?raw";
 
 function renderPlayerRow(playerIndex = 0) {
   const player = { ...makeSnapshot("INGAME", 1).board.players[playerIndex], role: "Duelist" };
@@ -11,64 +10,51 @@ function renderPlayerRow(playerIndex = 0) {
 }
 
 describe("PlayerRow hierarchy", () => {
-  it("responds to its own container at the two specified thresholds", () => {
-    expect(styles).toContain("container-name: player-row");
-    expect(styles).toContain("@container player-row (max-width: 520px)");
-    expect(styles).toContain("@container player-row (max-width: 440px)");
-    expect(styles).not.toContain("minmax(180px, 42%)");
-    expect(styles).not.toContain("minmax(44px, 1fr)");
-    expect(styles).not.toContain('[data-window-density="compact"] .live-player');
-    expect(styles).toContain('"identity primary"');
-    expect(styles).toContain('"identity secondary"');
-    expect(styles).toContain('"secondary secondary"');
-    expect(styles).toContain("repeat(var(--live-player-count), clamp(92px, 14vh, 124px))");
-    expect(teamPanelSource).not.toContain("minmax(0, 1fr)");
+  it("keeps two rosters of horizontal player rows with responsive secondary statistics", () => {
+    expect(styles).toContain(".player-row");
+    expect(styles).toContain('"avatar identity rank stats"');
+    expect(styles).toContain('"avatar alerts detail detail"');
+    expect(styles).toContain("background: var(--bg-card);");
+    expect(styles).not.toContain('[data-team-tone="defeat"] .player-row');
+    expect(styles).toContain("grid-template-rows: repeat(var(--live-player-count), minmax(0, 1fr));");
+    expect(styles).toContain(".matchup-board { grid-template-columns: repeat(2, minmax(0, 1fr));");
+    expect(styles).toContain("@container (max-width: 520px)");
+    expect(styles).toContain("@container (max-width: 440px)");
+    expect(styles).toContain('[data-testid="player-row-kd"]');
+    expect(styles).toContain('[data-testid="player-row-hs"]');
+    expect(styles).toContain(".match-chip");
+    expect(styles).toContain(".match-chip.win");
+    expect(styles).toContain(".match-chip.loss");
   });
 
-  it("renders each player's card art as a right-focused matte backdrop", () => {
+  it("uses an opaque solid surface with the player's real artwork", () => {
     const html = renderPlayerRow();
 
     expect(html).toContain("live-player-art");
-    expect(html).toContain("w-[58%]");
-    expect(html).toContain("object-[center_18%]");
-    expect(html).toContain("opacity-20");
-    expect(html).toContain("saturate-[0.65]");
-    expect(html).toContain("group-hover/card:opacity-[0.26]");
     expect(html).toContain("live-player-matte");
+    expect(html).not.toContain("opacity-20");
+    expect(html).not.toContain("weapon-icon");
+    expect(html).toContain("live-player-loadout");
+    expect(styles).toContain("width: 58%;");
+    expect(styles).toContain("opacity: 0.2;");
+    expect(styles).toContain("filter: saturate(0.65)");
   });
-  it("keeps four padded black weapon surfaces with contained artwork", () => {
+
+  it("renders match chips with win and loss tokens", () => {
     const html = renderPlayerRow();
 
-    expect(html.match(/live-weapon-slot/g)).toHaveLength(4);
-    expect(html).toContain("h-8 min-w-0 items-center justify-center overflow-hidden rounded-sm border border-edge/60 bg-ink/90 p-1");
-    expect(html).toContain("h-6 max-h-6 w-full object-contain");
-    expect(html).toContain('draggable="false"');
+    expect(html).toContain("match-chip");
   });
 
-  it("renders aligned identity and stats zones with the expanded hierarchy", () => {
-    const html = renderPlayerRow();
-
-    expect(html).toContain("live-player-grid");
-    expect(html).toContain("live-player-identity");
-    expect(html).toContain("live-player-stats");
-    expect(html).toContain("live-primary-stats");
-    expect(html).toContain("WR");
-    expect(html).toContain("K/D");
-    expect(html).toContain("HS");
-    expect(html).toContain("live-current-rank-name");
-    expect(html).toContain("live-player-peak");
-    expect(html).toContain("Peak");
-  });
-
-  it("keeps the role out of the card while streak state stays beside the name", () => {
+  it("keeps the role out of the card while giving the player name useful room", () => {
     const html = renderPlayerRow();
 
     expect(html).not.toContain("Duelist");
     expect(html).toContain('data-testid="streak-w"');
-    expect(html).toContain("max-width:160px");
+    expect(html).toContain("max-width:100%");
   });
 
-  it("reserves threat classes for smurf and boosting while streak uses amber signal styling", () => {
+  it("reserves threat classes for smurf and boosting while streak uses proper state", () => {
     const smurfHtml = renderPlayerRow(4);
     const lossHtml = renderPlayerRow(5);
 
@@ -76,16 +62,31 @@ describe("PlayerRow hierarchy", () => {
     expect(smurfHtml).toContain("live-alert-boosting");
     expect(smurfHtml).toContain("BOOSTING");
     expect(lossHtml).toContain('data-testid="streak-l"');
-    expect(lossHtml).not.toContain("live-alert-loss");
-    expect(smurfHtml).not.toContain("live-current-rank-name live-alert");
-    expect(smurfHtml).not.toContain("live-alert-reason");
-    expect(smurfHtml).toContain('aria-haspopup="dialog"');
   });
 
-  it("keeps win rate typographically stronger than supporting K/D and headshots", () => {
+  it("formats combat KPIs with readable tabular numbers", () => {
     const html = renderPlayerRow();
 
-    expect(html).toContain('text-[15px] font-black text-zinc-100');
-    expect(html.match(/text-\[10px\] font-medium text-zinc-500/g)).toHaveLength(2);
+    expect(html).toContain('data-testid="player-row-kd"');
+    expect(html).toContain('data-testid="player-row-wr"');
+    expect(html).toContain("font-mono");
+    expect(html).toContain("tabular-nums");
+    expect(html).toContain("text-[20px]");
+    expect(html).toContain("text-[17px]");
+  });
+
+  it("renders an accessible profile opener", () => {
+    const html = renderPlayerRow();
+
+    expect(html).toContain("player-row");
+    expect(html).toContain('aria-label="View profile for');
+    expect(html).toContain('data-testid="player-row-open-');
+  });
+
+  it("keeps threat fills stronger than rank, party, form, and streak styling", () => {
+    expect(styles).toContain(".live-alert-smurf");
+    expect(styles).toContain("background: var(--accent-gold)");
+    expect(styles).toContain("color: #ffffff");
+    expect(styles).not.toContain("[data-window-density=\"compact\"]");
   });
 });

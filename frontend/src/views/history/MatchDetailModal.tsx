@@ -22,30 +22,30 @@ interface ExpectedMatch {
 function DetailTable({ players, accent, label }: { players: DetailPlayer[]; accent: string; label: string }) {
   return (
     <div className="border border-edge rounded-md overflow-hidden">
-      <header className="flex items-center gap-2 px-3 py-1.5 bg-panel border-b border-edge">
+      <header className="flex items-center gap-2 border-b border-edge bg-panel px-3 py-2">
         <span className="w-1.5 h-3.5 rounded-[2px]" style={{ backgroundColor: accent }} />
-        <span className="font-display font-bold uppercase text-[13px]" style={{ color: accent }}>
+        <span className="font-display text-[14px] font-semibold" style={{ color: accent }}>
           {label}
         </span>
       </header>
-      <table className="w-full text-[12px]">
+      <table className="w-full text-[14px]">
         <thead>
-          <tr className="text-[9px] uppercase tracking-wider text-zinc-500 border-b border-edge/70">
-            <th className="text-left font-medium py-1 pl-2">Player</th>
-            <th className="text-right font-medium">K / D / A</th>
-            <th className="text-right font-medium">K/D</th>
-            <th className="text-right font-medium">ACS</th>
-            <th className="text-right font-medium pr-2">HS%</th>
+          <tr className="border-b border-edge text-[12px] text-zinc-400">
+            <th className="py-2 pl-2 text-left font-semibold">Player</th>
+            <th className="text-right font-semibold">K / D / A</th>
+            <th className="text-right font-semibold">K/D</th>
+            <th className="text-right font-semibold">ACS</th>
+            <th className="pr-2 text-right font-semibold">HS%</th>
           </tr>
         </thead>
         <tbody>
           {players.map((p) => (
             <tr
               key={p.puuid}
-              className={`border-b border-edge/50 last:border-b-0 ${p.isSubject ? "bg-brand/5" : ""}`}
+              className={`border-b border-edge last:border-b-0 ${p.isSubject ? "bg-brand/5" : ""}`}
               data-testid={`detail-player-${p.puuid}`}
             >
-              <td className="py-1.5 pl-2">
+              <td className="py-2 pl-2">
                 <span className="flex items-center gap-2 min-w-0">
                   <AgentAvatar portrait={p.agentPortrait} name={p.agent} color={p.agentColor} size={24} />
                   {p.rankIcon && <img src={p.rankIcon} alt={p.rank} title={p.rank} className="w-4 h-4" loading="lazy" />}
@@ -108,18 +108,18 @@ function MetaEditor({
   return (
     <div className="border border-edge rounded-md p-3 space-y-2" data-testid="match-meta-editor">
       <div className="flex items-center gap-2">
-        <h4 className="text-[10px] uppercase tracking-[0.25em] text-zinc-500 flex-1">Notes</h4>
+        <h4 className="flex-1 text-[12px] font-semibold text-zinc-300">Match notes</h4>
         <button
           data-testid="meta-bookmark-toggle"
           onClick={() => setBookmarked((b) => !b)}
-          className={`inline-flex items-center gap-1 border rounded-sm px-2 py-1 text-[10px] uppercase tracking-wider font-semibold transition-colors ${
+          className={`inline-flex items-center gap-1 rounded-sm border px-2.5 py-1.5 text-[12px] font-semibold transition-colors ${
             bookmarked ? "border-amber-400 text-amber-300 bg-amber-400/10" : "border-edge text-zinc-400 hover:bg-zinc-800"
           }`}
         >
           <Bookmark size={11} /> {bookmarked ? "Bookmarked" : "Bookmark"}
         </button>
       </div>
-      <label htmlFor="match-notes" className="block text-[10px] font-semibold text-white/60">Notes</label>
+      <label htmlFor="match-notes" className="block text-[12px] font-semibold text-white/70">Notes</label>
       <textarea id="match-notes"
         data-testid="meta-note-input"
         value={note}
@@ -127,27 +127,27 @@ function MetaEditor({
         maxLength={500}
         rows={2}
         placeholder="What happened this game?"
-        className="w-full bg-panel border border-edge rounded-sm px-2 py-1.5 text-[12px] text-zinc-200 placeholder:text-zinc-600 resize-none"
+        className="w-full bg-panel border border-edge rounded-sm px-2 py-1.5 text-[12px] text-zinc-200 placeholder:text-zinc-500 resize-none"
       />
       <div className="grid grid-cols-[minmax(0,1fr)_auto] gap-2">
-        <label htmlFor="match-tags" className="col-span-2 text-[10px] font-semibold text-white/60">Tags</label>
+        <label htmlFor="match-tags" className="col-span-2 text-[12px] font-semibold text-white/70">Tags</label>
         <input id="match-tags"
           data-testid="meta-tags-input"
           value={tags}
           onChange={(e) => setTags(e.target.value)}
           placeholder="e.g. clutch, ace, throw"
-          className="flex-1 bg-panel border border-edge rounded-sm px-2 py-1.5 text-[12px] text-zinc-200 placeholder:text-zinc-600"
+          className="flex-1 bg-panel border border-edge rounded-sm px-2 py-1.5 text-[12px] text-zinc-200 placeholder:text-zinc-500"
         />
         <button
           data-testid="meta-save-button"
           disabled={busy}
           onClick={save}
-          className="bg-brand hover:bg-brand-hover text-ink rounded-sm px-3 text-[11px] uppercase tracking-wider font-bold transition-colors disabled:opacity-50"
+          className="rounded-sm bg-brand px-3 text-[12px] font-semibold text-ink transition-colors hover:bg-brand-hover disabled:opacity-50"
         >
           Save
         </button>
       </div>
-      {msg && <p className="text-[11px] text-zinc-400">{msg}</p>}
+      {msg && <p className="text-[12px] text-zinc-400">{msg}</p>}
     </div>
   );
 }
@@ -212,19 +212,19 @@ export function MatchDetailModal({
   const orderedTeams = subjectTeam ? [subjectTeam, ...teams.filter((t) => t !== subjectTeam)] : teams;
 
   return (
-    <Dialog.Root open onOpenChange={(open) => { if (!open) onClose(); }}><Dialog.Portal><div className="fixed inset-0 z-[70] flex items-center justify-center p-6" data-testid="match-detail-modal">
+    <Dialog.Root open onOpenChange={(open) => { if (!open) onClose(); }}><Dialog.Portal><div className="modal-backdrop z-[70] p-6" data-testid="match-detail-modal">
       <Dialog.Overlay className="absolute inset-0 bg-black/70" data-testid="match-detail-backdrop" />
-      <Dialog.Content onCloseAutoFocus={(event) => { event.preventDefault(); if (restoreFocus?.isConnected) restoreFocus.focus(); }} className="relative max-h-[88vh] w-full max-w-3xl overflow-y-auto rounded-xl border border-white/10 bg-surface-modal/95 shadow-modal backdrop-blur-modal rise">
+      <Dialog.Content onCloseAutoFocus={(event) => { event.preventDefault(); if (restoreFocus?.isConnected) restoreFocus.focus(); }} className="relative max-h-[85vh] w-full max-w-3xl overflow-y-auto rounded-[var(--radius-lg)] border border-[var(--border-subtle)] bg-[var(--bg-panel)] shadow-2xl focus-visible:outline-none">
         {/* header */}
-        <div className="relative border-b border-edge overflow-hidden">
+        <div className="relative border-b border-[var(--border-subtle)] overflow-hidden">
           {detail?.mapSplash && (
             <img src={detail.mapSplash} alt="" className="absolute inset-0 w-full h-full object-cover opacity-25" draggable={false} />
           )}
           <div className="absolute inset-0 bg-gradient-to-r from-panel via-panel/80 to-panel/50" />
           <div className="relative flex items-center gap-4 p-4">
             <div>
-              <div className="text-[11px] uppercase tracking-wider text-zinc-400">{detail?.mode ?? "Match"}</div>
-              <Dialog.Title id="match-detail-title" className="font-display text-2xl font-bold italic uppercase leading-tight">{detail?.map ?? "Match Details"}</Dialog.Title>
+              <div className="text-[12px] font-semibold text-zinc-400">{detail?.mode ?? "Match"}</div>
+              <Dialog.Title id="match-detail-title" className="font-display text-[28px] font-semibold leading-tight">{detail?.map ?? "Match details"}</Dialog.Title>
             </div>
             {detail && (
               <OutcomeBadge size="lg" outcome={normalizeOutcome(detail.result)} score={scoreline(detail.scores, subjectTeam)} />
@@ -233,7 +233,7 @@ export function MatchDetailModal({
               aria-label="Close"
               data-testid="match-detail-close"
               onClick={onClose}
-              className="ml-auto flex h-8 w-8 items-center justify-center rounded-sm border border-edge text-zinc-400 transition-colors hover:bg-zinc-800 hover:text-zinc-100"
+              className="ml-auto flex h-8 w-8 items-center justify-center rounded-[var(--radius-sm)] border border-[var(--border-subtle)] bg-[var(--bg-panel)] text-[var(--text-secondary)] transition-colors hover:text-[var(--text-primary)] hover:bg-[var(--bg-card)] focus-visible:ring-2 focus-visible:ring-[var(--accent-info)]"
             >
               <X size={15} />
             </button>
@@ -256,7 +256,7 @@ export function MatchDetailModal({
               <DetailTable
                 key={teamId}
                 players={detail.players.filter((p) => p.team === teamId)}
-                accent={teamId === subjectTeam ? "#10B981" : subjectTeam ? "#EF4444" : "#3B82F6"}
+                accent={teamId === subjectTeam ? "var(--accent-team-a)" : subjectTeam ? "var(--accent-team-b)" : "var(--text-secondary)"}
                 label={
                   subjectTeam
                     ? teamId === subjectTeam
