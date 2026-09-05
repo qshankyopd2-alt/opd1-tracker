@@ -27,9 +27,16 @@ function MatchRow({
   rankIcon: string | null | undefined;
   onOpen: () => void;
 }) {
+  const ariaLabel = `${point.map ?? "Unknown map"} match, ${point.result ?? "Unknown result"}${
+    point.agent ? `, played as ${point.agent}` : ""
+  }${
+    point.kills !== undefined ? `, KDA ${point.kills}/${point.deaths}/${point.assists}` : ""
+  }`;
+
   return (
     <button
       data-testid={`history-row-${point.matchId}`}
+      aria-label={ariaLabel}
       onClick={onOpen}
       className="group relative min-h-[72px] w-full overflow-hidden rounded-md border border-edge bg-card text-left transition-colors hover:border-zinc-600"
     >
