@@ -4,6 +4,28 @@
 
 :root {
   color-scheme: dark;
+
+  --bg-app: #111111;
+  --bg-panel: #181818;
+  --bg-card: #202020;
+  --bg-card-hover: #292929;
+  --border-subtle: #333333;
+  --border-strong: #525252;
+
+  --text-primary: #f2f2f2;
+  --text-secondary: #bdbdbd;
+  --text-muted: #999999;
+
+  --accent-team-a: #76c9a5;
+  --accent-team-b: #ed8793;
+  --accent-gold: #bb3650;
+  --accent-info: #eeeeee;
+
+  --space-1: 4px;  --space-2: 8px;  --space-3: 12px;
+  --space-4: 16px; --space-5: 24px; --space-6: 32px;
+  --radius-sm: 4px; --radius-md: 6px; --radius-lg: 8px;
+  --ease: cubic-bezier(0.4, 0, 0.2, 1);
+  --dur-fast: 150ms; --dur-normal: 250ms;
 }
 
 html,
@@ -13,13 +35,16 @@ body,
 }
 
 body {
-  @apply bg-ink text-zinc-100 font-body antialiased;
-  font-size: 13px;
+  @apply bg-canvas font-sans;
+  color: var(--text-primary);
+  font-size: 14px;
+  line-height: 1.5;
+  font-variant-numeric: tabular-nums;
   overflow: hidden;
 }
 
 ::selection {
-  background: rgba(249, 115, 22, 0.35);
+  background: rgba(226, 231, 235, 0.28);
 }
 
 *::-webkit-scrollbar {
@@ -38,12 +63,193 @@ body {
 }
 
 :focus-visible {
-  outline: 2px solid #f97316;
-  outline-offset: 1px;
+  outline: 2px solid var(--accent-info);
+  outline-offset: 2px;
 }
 
 .num {
   font-variant-numeric: tabular-nums;
+}
+
+/* A match is two aligned rosters; each row keeps identity ahead of telemetry. */
+.player-row {
+  display: grid;
+  grid-template-columns: 44px minmax(130px, 1fr) 144px 140px;
+  grid-template-rows: minmax(42px, 1fr) 18px 20px;
+  grid-template-areas:
+    "avatar identity rank stats"
+    "avatar alerts detail detail"
+    "loadout loadout loadout loadout";
+  align-items: center;
+  gap: 2px 8px;
+  width: 100%;
+  height: 100%;
+  min-width: 0;
+  padding: 4px 10px;
+  overflow: hidden;
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  transition: border-color var(--dur-fast) var(--ease), background var(--dur-fast) var(--ease);
+}
+
+.player-row:hover {
+  background: var(--bg-card-hover);
+  border-color: var(--border-strong);
+}
+
+.player-row-self {
+  border-left: 3px solid var(--accent-team-a);
+  padding-left: 8px;
+}
+
+.live-player-background { z-index: 0; }
+.live-player-art {
+  left: auto;
+  width: 58%;
+  opacity: 0.2;
+  filter: saturate(0.65);
+  transition: opacity var(--dur-fast) var(--ease);
+}
+.player-row:hover .live-player-art { opacity: 0.26; }
+.live-player-matte {
+  background: linear-gradient(90deg, var(--bg-card) 36%, transparent 100%);
+}
+
+.live-player-avatar { grid-area: avatar; }
+.live-player-identity { grid-area: identity; }
+.live-player-alerts { grid-area: alerts; }
+.live-player-rank { grid-area: rank; }
+.live-player-stats { grid-area: stats; }
+.tier-3-detail { grid-area: detail; }
+
+.live-player-rank { padding-left: 12px; border-left: 1px solid var(--border-subtle); }
+.live-player-stats { display: grid; grid-template-columns: 54px 42px 36px; gap: 4px; }
+.live-player-stats > div { align-items: flex-end; }
+.live-player-alerts { min-height: 22px; }
+.live-player-form-line { width: 100%; }
+.live-player-loadout { display: grid; position: relative; z-index: 2; grid-area: loadout; }
+.tier-3-detail { display: contents; }
+.live-player-form-line { grid-area: detail; position: relative; z-index: 2; }
+.live-current-rank-icon { order: -1; }
+.live-current-rank-name { color: var(--text-primary); }
+
+.live-team-panel { border-radius: var(--radius-lg); container-type: inline-size; }
+.live-team-header { background: var(--bg-panel); }
+.live-roster {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-rows: repeat(var(--live-player-count), minmax(96px, 1fr));
+  gap: 8px;
+  padding: 8px;
+}
+.live-player-slot { container-type: inline-size; min-width: 0; }
+.matchup-board { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+.live-match-header { background: var(--bg-panel); border-radius: var(--radius-md); }
+.win-chance-track { background: var(--bg-card); border-radius: 4px; }
+.match-chip { border-radius: 3px; }
+.match-chip.win { background: var(--accent-team-a); }
+.match-chip.loss { background: var(--accent-team-b); }
+
+@container (max-width: 520px) {
+  .player-row { grid-template-columns: 40px minmax(100px, 1fr) 120px 120px; gap: 2px 8px; padding-inline: 10px; }
+  .player-row-self { padding-left: 8px; }
+  .live-player-stats { grid-template-columns: 42px 36px 34px; }
+  .live-player-rank { padding-left: 8px; }
+  .live-player-avatar, .live-player-avatar > img, .live-player-avatar > span:first-child { width: 40px !important; height: 40px !important; }
+
+  .live-player-peak-name { max-width: 70px; }
+}
+
+@container (max-width: 440px) {
+  .player-row { grid-template-columns: 36px minmax(80px, 1fr) 106px 108px; }
+  .live-player-stats { grid-template-columns: 38px 32px 30px; }
+  .live-player-rank { padding-left: 6px; }
+  .live-player-peak { display: none; }
+  .live-player-form-line { justify-content: flex-end; }
+}
+
+@container (min-width: 760px) {
+  .player-row { grid-template-columns: 48px minmax(180px, 1fr) 140px 176px; gap: 6px 16px; padding: 14px 16px; }
+  .live-player-stats { grid-template-columns: 64px 52px 52px; }
+  .live-current-rank-icon { width: 36px; height: 36px; }
+  .live-player-rank { justify-content: flex-start; gap: 10px; }
+  .player-row { grid-template-rows: minmax(48px, 1fr) 24px 42px; grid-template-areas: "avatar identity rank stats" "avatar alerts detail detail" "loadout loadout loadout loadout"; }
+  .tier-3-detail { display: contents; }
+  .live-player-form-line { grid-area: detail; position: relative; z-index: 2; }
+  .live-player-loadout img { max-width: 96px; }
+}
+
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 60;
+}
+
+.modal {
+  width: min(760px, calc(100vw - 32px));
+  height: min(760px, calc(100vh - 24px));
+  max-height: calc(100vh - 24px);
+  overflow: hidden;
+  background: var(--bg-panel);
+  border-radius: 6px;
+  border: 1px solid var(--border-strong);
+  border-top: 3px solid var(--accent-info);
+}
+
+.player-profile-layer {
+  align-items: center;
+  justify-content: center;
+}
+.player-profile-layer .modal {
+  width: min(1120px, calc(100vw - 32px));
+  height: calc(100vh - 32px);
+  max-height: 960px;
+  border: 1px solid var(--border-strong);
+  border-radius: 10px;
+  box-shadow: -24px 0 64px #0008;
+}
+.drawer-profile-header { background: var(--bg-panel); }
+.drawer-player-card-art { position: absolute; right: 23%; top: 22px; width: 150px; height: 100px; object-fit: cover; border-radius: 4px; border: 1px solid var(--border-strong); }
+.drawer-player-card-matte { background: linear-gradient(90deg, var(--bg-panel) 0%, var(--bg-panel) 35%, transparent 58%, transparent 79%, var(--bg-panel) 81%); }
+.drawer-profile-header > .relative { text-shadow: 0 2px 5px #000; }
+.profile-dossier-grid { display: grid; grid-template-columns: 1.05fr 1fr; gap: 12px 24px; }
+.profile-dossier-column { min-width: 0; }
+.match-detail-teams { display: grid; gap: 12px; }
+.player-profile-layer .match-detail-teams { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.profile-dossier-loadout { grid-row: 1; grid-column: 1 / -1; }
+.profile-kda { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+.profile-kda > div, .profile-metrics > div { background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: 5px; padding: 12px; }
+.profile-kda strong, .profile-metrics strong { display: block; font-size: 24px; font-weight: 600; line-height: 1.25; }
+.profile-kda span, .profile-metrics span { display: block; font-size: 13px; color: var(--text-secondary); margin-top: 4px; }
+.profile-metrics { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+
+.weapon-loadout { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; }
+.weapon-slot { display: flex; flex-direction: column; align-items: center; min-width: 0; border: 1px solid var(--border-subtle); border-radius: 4px; padding: 8px; background: var(--bg-app); }
+.weapon-image { display: flex; align-items: center; justify-content: center; min-width: 0; width: 100%; height: 58px; overflow: hidden; }
+.weapon-image img { width: 100%; height: 100%; object-fit: contain; }
+.weapon-name { font-size: 12px; color: var(--text-secondary); }
+.weapon-skin-name { max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 13px; color: var(--text-primary); }
+.weapon-unavailable { color: var(--text-muted); font-size: 11px; text-align: center; }
+.weapon-loadout-compact { gap: 6px; height: 100%; }
+.weapon-loadout-compact .weapon-slot { position: relative; min-height: 0; overflow: hidden; padding: 0 6px; flex-direction: row; gap: 4px; background: var(--bg-panel); }
+.weapon-loadout-compact .weapon-image { height: 18px; min-height: 0; }
+.weapon-loadout-compact .weapon-image img { max-height: 18px; }
+.weapon-loadout-compact .weapon-name { font-size: 10px; }
+.weapon-loadout-compact .weapon-skin-name { display: none; }
+.weapon-loadout-compact .weapon-unavailable { font-size: 10px; }
+.recent-match-row { display: grid; grid-template-columns: 150px minmax(150px, 1fr) 110px 70px 172px; gap: 16px; align-items: center; }
+.recent-map-art { position: relative; width: 150px; height: 70px; overflow: hidden; border-radius: 4px; background: var(--bg-app); }
+.recent-map-art > img { width: 100%; height: 100%; object-fit: cover; }
+.recent-map-art > span { position: absolute; bottom: 3px; right: 3px; }
+
+@container (min-width: 760px) {
+  .weapon-loadout-compact .weapon-image { height: 40px; }
+  .weapon-loadout-compact .weapon-image img { max-height: 40px; }
+  .weapon-loadout-compact .weapon-name { font-size: 12px; }
 }
 
 @keyframes rise {
@@ -75,10 +281,53 @@ body {
 .stagger > *:nth-child(9) { animation-delay: 240ms; }
 .stagger > *:nth-child(10) { animation-delay: 270ms; }
 
-@keyframes pulse-dot {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.35; }
-}
 .pulse-dot {
-  animation: pulse-dot 1.6s ease-in-out infinite;
+  opacity: 0.9;
 }
+
+@keyframes drawer-in {
+  from {
+    opacity: 0;
+    transform: translateX(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.drawer-slide {
+  animation: drawer-in 160ms ease-out both;
+}
+
+.live-team-panel { overflow: hidden; }
+.live-roster { overflow-y: auto; }
+
+.live-alert-badge { border: 1px solid var(--accent-gold); }
+.live-alert-smurf, .live-alert-boosting { background: var(--accent-gold); color: #ffffff; }
+.live-alert-reason { display: inline-flex; align-items: center; gap: 0.25rem; }
+
+@media (max-height: 740px) {
+  .live-view { gap: 8px; padding: 8px; }
+  .live-match-header { height: 40px; min-height: 40px; }
+  .live-roster { gap: 6px; padding: 6px; }
+  .player-row { padding-block: 4px; }
+  .live-player-art { opacity: 0.14; }
+}
+
+@media (max-width: 1050px) {
+  .live-team-header { row-gap: 4px; }
+  .live-team-stats { flex-basis: 100%; margin-left: 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+.player-profile-layer .modal { font-family: Bahnschrift, "Segoe UI", sans-serif; }
+.player-profile-layer .font-display, .player-profile-layer .font-mono { font-family: inherit; }

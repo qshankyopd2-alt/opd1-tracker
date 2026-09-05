@@ -9,7 +9,12 @@ if (-not (Test-Path -LiteralPath (Join-Path $cargoBin "cargo.exe"))) {
     throw "Rust Cargo was not found in $cargoBin"
 }
 $env:PATH = "$cargoBin;$env:PATH"
-$env:RUSTFLAGS = "--remap-path-prefix=$env:USERPROFILE=/rust-user --remap-path-prefix=$root=/project"
+$rustFlags = @(
+    "--remap-path-prefix=$env:USERPROFILE=/rust-user",
+    "--remap-path-prefix=$root=/project"
+)
+$env:CARGO_ENCODED_RUSTFLAGS = [string]::Join([char]0x1f, $rustFlags)
+Remove-Item Env:RUSTFLAGS -ErrorAction SilentlyContinue
 
 function Assert-NativeSuccess([string]$Step) {
     if ($LASTEXITCODE -ne 0) {

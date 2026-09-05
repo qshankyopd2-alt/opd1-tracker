@@ -1,92 +1,73 @@
-import { useEffect, useState, useRef } from "react";
-import { X } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import { AlertTriangle, Bookmark, X } from "lucide-react";
+import * as Dialog from "@radix-ui/react-dialog";
 import { ApiError, backend } from "../../api/client";
 import type { Career, LivePlayer, MatchMeta } from "../../api/types";
-import { MatchDetailModal } from "../history/MatchDetailModal";
 import { AgentAvatar } from "../../components/domain/AgentAvatar";
 import { Badge } from "../../components/ui/Badge";
+import { StreakBadge } from "../../components/ui/StreakBadge";
 import { RANKS } from "../../lib/ranks";
+import { MatchDetailContent, type MatchMetaDraft } from "../history/MatchDetailModal";
 import { CareerSection } from "./drawer/CareerSection";
-import { Chip } from "./drawer/Chip";
-import { RankCard } from "./drawer/RankCard";
+import { MatchesSection } from "./drawer/MatchesSection";
 import { SavedPlayerSection } from "./drawer/SavedPlayerSection";
+import contourTexture from "../../assets/contour.png";
+
+export type DrawerTab = "overview" | "matches";
+
+const DRAWER_TABS: DrawerTab[] = ["overview", "matches"];
+
+export function nextDrawerTabIndex(current: number, key: string): number | null {
+  if (key === "ArrowRight") return (current + 1) % DRAWER_TABS.length;
+  if (key === "ArrowLeft") return (current - 1 + DRAWER_TABS.length) % DRAWER_TABS.length;
+  if (key === "Home") return 0;
+  if (key === "End") return DRAWER_TABS.length - 1;
+  return null;
+}
 
 export function PlayerDrawer({
   player,
   accountPuuid,
   onSavedChange,
   onClose,
+  restoreFocus,
 }: {
   player: LivePlayer;
   accountPuuid: string | null;
   onSavedChange: (saved: boolean, note: string) => void;
   onClose: () => void;
+  restoreFocus?: HTMLElement | null;
 }) {
   const [career, setCareer] = useState<Career | null>(null);
-  const dialogRef = useRef<HTMLElement>(null);
-  const previousFocusRef = useRef<HTMLElement | null>(null);
-
-  useEffect(() => {
-    previousFocusRef.current = document.activeElement as HTMLElement;
-    if (dialogRef.current) {
-      dialogRef.current.focus();
-    }
-    return () => {
-      if (previousFocusRef.current) {
-        previousFocusRef.current.focus();
-      }
-    };
-  }, []);
-
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
-    if (e.key === "Escape") {
-      e.stopPropagation();
-      onClose();
-      return;
-    }
-    if (e.key === "Tab") {
-      if (!dialogRef.current) return;
-      const selectors = 'a[href], button:not([disabled]), textarea:not([disabled]), input:not([type="hidden"]):not([disabled]), select:not([disabled]), [tabindex]:not([tabindex="-1"])';
-      const focusableElements = Array.from(dialogRef.current.querySelectorAll<HTMLElement>(selectors))
-        .filter((el) => el.offsetWidth > 0 || el.offsetHeight > 0);
-
-      if (focusableElements.length === 0) return;
-
-      const firstElement = focusableElements[0];
-      const lastElement = focusableElements[focusableElements.length - 1];
-
-      if (e.shiftKey) {
-        if (document.activeElement === firstElement || document.activeElement === dialogRef.current) {
-          lastElement?.focus();
-          e.preventDefault();
-        }
-      } else {
-        if (document.activeElement === lastElement) {
-          firstElement?.focus();
-          e.preventDefault();
-        }
-      }
-    }
-  };
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
-  const [openMatch, setOpenMatch] = useState<string | null>(null);
+  const [openMatch, setOpenMatch] = useState<{ id: string; opener: HTMLElement } | null>(null);
+  const [matchDrafts, setMatchDrafts] = useState<Record<string, MatchMetaDraft>>({});
   const [metaOverrides, setMetaOverrides] = useState<Record<string, MatchMeta>>({});
   const [saved, setSaved] = useState(Boolean(player.saved));
   const [note, setNote] = useState(player.savedNote ?? "");
   const [savedBusy, setSavedBusy] = useState(false);
   const [savedMessage, setSavedMessage] = useState<string | null>(null);
+  const [activeTab, setActiveTab] = useState<DrawerTab>("overview");
+  const [noteExpanded, setNoteExpanded] = useState(false);
   const [cardFailed, setCardFailed] = useState(false);
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const tabRefs = useRef<Array<HTMLButtonElement | null>>([]);
+
+  useEffect(() => {
+    setCardFailed(false);
+  }, [player.puuid, player.playerCard]);
 
   useEffect(() => {
     let alive = true;
     setCareer(null);
     setError(null);
     setLoading(true);
+    setOpenMatch(null);
     backend
       .profile(player.puuid)
-      .then((c) => alive && setCareer(c))
-      .catch((e) => alive && setError(e instanceof ApiError ? e.message : "Failed to load career."))
+      .then((nextCareer) => alive && setCareer(nextCareer))
+      .catch((nextError) => alive && setError(nextError instanceof ApiError ? nextError.message : "Failed to load career."))
       .finally(() => alive && setLoading(false));
     return () => {
       alive = false;
@@ -97,25 +78,31 @@ export function PlayerDrawer({
     setSaved(Boolean(player.saved));
     setNote(player.savedNote ?? "");
     setSavedMessage(null);
-    setCardFailed(false);
+    setActiveTab("overview");
+    setNoteExpanded(false);
+    scrollRef.current?.scrollTo({ top: 0 });
   }, [player.puuid, player.saved, player.savedNote]);
 
-  const enc = player.encounter;
-  const careerUsable = Boolean(career && career.source === "local");
-  const featuredWeapons = ["Vandal", "Phantom", "Operator", "Melee"]
-    .map((weapon) => player.weapons.find((item) => item.weapon === weapon))
-    .filter((item) => item !== undefined);
-  const profileBackdrop = player.playerCard ?? player.agentArt ?? player.agentPortrait;
-  const largePlayerCard = player.playerCard?.replace("/wideart.png", "/largeart.png");
-  const previousRank = RANKS.find((rank) => rank.name === player.previousRank);
-  const rankIconTemplate = player.rankIcon ?? player.peakIcon;
-  const previousRankIcon = previousRank && rankIconTemplate
-    ? rankIconTemplate.replace(/\/\d+\/smallicon\.png$/, `/${previousRank.tier}/smallicon.png`)
-    : null;
-  const mapSplashes = new Map<string, string>();
-  for (const match of career?.matches ?? []) {
-    if (match.mapSplash && !mapSplashes.has(match.map)) mapSplashes.set(match.map, match.mapSplash);
-  }
+  const handleTabKeyDown = (event: React.KeyboardEvent<HTMLButtonElement>, index: number) => {
+    const nextIndex = nextDrawerTabIndex(index, event.key);
+    if (nextIndex === null) return;
+    event.preventDefault();
+    const nextTab = DRAWER_TABS[nextIndex];
+    setActiveTab(nextTab);
+    scrollRef.current?.scrollTo({ top: 0 });
+    tabRefs.current[nextIndex]?.focus();
+  };
+
+  const closeMatch = () => {
+    const opener = openMatch?.opener;
+    setOpenMatch(null);
+    setTimeout(() => { if (opener?.isConnected) opener.focus(); }, 0);
+  };
+
+  const selectTab = (tab: DrawerTab) => {
+    setActiveTab(tab);
+    scrollRef.current?.scrollTo({ top: 0 });
+  };
 
   const updateSaved = async (keep: boolean) => {
     if (!accountPuuid) return;
@@ -132,179 +119,213 @@ export function PlayerDrawer({
       setNote(updatedNote);
       onSavedChange(result.saved, updatedNote);
       setSavedMessage(result.saved ? "Player and note saved." : "Player removed from Saved Players.");
-    } catch (e) {
-      setSavedMessage(e instanceof ApiError ? e.message : "Could not save this player.");
+      if (!result.saved) setNoteExpanded(false);
+    } catch (nextError) {
+      setSavedMessage(nextError instanceof ApiError ? nextError.message : "Could not save this player.");
     } finally {
       setSavedBusy(false);
     }
   };
 
+  const openNoteEditor = () => {
+    setActiveTab("overview");
+    setNoteExpanded(true);
+    requestAnimationFrame(() => document.getElementById("drawer-player-note")?.scrollIntoView({ block: "nearest" }));
+  };
+
+  const careerUsable = Boolean(career && career.source === "local");
+  const previousRank = RANKS.find((rank) => rank.name === player.previousRank);
+  const rankIconTemplate = player.rankIcon ?? player.peakIcon;
+  const previousRankIcon = previousRank && rankIconTemplate
+    ? rankIconTemplate.replace(/\/\d+\/smallicon\.png$/, `/${previousRank.tier}/smallicon.png`)
+    : null;
+  const mapSplashes = new Map<string, string>();
+  for (const match of career?.matches ?? []) {
+    if (match.mapSplash && !mapSplashes.has(match.map)) mapSplashes.set(match.map, match.mapSplash);
+  }
+  const matchCount = career?.matches.length ?? player.recentMatches ?? 0;
+  const boostingReasons = player.smurfReasons.filter((reason) => /boost/i.test(reason));
+  const hasThreatAlerts = player.smurf || boostingReasons.length > 0;
+  const hasDrawerAlerts = player.smurf || boostingReasons.length > 0 || Boolean(player.streak && player.streak.count >= 3);
+  const cardSrc = (!cardFailed && player.playerCard) ? player.playerCard : contourTexture;
+
   return (
-    <div className="fixed inset-0 z-40" data-testid="player-drawer">
-      <div className="absolute inset-0 bg-black/60" onClick={onClose} data-testid="player-drawer-backdrop" />
-      <div
-        className="absolute right-0 top-0 h-full w-[640px] max-w-full bg-panel border-l border-edge overflow-y-auto rise"
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby="player-drawer-title"
-        ref={dialogRef as any}
-        tabIndex={-1}
-        onKeyDown={handleKeyDown}
-      >
-        {/* header */}
-        <div className="relative border-b border-edge overflow-hidden">
-          {profileBackdrop && (
-            <img src={profileBackdrop} alt="" className="absolute inset-0 h-full w-full object-cover object-center opacity-30" draggable={false} onError={(event) => { event.currentTarget.style.display = "none"; }} />
-          )}
-          <div className="absolute inset-0 bg-gradient-to-r from-panel via-panel/95 to-panel/75" />
-          <div className="relative flex min-h-[132px] items-center gap-4 p-4">
-            {largePlayerCard && !cardFailed ? (
-              <img
-                src={largePlayerCard}
-                alt={`${player.name} player card`}
-                className="h-24 w-16 shrink-0 rounded-sm border border-edge object-cover"
-                draggable={false}
-                onError={() => setCardFailed(true)}
-              />
-            ) : (
-              <AgentAvatar portrait={player.agentPortrait} name={player.agent ?? player.name} color={player.agentColor} size={64} />
-            )}
-            <div className="min-w-0 flex-1 self-center">
-              <div className="flex items-center gap-2">
-                <h2 id="player-drawer-title" dir="auto" className="truncate font-display text-[26px] font-black leading-tight">{player.name}</h2>
-                {player.party && (
-                  <span
-                    className="shrink-0 rounded-sm border px-1.5 py-0.5 text-[9px] font-black num"
-                    style={{ borderColor: player.party.color, color: player.party.color }}
+    <Dialog.Root open onOpenChange={(open) => { if (!open) onClose(); }}><Dialog.Portal>
+      <div className="modal-backdrop player-profile-layer z-[60]" data-testid="player-drawer">
+        <Dialog.Overlay className="fixed inset-0 bg-black/70" data-testid="player-drawer-backdrop" />
+        <Dialog.Content
+          aria-labelledby={openMatch ? "match-detail-title" : "player-drawer-title"}
+          aria-describedby={undefined}
+          onEscapeKeyDown={(event) => {
+            if (openMatch) {
+              event.preventDefault();
+              closeMatch();
+            }
+          }}
+          onCloseAutoFocus={(event) => { event.preventDefault(); if (restoreFocus?.isConnected) restoreFocus.focus(); }}
+          className="modal drawer-slide relative z-[61] flex flex-col focus-visible:outline-none"
+        >
+        <div className={openMatch ? "hidden" : "flex flex-col h-full min-h-0"}>
+            <header className="drawer-profile-header relative flex h-36 shrink-0 items-center gap-4 overflow-hidden border-b border-[var(--border-strong)] px-5" data-testid="drawer-header">
+              <span className="pointer-events-none absolute inset-0" aria-hidden="true">
+                <img
+                  src={cardSrc}
+                  alt=""
+                  draggable={false}
+                  className="drawer-player-card-art h-full w-full object-cover object-[center_22%]"
+                  onError={() => {
+                    if (!cardFailed) setCardFailed(true);
+                  }}
+                />
+                <span className="drawer-player-card-matte absolute inset-0" />
+              </span>
+              <span className="absolute inset-y-3 left-0 w-[3px]" style={{ backgroundColor: player.rankColor }} aria-hidden="true" />
+              <span className="relative shrink-0">
+                <AgentAvatar portrait={player.agentPortrait} name={player.agent ?? player.name} color={player.agentColor} size={62} />
+              </span>
+              <div className="relative min-w-0 flex-1">
+                {!openMatch ? (
+                  <Dialog.Title id="player-drawer-title" dir="auto" className="truncate font-display text-[26px] font-semibold leading-tight text-[var(--text-primary)]">{player.name}</Dialog.Title>
+                ) : (
+                  <h2 id="player-drawer-title" dir="auto" className="truncate font-display text-[26px] font-semibold leading-tight text-[var(--text-primary)]">{player.name}</h2>
+                )}
+                {player.title && <div className="mt-1.5 truncate text-[13px] font-medium text-[var(--text-muted)]">{player.title}</div>}
+                <div className="mt-1 truncate text-[13px] font-medium text-[var(--text-secondary)]">
+                  {player.agent ?? "Unpicked"}{player.levelHidden ? " · Level hidden" : ` · Level ${player.level || "?"}`}
+                </div>
+                <div className="mt-1.5 flex min-w-0 items-center gap-1.5">
+                  {player.party && (
+                    <span className="shrink-0 rounded-sm border px-1.5 py-0.5 text-[12px] font-semibold" style={{ borderColor: player.party.color, color: player.party.color }}>
+                      Party P{player.party.number}
+                    </span>
+                  )}
+                  {player.smurf && <Badge color="#ed8793" testId="drawer-smurf-badge">Smurf</Badge>}
+                </div>
+              </div>
+              <div className="relative flex w-[180px] shrink-0 items-center justify-end gap-3 pr-8" data-testid="drawer-current-rank">
+                <div className="min-w-0 text-right">
+                  <div className="text-[12px] font-semibold text-[var(--text-muted)]">Current rank</div>
+                  <div className="whitespace-nowrap font-display text-[18px] font-semibold leading-tight" style={{ color: player.rankColor }}>{player.rank}</div>
+                  {player.rankTier > 2 && <div className="font-mono text-[12px] font-semibold text-[var(--text-secondary)] tabular-nums">{player.rr} RR</div>}
+                </div>
+                {player.rankIcon && <img src={player.rankIcon} alt="" className="h-11 w-11 shrink-0" loading="lazy" onError={(event) => { event.currentTarget.style.display = "none"; }} />}
+              </div>
+              {!player.isSelf && accountPuuid && (
+                <button type="button" data-testid="drawer-save-action" aria-label="Open player note" title="Player note" onClick={openNoteEditor} className="absolute bottom-3 right-3 rounded-sm border border-edge bg-panel p-1.5 text-text-secondary hover:bg-zinc-800">
+                  <Bookmark size={14} fill={saved ? "currentColor" : "none"} />
+                </button>
+              )}
+              <button
+                type="button"
+                aria-label="Close"
+                data-testid="player-drawer-close"
+                onClick={onClose}
+                className="absolute right-3 top-3 flex h-8 w-8 items-center justify-center rounded-[var(--radius-sm)] border border-[var(--border-subtle)] bg-[var(--bg-panel)] text-[var(--text-secondary)] transition-colors hover:text-[var(--text-primary)] hover:bg-[var(--bg-card)] focus-visible:ring-2 focus-visible:ring-[var(--accent-info)]"
+              >
+                <X size={15} />
+              </button>
+            </header>
+
+            <div className="flex h-11 shrink-0 border-b border-[var(--border-strong)] bg-[var(--bg-app)] px-5" role="tablist" aria-label="Player details" data-testid="drawer-tabs">
+              {DRAWER_TABS.map((tab, index) => {
+                const selectedTab = activeTab === tab;
+                const label = tab === "overview" ? "Overview" : "Matches";
+                return (
+                  <button
+                    key={tab}
+                    ref={(element) => { tabRefs.current[index] = element; }}
+                    type="button"
+                    id={`drawer-tab-${tab}`}
+                    role="tab"
+                    aria-selected={selectedTab}
+                    aria-controls={`drawer-panel-${tab}`}
+                    tabIndex={selectedTab ? 0 : -1}
+                    data-testid={`drawer-tab-${tab}`}
+                    onClick={() => selectTab(tab)}
+                    onKeyDown={(event) => handleTabKeyDown(event, index)}
+                    className={`relative flex min-w-32 items-center justify-center gap-2 px-5 text-[14px] font-semibold transition-colors ${selectedTab ? "text-[var(--text-primary)]" : "text-[var(--text-muted)] hover:text-[var(--text-secondary)]"}`}
                   >
-                    PARTY P{player.party.number}
-                  </span>
-                )}
-                {player.smurf && (
-                  <Badge color="#F59E0B" filled testId="drawer-smurf-badge">
-                    Smurf
-                  </Badge>
-                )}
-              </div>
-              {player.title && <div className="mt-1 text-[12px] italic text-zinc-400">{player.title}</div>}
-              <div className="mt-1 text-[12px] text-zinc-400">
-                {player.agent ? `${player.agent} · ` : ""}
-                {player.role ?? ""} {player.levelHidden ? "· Lvl hidden" : `· Lvl ${player.level || "?"}`}
-              </div>
+                    {label}
+                    {tab === "matches" && <span className="rounded-sm bg-card px-1.5 py-0.5 text-[12px] text-text-secondary tabular-nums">{matchCount}</span>}
+                    {selectedTab && <span className="absolute inset-x-3 bottom-0 h-[3px] bg-[var(--text-primary)]" aria-hidden="true" />}
+                  </button>
+                );
+              })}
             </div>
-            <button
-              aria-label="Close"
-              data-testid="player-drawer-close"
-              onClick={onClose}
-              className="absolute right-4 top-4 rounded-sm border border-edge p-1.5 text-zinc-400 transition-colors hover:bg-zinc-800 hover:text-zinc-100"
-            >
-              <X size={15} />
-            </button>
-          </div>
+
+            <div ref={scrollRef} className="min-h-0 flex-1 overflow-y-auto" data-testid="drawer-scroll-region">
+              {activeTab === "overview" ? (
+                <div id="drawer-panel-overview" role="tabpanel" aria-labelledby="drawer-tab-overview" className="p-4" data-testid="drawer-overview-panel">
+                  {hasDrawerAlerts && (
+                    <section className={hasThreatAlerts ? "mb-2.5 border-l-[3px] border-rose-500 bg-[#241217] px-3 py-2" : "mb-2.5"} data-testid="drawer-smurf-reasons" data-alert-kind={hasThreatAlerts ? "threat" : "streak"}>
+                      <div className="flex flex-wrap items-center gap-1.5">
+                        {player.smurf && <span className="live-alert-badge live-alert-smurf inline-flex items-center gap-1 rounded-sm border px-2 py-1 text-[12px] font-semibold text-white"><AlertTriangle size={12} strokeWidth={3} />Smurf</span>}
+                        {boostingReasons.length > 0 && <span className="live-alert-badge live-alert-boosting inline-flex items-center gap-1 rounded-sm border px-2 py-1 text-[12px] font-semibold text-white"><AlertTriangle size={12} strokeWidth={3} />Boosting</span>}
+                        {player.streak && player.streak.count >= 3 && <StreakBadge type={player.streak.type} count={player.streak.count} />}
+                      </div>
+                      {hasThreatAlerts && player.smurfReasons.length > 0 && <p className="mt-1.5 text-[12px] font-medium leading-relaxed text-zinc-300">{player.smurfReasons.join(" · ")}</p>}
+                    </section>
+                  )}
+                  <CareerSection
+                    player={player}
+                    career={career}
+                    careerUsable={careerUsable}
+                    loading={loading}
+                    error={error}
+                    mapSplashes={mapSplashes}
+                    previousRankIcon={previousRankIcon}
+                    previousRankColor={previousRank?.color ?? "#A1A1AA"}
+                  />
+                  {!player.isSelf && accountPuuid && (
+                    <SavedPlayerSection
+                      saved={saved}
+                      note={note}
+                      expanded={noteExpanded}
+                      savedBusy={savedBusy}
+                      savedMessage={savedMessage}
+                      onExpandedChange={setNoteExpanded}
+                      onNoteChange={setNote}
+                      onSave={() => void updateSaved(true)}
+                      onRemove={() => void updateSaved(false)}
+                    />
+                  )}
+                </div>
+              ) : (
+                <div id="drawer-panel-matches" role="tabpanel" aria-labelledby="drawer-tab-matches" className="flex h-full min-h-0 flex-col p-4" data-testid="drawer-matches-panel">
+                  <MatchesSection career={career} careerUsable={careerUsable} loading={loading} error={error} onOpenMatch={(id, opener) => setOpenMatch({ id, opener })} />
+                </div>
+              )}
+            </div>
         </div>
-
-        <div className="p-4 space-y-4">
-          {player.smurf && player.smurfReasons.length > 0 && (
-            <div className="border border-amber-500/30 bg-amber-500/10 rounded-sm px-3 py-2.5 text-[12px] text-amber-200 font-semibold" data-testid="drawer-smurf-reasons">
-              {player.smurfReasons.join(" · ")}
-            </div>
-          )}
-
-          {!player.isSelf && accountPuuid && (
-            <SavedPlayerSection
-              saved={saved}
-              note={note}
-              savedBusy={savedBusy}
-              savedMessage={savedMessage}
-              onNoteChange={setNote}
-              onSave={() => void updateSaved(true)}
-              onRemove={() => void updateSaved(false)}
+        {openMatch && (
+          <div className="flex flex-col flex-1 min-h-0">
+            <MatchDetailContent
+              matchId={openMatch.id}
+              subject={player.puuid}
+              expected={career?.matches.find((match) => match.matchId === openMatch.id)}
+              meta={metaOverrides[openMatch.id]}
+              draft={matchDrafts[openMatch.id]}
+              onDraftChange={(draft) => {
+                setMatchDrafts((prev) => ({ ...prev, [openMatch.id]: draft }));
+              }}
+              isEmbedded
+              onBack={closeMatch}
+              onMetaSaved={(id, savedMeta) => {
+                setMetaOverrides((previous) => ({ ...previous, [id]: savedMeta }));
+                setMatchDrafts((previous) => ({
+                  ...previous,
+                  [id]: {
+                    note: savedMeta.note,
+                    tags: (savedMeta.tags ?? []).join(", "),
+                    bookmarked: savedMeta.bookmarked,
+                  },
+                }));
+              }}
+              onClose={onClose}
             />
-          )}
-
-          {/* Act rank information comes from the current competitive MMR payload. */}
-          <div className="space-y-2" data-testid="drawer-rank-chips">
-            <RankCard
-              label="Current rank"
-              name={player.rank}
-              icon={player.rankIcon}
-              color={player.rankColor}
-              rr={player.rankTier > 2 ? player.rr : null}
-              hero
-            />
-            <div className="grid grid-cols-2 gap-2">
-              <RankCard
-                label="Peak rank"
-                name={player.peakRank}
-                icon={player.peakIcon}
-                color={player.peakColor}
-                detail={player.peakAct ?? undefined}
-              />
-              <RankCard
-                label="Previous rank"
-                name={player.previousRank || "Unknown"}
-                icon={previousRankIcon}
-                color={previousRank?.color ?? "#A1A1AA"}
-              />
-            </div>
           </div>
-
-          {/* encounter history */}
-          {enc && (enc.withCount > 0 || enc.againstCount > 0) && (
-            <div className="grid grid-cols-2 gap-2" data-testid="drawer-encounter">
-              <Chip
-                label="Played with you"
-                value={`${enc.withCount}× · ${enc.winsWith}W–${enc.lossesWith}L`}
-                variant="ally"
-              />
-              <Chip
-                label="Played against you"
-                value={`${enc.againstCount}× · ${enc.winsAgainst}W–${enc.lossesAgainst}L`}
-                variant="enemy"
-              />
-            </div>
-          )}
-
-          {/* loadout */}
-          {featuredWeapons.length > 0 && (
-            <section data-testid="drawer-loadout">
-              <h3 className="mb-3 text-[11px] font-bold uppercase tracking-[0.2em] text-zinc-400">Featured loadout</h3>
-              <div className="grid grid-cols-2 gap-1.5">
-                {featuredWeapons.map((w) => (
-                  <div key={w.weapon} className="flex items-center gap-2 border border-edge rounded-sm px-2 py-1.5 bg-card">
-                    {w.skin?.icon && <img src={w.skin.icon} alt="" className="h-5 max-w-[64px] object-contain" loading="lazy" onError={(event) => { event.currentTarget.style.display = "none"; }} />}
-                    <div className="min-w-0">
-                      <div className="text-[12px] font-semibold text-zinc-100 truncate">{w.skin?.name ?? "Standard"}</div>
-                      <div className="text-[10px] uppercase tracking-widest text-zinc-500">{w.weapon === "Melee" ? "Knife" : w.weapon}</div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </section>
-          )}
-
-          <CareerSection
-            player={player}
-            career={career}
-            careerUsable={careerUsable}
-            loading={loading}
-            error={error}
-            mapSplashes={mapSplashes}
-            onOpenMatch={(matchId) => setOpenMatch(matchId)}
-          />
-        </div>
-      </div>
-
-      {openMatch && (
-        <MatchDetailModal
-          matchId={openMatch}
-          subject={player.puuid}
-          expected={career?.matches.find((match) => match.matchId === openMatch)}
-          meta={metaOverrides[openMatch]}
-          onMetaSaved={(id, m) => setMetaOverrides((prev) => ({ ...prev, [id]: m }))}
-          onClose={() => setOpenMatch(null)}
-        />
-      )}
-    </div>
+        )}
+        </Dialog.Content>
+      </div></Dialog.Portal></Dialog.Root>
   );
 }

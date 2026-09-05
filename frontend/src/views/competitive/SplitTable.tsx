@@ -4,12 +4,12 @@ import { fmtDelta, fmtNum } from "../../lib/format";
 
 export function SplitTable({ rows, kind, testId }: { rows: SplitRow[]; kind: "map" | "agent"; testId: string }) {
   if (rows.length === 0) {
-    return <p className="text-[12px] text-zinc-500 px-1 py-2">No rated matches yet.</p>;
+    return <p className="text-[12px] text-zinc-400 px-1 py-2">No rated matches yet.</p>;
   }
   return (
     <table className="w-full text-[12px]" data-testid={testId}>
       <thead>
-        <tr className="text-[10px] uppercase tracking-wider text-zinc-500 border-b border-edge">
+        <tr className="text-[12px] text-zinc-400 border-b border-edge">
           <th className="text-left font-medium py-1.5 pl-1">{kind === "map" ? "Map" : "Agent"}</th>
           <th className="text-right font-medium">Games</th>
           <th className="text-right font-medium">W–L</th>

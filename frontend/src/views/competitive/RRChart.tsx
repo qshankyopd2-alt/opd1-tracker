@@ -27,7 +27,7 @@ export function RRChart({ points }: { points: HistoryPoint[] }) {
 
   if (data.length < 2) {
     return (
-      <div className="h-[170px] flex items-center justify-center text-[12px] text-zinc-500" data-testid="rr-chart-empty">
+      <div className="h-[170px] flex items-center justify-center text-[12px] text-zinc-400" data-testid="rr-chart-empty">
         Not enough rated matches for a chart yet.
       </div>
     );
@@ -62,8 +62,8 @@ export function RRChart({ points }: { points: HistoryPoint[] }) {
       <svg viewBox={`0 0 ${W} ${H}`} className="w-full h-[170px]" preserveAspectRatio="none">
         <defs>
           <linearGradient id="rrfill" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopColor="#F97316" stopOpacity="0.28" />
-            <stop offset="100%" stopColor="#F97316" stopOpacity="0" />
+            <stop offset="0%" stopColor="var(--text-secondary)" stopOpacity="0.16" />
+            <stop offset="100%" stopColor="var(--text-secondary)" stopOpacity="0" />
           </linearGradient>
         </defs>
         {[0.25, 0.5, 0.75].map((f) => (
@@ -73,27 +73,27 @@ export function RRChart({ points }: { points: HistoryPoint[] }) {
             x2={W - PAD.right}
             y1={PAD.top + f * (H - PAD.top - PAD.bottom)}
             y2={PAD.top + f * (H - PAD.top - PAD.bottom)}
-            stroke="#27272A"
+            stroke="var(--border-subtle)"
             strokeWidth="1"
           />
         ))}
         <path d={area} fill="url(#rrfill)" />
-        <path d={path} fill="none" stroke="#F97316" strokeWidth="2" vectorEffect="non-scaling-stroke" />
+        <path d={path} fill="none" stroke="var(--text-primary)" strokeWidth="2" vectorEffect="non-scaling-stroke" />
         {h && hover !== null && (
           <>
-            <line x1={x(hover)} x2={x(hover)} y1={PAD.top} y2={H - PAD.bottom} stroke="#52525B" strokeWidth="1" strokeDasharray="3 3" />
-            <circle cx={x(hover)} cy={y(h.rating)} r="4" fill="#F97316" stroke="#09090B" strokeWidth="2" />
+            <line x1={x(hover)} x2={x(hover)} y1={PAD.top} y2={H - PAD.bottom} stroke="var(--text-muted)" strokeWidth="1" strokeDasharray="3 3" />
+            <circle cx={x(hover)} cy={y(h.rating)} r="4" fill="var(--text-primary)" stroke="var(--bg-panel)" strokeWidth="2" />
           </>
         )}
-        <circle cx={x(data.length - 1)} cy={y(data[data.length - 1].rating)} r="3.5" fill="#F97316" />
+        <circle cx={x(data.length - 1)} cy={y(data[data.length - 1].rating)} r="3.5" fill="var(--text-primary)" />
       </svg>
 
-      <div className="absolute top-1 left-2 text-[10px] text-zinc-500">{rankFromTier(Math.floor(hi / 100)).name}</div>
-      <div className="absolute bottom-4 left-2 text-[10px] text-zinc-600">{rankFromTier(Math.floor(lo / 100)).name}</div>
+      <div className="absolute top-1 left-2 text-[12px] text-zinc-400">{rankFromTier(Math.floor(hi / 100)).name}</div>
+      <div className="absolute bottom-4 left-2 text-[12px] text-zinc-400">{rankFromTier(Math.floor(lo / 100)).name}</div>
 
       {h && hRank && (
         <div
-          className="absolute -top-1 pointer-events-none bg-panel border border-edge rounded-sm px-2.5 py-1.5 text-[11px] shadow-lg z-10"
+          className="absolute -top-1 pointer-events-none bg-panel border border-edge rounded-sm px-2.5 py-1.5 text-[12px] shadow-lg z-10"
           style={{ left: `${((hover ?? 0) / (data.length - 1)) * 82 + 4}%` }}
           data-testid="rr-chart-tooltip"
         >

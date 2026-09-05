@@ -36,6 +36,7 @@ Assert-NativeSuccess "Checking Python architecture and timezone data"
     (Join-Path $root "backend\tests\test_live_name_refresh.py") `
     (Join-Path $root "backend\tests\test_live_party_detection.py") `
     (Join-Path $root "backend\tests\test_live_match_cache.py") `
+    (Join-Path $root "backend\tests\test_encounter_reconciliation.py") `
     -q
 Assert-NativeSuccess "Testing backend release logic"
 

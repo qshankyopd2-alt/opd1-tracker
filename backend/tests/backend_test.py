@@ -55,13 +55,13 @@ class TestHealthAndState:
 
     def test_state_contract(self, client: requests.Session) -> None:
         state = get_json(client, "/state")
-        assert state.get("state") in {"MENUS", "PREGAME", "INGAME", "UNKNOWN"}
+        assert state.get("state") in {"MENUS", "PREGAME", "INGAME", "OFFLINE", "UNKNOWN"}
 
 
 class TestLiveData:
     def test_live_board_contract(self, client: requests.Session, health: dict) -> None:
         board = get_json(client, "/live", timeout=60)
-        assert board.get("state") in {"MENUS", "PREGAME", "INGAME", "UNKNOWN"}
+        assert board.get("state") in {"MENUS", "PREGAME", "INGAME", "OFFLINE", "UNKNOWN"}
         assert isinstance(board.get("players", []), list)
         if health.get("clientStatus") == "ok" and health.get("dataSourcePreference") != "demo":
             assert board.get("source") == "local"

@@ -7,6 +7,7 @@ import { HistoryView } from "./views/history/HistoryView";
 import { EncountersView } from "./views/encounters/EncountersView";
 import { CollectionView } from "./views/collection/CollectionView";
 import { AsciiStudioView } from "./views/ascii/AsciiStudioView";
+
 import { SettingsView } from "./views/settings/SettingsView";
 
 const DesignModeBar = import.meta.env.DEV

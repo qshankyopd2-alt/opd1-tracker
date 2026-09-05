@@ -10,14 +10,16 @@ import { PlayerDrawer } from "./PlayerDrawer";
 import { RecapCard } from "./RecapCard";
 import { TeamPanel } from "./TeamPanel";
 import { splitTeams } from "./teamSplit";
+import { useRecentFormDetails } from "../../hooks/useRecentFormDetails";
 
 const designModeEnabled = import.meta.env.DEV && import.meta.env.VITE_DESIGN_MODE === "true";
 
 export function LiveView() {
   const { board, error, loading, showBoard, refresh } = useLiveData();
-  const [selected, setSelected] = useState<{ player: LivePlayer; accountPuuid: string | null } | null>(null);
+  const [selected, setSelected] = useState<{ player: LivePlayer; accountPuuid: string | null; restoreFocus: HTMLElement | null } | null>(null);
   const [savedOverrides, setSavedOverrides] = useState<Record<string, { saved: boolean; note: string }>>({});
   const [previewDrawerRequested, setPreviewDrawerRequested] = useState(false);
+  const { recentDetailsByPlayer, onRequestRecentDetails } = useRecentFormDetails();
   const accountPuuid = board?.selfPuuid ?? null;
 
   useEffect(() => {
@@ -51,7 +53,7 @@ export function LiveView() {
   useEffect(() => {
     if (!previewDrawerRequested || !board) return;
     const player = board.players.find((candidate) => candidate.smurf) ?? board.players[0];
-    if (player) setSelected({ player, accountPuuid: board.selfPuuid ?? null });
+    if (player) setSelected({ player, accountPuuid: board.selfPuuid ?? null, restoreFocus: null });
   }, [board, previewDrawerRequested]);
 
   if (loading && !board) {
@@ -85,50 +87,55 @@ export function LiveView() {
   const menus = board.state === "MENUS";
   const { allyId, enemyId, ally, enemy } = splitTeams(board);
 
+
   return (
     <div
       data-testid="live-view"
-      className={menus ? "space-y-4 p-5" : "flex h-full min-h-0 flex-col gap-3 overflow-hidden p-3"}
+      className={menus ? "w-full space-y-4 p-5" : "live-view flex h-full min-h-0 w-full flex-col gap-2 overflow-hidden p-2"}
     >
       <MatchHeader board={board} />
 
       {menus && board.recap && <RecapCard recap={board.recap} />}
 
-      <div className={`grid items-stretch gap-3 ${menus ? "" : "min-h-0 flex-1"} ${enemy.length > 0 ? "grid-cols-1 lg:grid-cols-2" : "grid-cols-1"}`}>
+      <div className={`matchup-board grid min-w-0 items-stretch gap-2 ${menus ? "" : "min-h-0 flex-1"} ${enemy.length > 0 || pregame ? "grid-cols-2" : "grid-cols-1"}`}>
         <TeamPanel
-          label={menus ? "Your Party" : "Your Team"}
-          accent="#10B981"
+          label={menus ? "Your party" : "Your team"}
+          accent="victory"
           players={ally}
           stats={allyId ? board.teamStats?.[allyId] : undefined}
           parties={board.parties ?? []}
           partyDetection={allyId ? board.partyDetection?.teams?.[allyId] : undefined}
           savedOverrides={savedOverrides}
           pregame={pregame}
-          onSelect={(player) => setSelected({ player, accountPuuid })}
+          onSelect={(player, restoreFocus) => setSelected({ player, accountPuuid, restoreFocus })}
+          recentDetailsByPlayer={recentDetailsByPlayer}
+          onRequestRecentDetails={onRequestRecentDetails}
           testId="ally-team-panel"
         />
         {enemy.length > 0 ? (
           <TeamPanel
-            label="Enemy Team"
-            accent="#EF4444"
+            label="Enemy team"
+            accent="defeat"
             players={enemy}
             stats={enemyId ? board.teamStats?.[enemyId] : undefined}
             parties={board.parties ?? []}
             partyDetection={enemyId ? board.partyDetection?.teams?.[enemyId] : undefined}
             savedOverrides={savedOverrides}
             pregame={pregame}
-            onSelect={(player) => setSelected({ player, accountPuuid })}
+            onSelect={(player, restoreFocus) => setSelected({ player, accountPuuid, restoreFocus })}
+            recentDetailsByPlayer={recentDetailsByPlayer}
+            onRequestRecentDetails={onRequestRecentDetails}
             testId="enemy-team-panel"
           />
         ) : (
           pregame && (
             <div
               data-testid="enemy-hidden-panel"
-              className="flex min-h-[120px] flex-col items-center justify-center gap-2 rounded-md border border-dashed border-edge bg-panel/30 text-zinc-500"
+              className="flex min-h-[120px] flex-1 flex-col items-center justify-center gap-2 rounded-xl border border-dashed border-edge bg-panel/30 text-zinc-500"
             >
               <EyeOff size={24} className="text-zinc-600 mb-1" />
-              <div className="text-[13px] font-semibold uppercase tracking-wider text-zinc-400">Enemy Team Hidden</div>
-              <div className="text-[11px]">Revealed once the match starts</div>
+              <div className="text-[14px] font-semibold text-[var(--text-primary)]">Enemy team hidden</div>
+              <div className="text-[12px] text-[var(--text-secondary)]">Revealed once the match starts</div>
             </div>
           )
         )}
@@ -136,8 +143,10 @@ export function LiveView() {
 
       {selected && (
         <PlayerDrawer
+          key={`${selected.accountPuuid}:${selected.player.puuid}`}
           player={selected.player}
           accountPuuid={selected.accountPuuid}
+          restoreFocus={selected.restoreFocus}
           onSavedChange={(saved, note) => {
             setSavedOverrides((current) => ({
               ...current,

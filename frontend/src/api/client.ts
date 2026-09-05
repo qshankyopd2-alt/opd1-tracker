@@ -66,7 +66,7 @@ async function api<T>(path: string, init?: RequestInit & { timeoutMs?: number })
         const kind = pathToKind(path);
         if (kind) {
           const { designApi } = await import("../dev/designMode");
-          return await designApi<T>(kind);
+          return await designApi<T>(kind, path, init);
         }
         throw new ApiError(`Design harness has no mapping for ${path}.`);
       } catch (err) {
@@ -115,6 +115,7 @@ async function api<T>(path: string, init?: RequestInit & { timeoutMs?: number })
 }
 
 function pathToKind(path: string): string | null {
+  if (/^\/api\/matches\/[^/]+\/meta$/.test(path)) return "matchMeta";
   if (path === "/api/health") return "health";
   if (path === "/api/state") return "state";
   if (path.startsWith("/api/live")) return "live";

@@ -206,6 +206,39 @@ class LiveMatch:
     def _presences(self) -> list:
         return riot_client.chat_presences(self.auth)
 
+    def pending_match_outcome(self, match_id: str) -> dict:
+        """Fetch only Match Details and return a terminal owner-relative result."""
+        md = self.auth.pd_get(f"/match-details/v1/matches/{match_id}", retries=0)
+        if not isinstance(md, dict):
+            return {"outcome": None, "sides": {}, "status": "not_ready"}
+        status = md.get("status") or md.get("httpStatus")
+        error_code = str(md.get("errorCode") or "").upper()
+        if status == 429 or error_code == "RATE_LIMITED":
+            return {"outcome": None, "sides": {}, "status": "rate_limited"}
+        if status == 404 or error_code in ("MATCH_NOT_FOUND", "RESOURCE_NOT_FOUND"):
+            return {"outcome": None, "sides": {}, "status": "not_found"}
+        if md.get("errorCode") or not isinstance(md.get("players"), list):
+            return {"outcome": None, "sides": {}, "status": "not_ready"}
+        owner = next((player for player in md["players"]
+                      if player.get("subject") == self.self_puuid), None)
+        owner_team = (owner or {}).get("teamId")
+        teams = [team for team in (md.get("teams") or []) if team.get("teamId")]
+        if not owner_team or len(teams) < 2 or any("won" not in team for team in teams):
+            return {"outcome": None, "sides": {}, "status": "not_ready"}
+        winners = {team["teamId"] for team in teams if team.get("won") is True}
+        if owner_team in winners:
+            outcome = "win"
+        elif winners:
+            outcome = "loss"
+        elif all(team.get("won") is False for team in teams):
+            outcome = "draw"
+        else:
+            return {"outcome": None, "sides": {}, "status": "not_ready"}
+        sides = {str(player["subject"]):
+                 ("with" if player.get("teamId") == owner_team else "against")
+                 for player in md["players"] if player.get("subject") != self.self_puuid}
+        return {"outcome": outcome, "sides": sides, "status": "resolved"}
+
     @staticmethod
     def _decode_private(private):
         if isinstance(private, dict):

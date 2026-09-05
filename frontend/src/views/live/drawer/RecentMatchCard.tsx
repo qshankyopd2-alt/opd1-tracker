@@ -1,58 +1,59 @@
 import type { CareerMatch } from "../../../api/types";
 import { AgentAvatar } from "../../../components/domain/AgentAvatar";
-import { fmtDelta, matchDate, resultColor } from "../../../lib/format";
+import { fmtDelta, matchAgeLabel, resultColor } from "../../../lib/format";
+import { OutcomeBadge, normalizeOutcome } from "../../../components/ui/OutcomeBadge";
 
-export function RecentMatchCard({ match, onOpen }: { match: CareerMatch; onOpen: () => void }) {
+export function RecentMatchCard({ match, onOpen }: { match: CareerMatch; onOpen: (opener: HTMLElement) => void }) {
+  const endingRank = match.rankAfter || "Unavailable";
+  const endingRankLabel = `${endingRank}${match.rrAfter !== null && match.rrAfter !== undefined ? ` · ${match.rrAfter} RR` : ""}`;
+  const fullMetaLabel = `${match.agent} · ${match.mode} · ${matchAgeLabel(match.startMillis)}`;
+
   return (
     <button
       type="button"
-      onClick={onOpen}
-      className="group relative min-h-[78px] w-full overflow-hidden rounded-sm border border-edge bg-card px-2.5 py-2 text-left transition-colors hover:border-zinc-600"
+      onClick={(event) => onOpen(event.currentTarget)}
+      className="recent-match-row group relative h-[90px] w-full overflow-hidden border-b border-edge bg-card px-3 py-2 text-left transition-colors hover:bg-card-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-info)]"
       data-testid={`drawer-match-${match.matchId}`}
     >
-      {match.mapSplash && (
-        <img
-          src={match.mapSplash}
-          alt=""
-          className="absolute inset-0 h-full w-full object-cover opacity-25 transition-opacity duration-200 group-hover:opacity-35"
-          loading="lazy"
-          draggable={false}
-        />
-      )}
-      <span className="absolute inset-0 bg-gradient-to-r from-card via-card/90 to-card/55" />
-
-      <span className="relative flex min-w-0 items-center gap-2">
-        <span className="h-9 w-1 shrink-0 rounded-full" style={{ backgroundColor: resultColor(match.result) }} />
-        <AgentAvatar portrait={match.agentPortrait} name={match.agent} color={match.agentColor} size={32} />
-        <span className="min-w-0 flex-1">
-          <span className="flex min-w-0 items-center gap-1.5">
-            <span className="truncate text-[13px] font-semibold text-zinc-100">{match.map}</span>
-            <span className="shrink-0 text-[10px] text-zinc-400">{match.mode}</span>
-          </span>
-          <span className="mt-0.5 flex items-center gap-1.5 text-[10px] text-zinc-400">
-            <span style={{ color: resultColor(match.result) }}>{match.result}</span>
-            <span>·</span>
-            <span>{matchDate(match.startMillis)}</span>
-          </span>
-        </span>
-        {match.rrDelta !== null && match.rrDelta !== undefined && (
-          <span className={`shrink-0 text-right text-[11px] font-semibold num ${match.rrDelta >= 0 ? "text-victory" : "text-defeat"}`}>
-            {fmtDelta(match.rrDelta)} RR
-          </span>
-        )}
+      <span className="recent-map-art" style={{ borderBottom: `3px solid ${resultColor(match.result)}` }}>
+        {match.mapSplash && <img src={match.mapSplash} alt="" loading="lazy" draggable={false} onError={(event) => { event.currentTarget.style.display = "none"; }} />}
+        <span><AgentAvatar portrait={match.agentPortrait} name={match.agent} color={match.agentColor} size={24} /></span>
       </span>
 
-      <span className="relative mt-2 grid grid-cols-[minmax(0,1fr)_auto_auto] items-center gap-3 border-t border-edge/70 pt-1.5">
-        <span className="text-[11px] text-zinc-200 num">
-          {match.kills}/{match.deaths}/{match.assists}
-          <span className="ml-1 text-[9px] uppercase tracking-wider text-zinc-500">K/D/A</span>
+      <span className="relative z-10 min-w-0 pr-2">
+        <span className="flex min-w-0 items-center gap-1.5">
+          <span className="truncate font-display text-[20px] font-semibold text-zinc-100">{match.map}</span>
+          <OutcomeBadge size="xs" outcome={normalizeOutcome(match.result)} />
         </span>
-        <span className="text-[10px] text-zinc-400 num">{match.acs} ACS</span>
-        <span className="flex min-w-0 items-center justify-end gap-1.5">
-          {match.rankIcon && <img src={match.rankIcon} alt={match.rankAfter ?? "Rank"} className="h-5 w-5 shrink-0" loading="lazy" onError={(event) => { event.currentTarget.style.display = "none"; }} />}
-          <span className="max-w-[96px] truncate text-right text-[10px] font-semibold" style={{ color: match.rankColor ?? "#A1A1AA" }}>
-            {match.rankAfter ?? "Unrated"}
-            {match.rrAfter !== null && match.rrAfter !== undefined ? ` · ${match.rrAfter} RR` : ""}
+        <span
+          className="mt-1 block truncate text-[12px] text-zinc-400"
+          title={fullMetaLabel}
+          aria-label={fullMetaLabel}
+        >
+          {fullMetaLabel}
+        </span>
+      </span>
+
+      <span className="relative z-10 text-[18px] font-semibold tabular-nums text-zinc-100">
+        {match.kills}/{match.deaths}/{match.assists}
+      </span>
+
+      <span className="relative z-10 text-[18px] font-semibold tabular-nums text-zinc-300">
+        {match.acs}
+      </span>
+
+      <span className="relative z-10 flex min-w-0 flex-col gap-0.5">
+        <span className={`text-[12px] font-semibold tabular-nums ${match.rrDelta !== null && match.rrDelta !== undefined && match.rrDelta >= 0 ? "text-victory" : "text-defeat"}`}>
+          {match.rrDelta !== null && match.rrDelta !== undefined ? `${fmtDelta(match.rrDelta)} RR` : "RR —"}
+        </span>
+        <span className="flex items-center gap-1.5 min-w-0">
+          {match.rankIcon && <img src={match.rankIcon} alt="" className="h-3.5 w-3.5 shrink-0" loading="lazy" onError={(event) => { event.currentTarget.style.display = "none"; }} />}
+          <span
+            className="truncate text-[14px] font-semibold text-text-primary"
+            title={endingRankLabel}
+            aria-label={`Ending rank ${endingRankLabel}`}
+          >
+            {endingRankLabel}
           </span>
         </span>
       </span>

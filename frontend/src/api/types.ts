@@ -58,8 +58,12 @@ export interface EncounterCounts {
   againstCount: number;
   winsWith: number;
   lossesWith: number;
+  drawsWith?: number;
+  pendingWith?: number;
   winsAgainst: number;
   lossesAgainst: number;
+  drawsAgainst?: number;
+  pendingAgainst?: number;
 }
 
 export interface LivePlayer {

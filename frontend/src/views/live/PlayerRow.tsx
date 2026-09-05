@@ -1,205 +1,245 @@
-import { useEffect, useState } from "react";
-import { AlertTriangle, Bookmark, EyeOff } from "lucide-react";
-import type { LivePlayer, WeaponLoadout } from "../../api/types";
+import { AlertTriangle, Bookmark, Check, Eye, EyeOff } from "lucide-react";
+import type { LivePlayer } from "../../api/types";
+import { WeaponLoadoutStrip } from "../../components/domain/WeaponLoadoutStrip";
 import { AgentAvatar } from "../../components/domain/AgentAvatar";
-import { FormDots } from "../../components/domain/FormDots";
+import { RecentFormTiles, type RecentFormDetail } from "../../components/domain/RecentFormTiles";
+import { StreakBadge } from "../../components/ui/StreakBadge";
+import { Truncate } from "../../components/ui/Truncate";
 import { fmtNum, fmtPct } from "../../lib/format";
-
-const FEATURED_WEAPONS = [
-  { weapon: "Vandal", label: "V" },
-  { weapon: "Phantom", label: "P" },
-  { weapon: "Operator", label: "O" },
-  { weapon: "Melee", label: "K" },
-] as const;
-
-function kdColor(kd: number | null): string {
-  if (kd === null) return "#A1A1AA";
-  if (kd >= 1.2) return "#10B981";
-  if (kd < 0.9) return "#EF4444";
-  return "#E4E4E7";
-}
-
-function Metric({ label, children, color }: { label: string; children: React.ReactNode; color?: string }) {
-  return (
-    <span className="min-w-0 px-1.5 py-0.5">
-      <span className="block truncate text-[8px] font-semibold uppercase tracking-[0.12em] text-zinc-500">
-        {label}
-      </span>
-      <span className="block text-[13px] font-bold leading-tight num" style={{ color }}>
-        {children}
-      </span>
-    </span>
-  );
-}
-
-function WeaponArtwork({ icon, name, fallback }: { icon: string | null | undefined; name: string; fallback: string }) {
-  const [failed, setFailed] = useState(false);
-  useEffect(() => setFailed(false), [icon]);
-  if (!icon || failed) return <span className="text-[10px] font-bold text-zinc-500">{fallback}</span>;
-  return <img src={icon} alt={name} className="h-7 w-[86%] object-contain" loading="lazy" onError={() => setFailed(true)} />;
-}
-
-function FeaturedLoadout({ weapons }: { weapons: WeaponLoadout[] }) {
-  const byWeapon = new Map(weapons.map((item) => [item.weapon, item]));
-
-  return (
-    <span className="grid min-w-0 flex-1 grid-cols-4 gap-1.5">
-      {FEATURED_WEAPONS.map(({ weapon, label }) => {
-        const item = byWeapon.get(weapon);
-        const skinName = item?.skin?.name;
-
-        return (
-          <span
-            key={weapon}
-            title={skinName ? `${weapon === "Melee" ? "Knife" : weapon}: ${skinName}` : `${weapon}: unavailable`}
-            className="flex h-10 min-w-0 items-center justify-center overflow-hidden rounded-sm border border-edge bg-panel/90"
-          >
-            <WeaponArtwork icon={item?.skin?.icon} name={skinName ?? weapon} fallback={label} />
-          </span>
-        );
-      })}
-    </span>
-  );
-}
 
 export function PlayerRow({
   player,
   pregame,
   onSelect,
+  recentDetails,
+  onRequestRecentDetails,
 }: {
   player: LivePlayer;
   pregame: boolean;
-  onSelect: (p: LivePlayer) => void;
+  onSelect: (p: LivePlayer, opener: HTMLElement) => void;
+  recentDetails?: RecentFormDetail[];
+  onRequestRecentDetails?: (puuid: string) => void;
 }) {
-  const enc = player.encounter;
-  const encTotal = enc ? enc.withCount + enc.againstCount : 0;
   const locked = pregame && player.selection === "locked";
-  const recentCount = player.recentMatches || 0;
-  const recentLabel = recentCount > 0 ? `Last ${recentCount}` : "Recent";
+  const encounterCount = player.encounter ? player.encounter.withCount + player.encounter.againstCount : 0;
+  const boostingReasons = player.smurfReasons.filter((reason) => /boost/i.test(reason));
+  const otherSmurfReasons = player.smurfReasons.filter((reason) => !/boost/i.test(reason));
+  const hasAlerts = player.smurf || boostingReasons.length > 0 || Boolean(player.streak && player.streak.count >= 3);
+  const openFrom = (element: HTMLElement) => onSelect(player, element);
 
   return (
-    <button
-      type="button"
+    <div
       data-testid={`player-row-${player.puuid}`}
-      onClick={() => onSelect(player)}
-      className={`group relative flex w-full flex-col overflow-hidden rounded-md border border-edge bg-card/95 px-2.5 py-1.5 text-left transition-colors hover:border-zinc-500 hover:bg-zinc-800/90 ${
-        player.isSelf ? "border-brand/50 bg-brand/5" : ""
-      }`}
+      className={`player-row relative select-none cursor-pointer group/row ${player.isSelf ? "player-row-self" : ""}`}
     >
-      {player.playerCard && (
+      <span className="live-player-background pointer-events-none absolute inset-0 overflow-hidden" aria-hidden="true">
+        {player.playerCard && (
           <img
             src={player.playerCard}
             alt=""
-            className="pointer-events-none absolute inset-0 h-full w-full object-cover object-center opacity-[0.25] saturate-50 transition-opacity duration-200 group-hover:opacity-[0.35]"
             draggable={false}
+            className="live-player-art absolute inset-0 h-full w-full object-cover object-[center_18%]"
+            loading="lazy"
             onError={(event) => { event.currentTarget.style.display = "none"; }}
           />
-      )}
-      <span className="pointer-events-none absolute inset-0 bg-gradient-to-r from-card/95 via-card/85 to-card/40" />
+        )}
+        <span className="live-player-matte absolute inset-0" />
+      </span>
 
-      {/* Top Row: Identity & Rank */}
-      <span className="relative flex min-w-0 items-start justify-between gap-3 mb-1.5">
-        <span className="flex min-w-0 items-start gap-2.5">
+      <button
+        type="button"
+        aria-label={`View profile for ${player.name}`}
+        data-testid={`player-row-open-${player.puuid}`}
+        onClick={(event) => openFrom(event.currentTarget)}
+        onFocus={() => onRequestRecentDetails?.(player.puuid)}
+        className="absolute inset-0 z-[1] rounded-[inherit] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-info)]"
+      />
+
+      <div className="live-player-avatar relative z-[2] flex h-11 w-11 shrink-0 items-center justify-center pointer-events-none">
+        <AgentAvatar
+          portrait={player.agentPortrait}
+          name={player.agent ?? player.name}
+          color={player.agentColor}
+          size={44}
+        />
+        {locked && (
           <span
-            className="mt-0.5 h-10 w-[3px] shrink-0 rounded-full"
-            title={player.party ? `Party ${player.party.number}` : undefined}
-            style={{ backgroundColor: player.party?.color ?? "transparent" }}
+            className="absolute -right-1 -top-1 flex h-4 w-4 items-center justify-center rounded-full bg-[var(--accent-team-a)] text-[var(--bg-app)] shadow-sm"
+            title="Agent locked"
+          >
+            <Check size={9} strokeWidth={3} />
+          </span>
+        )}
+      </div>
+
+      <div className="live-player-identity relative z-[2] flex min-w-0 flex-col justify-center gap-0.5 pointer-events-none">
+        <div className="flex min-w-0 items-center gap-1.5">
+          <span
+            className={`min-w-0 font-display text-[17px] font-semibold leading-snug ${
+              player.isSelf ? "text-brand" : "text-[var(--text-primary)]"
+            }`}
+          >
+            <Truncate text={player.name} maxWidth="100%" tooltip={true} />
+          </span>
+
+          {player.nameHidden && (
+            <EyeOff size={12} className="shrink-0 text-[var(--text-muted)]" aria-label="streamer mode name" />
+          )}
+
+          {player.saved && (
+            <Bookmark size={12} className="shrink-0 text-[var(--accent-gold)] fill-current" aria-label="Saved player" />
+          )}
+
+          {player.party && (
+            <span
+              title={`Party ${player.party.number}`}
+              className="live-party-badge inline-flex shrink-0 items-center gap-1 rounded border px-1.5 py-0.5 text-[11px] font-bold tracking-normal"
+              style={{
+                borderColor: player.party.color,
+                color: player.party.color,
+                backgroundColor: "var(--bg-panel)",
+              }}
+            >
+              <span className="h-1.5 w-1.5 rounded-sm" style={{ backgroundColor: player.party.color }} />
+              P{player.party.number}
+            </span>
+          )}
+
+        </div>
+
+        <div className="live-player-subtitle flex min-w-0 items-center gap-1.5 overflow-hidden whitespace-nowrap text-[12px] font-normal leading-relaxed text-[var(--text-secondary)]">
+          <span>{player.agent ?? "Unpicked"}</span>
+          {player.levelHidden ? <span className="live-player-level">· Level hidden</span> : <span className="live-player-level">· Level {player.level || "?"}</span>}
+          {encounterCount > 0 && <span className="live-player-seen inline-flex items-center gap-1"><Eye size={10} /> {encounterCount}x</span>}
+        </div>
+      </div>
+
+      {hasAlerts && <div className="live-player-alerts relative z-[2] flex min-w-0 items-center gap-1 pointer-events-none">
+        {player.smurf && (
+          <span
+            data-testid={`smurf-flag-${player.puuid}`}
+            title={otherSmurfReasons.join(" · ") || "Smurf indicators detected"}
+            className="live-alert-badge live-alert-smurf inline-flex shrink-0 items-center gap-1 rounded px-1.5 py-0.5 text-[11px] font-bold tracking-normal"
+          >
+            <AlertTriangle size={10} /> SMURF
+          </span>
+        )}
+        {boostingReasons.length > 0 && (
+          <span
+            data-testid={`boosting-flag-${player.puuid}`}
+            title={boostingReasons.join(" · ")}
+            className="live-alert-badge live-alert-boosting inline-flex shrink-0 items-center gap-1 rounded px-1.5 py-0.5 text-[11px] font-bold tracking-normal"
+          >
+            <AlertTriangle size={10} /> BOOSTING
+          </span>
+        )}
+        {player.streak && player.streak.count >= 3 && (
+          <StreakBadge type={player.streak.type} count={player.streak.count} />
+        )}
+      </div>}
+
+      <div className="live-player-rank relative z-[2] flex min-w-0 items-center justify-between gap-2 shrink-0 pointer-events-none">
+        <div className="flex min-w-0 flex-col leading-none">
+          <span
+            className="live-current-rank-name truncate font-display text-[14px] font-semibold leading-snug"
+            title={player.rank}
+          >
+            {player.rank}
+          </span>
+          {player.rankTier > 2 && (
+            <span className="mt-0.5 text-[12px] font-mono text-[var(--text-secondary)] tabular-nums">
+              {player.rr} RR
+            </span>
+          )}
+        </div>
+        {player.rankIcon && (
+          <img
+            src={player.rankIcon}
+            alt=""
+            draggable={false}
+            className="live-current-rank-icon h-8 w-8 shrink-0 object-contain"
+            loading="lazy"
+            onError={(event) => {
+              event.currentTarget.style.display = "none";
+            }}
           />
+        )}
+      </div>
 
-          <span className="relative shrink-0 mt-0.5">
-            <AgentAvatar portrait={player.agentPortrait} name={player.agent ?? player.name} color={player.agentColor} size={40} />
-            {locked && <span className="absolute -bottom-1 -right-1 h-3 w-3 rounded-full border-2 border-ink bg-victory" />}
-          </span>
+      <div className="live-player-stats relative z-[2] flex items-center justify-end gap-2 shrink-0 pointer-events-none">
+          <div className="flex flex-col items-center leading-none" data-testid="player-row-wr">
+            <span className="font-display text-[20px] font-semibold leading-none text-[var(--text-primary)] tabular-nums">
+              {fmtPct(player.winRate)}
+            </span>
+            <span className="mt-1 text-[11px] font-medium text-[var(--text-muted)]">
+              WR
+            </span>
+          </div>
 
-          <span className="min-w-0 flex-1 flex flex-col justify-center">
-            <span className="flex min-w-0 items-center gap-1.5">
-              <span dir="auto" className={`truncate font-display text-[17px] font-black tracking-wide leading-none ${player.isSelf ? "text-brand" : "text-zinc-100"}`}>
-                {player.name}
-              </span>
-              {player.party && (
-                <span
-                  title={`Party ${player.party.number}`}
-                  className="inline-flex shrink-0 items-center gap-1 rounded-sm border px-1.5 py-0.5 text-[9px] font-black uppercase tracking-widest"
-                  style={{ borderColor: player.party.color, color: player.party.color, backgroundColor: `${player.party.color}15` }}
-                >
-                  <span className="h-1.5 w-1.5 rounded-sm" style={{ backgroundColor: player.party.color }} />
-                  P{player.party.number}
-                </span>
+          <div className="flex flex-col items-center leading-none" data-testid="player-row-kd">
+            <span
+              className={`text-[17px] font-semibold font-mono tabular-nums ${
+                player.kd !== null && player.kd >= 1.2
+                  ? "text-[var(--accent-team-a)]"
+                  : player.kd !== null && player.kd <= 0.85
+                    ? "text-[var(--accent-team-b)]"
+                    : "text-[var(--text-secondary)]"
+              }`}
+            >
+              {player.kd !== null ? fmtNum(player.kd, 2) : "—"}
+            </span>
+            <span className="mt-1 text-[11px] font-medium text-[var(--text-muted)]">
+              KD
+            </span>
+          </div>
+
+          <div className="flex flex-col items-center leading-none" data-testid="player-row-hs">
+            <span className="text-[17px] font-semibold font-mono text-[var(--text-secondary)] tabular-nums">
+              {fmtPct(player.hsPct)}
+            </span>
+            <span className="mt-1 text-[11px] font-medium text-[var(--text-muted)]">
+              HS
+            </span>
+          </div>
+      </div>
+
+      {/* Tier 3: details that remain useful during a quick expanded-window scan. */}
+      <div className="tier-3-detail relative z-[2] pointer-events-none">
+        <div className="live-player-form-line flex min-w-0 items-center justify-between gap-2">
+          {player.peakRank && (
+            <div
+              className="live-player-peak flex min-w-0 items-center gap-1 text-[12px]"
+              title={`Peak Rank: ${player.peakRank}`}
+            >
+              <span className="text-[11px] font-semibold text-[var(--text-muted)]">Peak</span>
+              {player.peakIcon && (
+                <img
+                  src={player.peakIcon}
+                  alt=""
+                  draggable={false}
+                  className="h-4 w-4 shrink-0 object-contain"
+                  loading="lazy"
+                  onError={(event) => {
+                    event.currentTarget.style.display = "none";
+                  }}
+                />
               )}
-              {player.saved && <Bookmark size={14} className="shrink-0 text-amber-300" fill="currentColor" aria-label="Saved player" />}
-              {player.nameHidden && <EyeOff size={13} className="shrink-0 text-zinc-500" aria-label="streamer mode name" />}
-              {player.smurf && (
-                <span
-                  data-testid={`smurf-flag-${player.puuid}`}
-                  title={player.smurfReasons.join(" · ")}
-                  className="inline-flex shrink-0 items-center gap-1 rounded-sm border border-defeat bg-defeat px-1.5 py-0.5 text-[10px] font-black uppercase tracking-widest text-white"
-                >
-                  <AlertTriangle size={10} strokeWidth={3} /> SMURF
-                </span>
-              )}
-            </span>
-            <span className="mt-1 block truncate text-[11px] font-medium leading-none text-zinc-400">
-              {player.agent ?? "Unpicked"}{player.role ? ` · ${player.role}` : ""}
-              {player.levelHidden ? " · Lvl hidden" : ` · Lvl ${player.level || "?"}`}
-              {encTotal > 0 ? ` · seen ${encTotal}x` : ""}
-            </span>
-            {player.savedNote && <span className="mt-1 block truncate text-[11px] font-medium leading-none text-amber-300" title={player.savedNote}>{player.savedNote}</span>}
-          </span>
-        </span>
-
-        <span className="min-w-[130px] shrink-0 text-right flex flex-col items-end justify-center">
-          <span className="flex items-center justify-end gap-2.5">
-            <span className="flex flex-col items-end justify-center">
-              <span className="block text-[15px] font-black leading-none tracking-wide" style={{ color: player.rankColor }}>{player.rank}</span>
-              {player.rankTier > 2 && <span className="block mt-1 text-[11px] font-bold leading-none text-zinc-400 num">{player.rr} RR</span>}
-            </span>
-            {player.rankIcon && <img src={player.rankIcon} alt="" className="h-10 w-10 shrink-0" loading="lazy" onError={(event) => { event.currentTarget.style.display = "none"; }} />}
-          </span>
-          <span className="mt-1.5 flex items-center justify-end gap-1.5 text-[10px] font-bold leading-none text-zinc-500">
-            <span className="text-[9px] uppercase tracking-widest">Peak</span>
-            {player.peakIcon && <img src={player.peakIcon} alt="" className="h-4 w-4 shrink-0 opacity-80" loading="lazy" onError={(event) => { event.currentTarget.style.display = "none"; }} />}
-            <span className="truncate" style={{ color: player.peakColor }}>{player.peakRank}</span>
-          </span>
-        </span>
-      </span>
-
-      {/* Middle Row: Metrics Grid */}
-      <span className="relative mb-1.5 grid grid-cols-4 gap-px overflow-hidden rounded-sm border border-edge/60 bg-edge/40">
-        <span className="bg-ink/80 px-2 py-1.5 flex flex-col justify-center">
-          <Metric label="Act games">{player.games || "—"}</Metric>
-        </span>
-        <span className="bg-ink/80 px-2 py-1.5 flex flex-col justify-center">
-          <Metric label="Act WR">{fmtPct(player.winRate)}</Metric>
-        </span>
-        <span className="bg-ink/80 px-2 py-1.5 flex flex-col justify-center">
-          <Metric label={`${recentLabel} K/D`} color={kdColor(player.kd)}>
-            {player.kd === null ? <span className="animate-pulse text-zinc-600">...</span> : fmtNum(player.kd, 2)}
-          </Metric>
-        </span>
-        <span className="bg-ink/80 px-2 py-1.5 flex flex-col justify-center">
-          <Metric label={`${recentLabel} HS`}>{fmtPct(player.hsPct)}</Metric>
-        </span>
-      </span>
-
-      {/* Bottom Row: Weapons & Form */}
-      <span className="relative flex min-w-0 items-center justify-between gap-3">
-        <FeaturedLoadout weapons={player.weapons} />
-        <span className="flex shrink-0 items-center justify-end gap-3">
-          {player.streak && player.streak.count >= 3 && (
-            <span className={`rounded-sm border px-1.5 py-0.5 text-[11px] font-black num ${player.streak.type === "W" ? "border-victory/30 bg-victory/20 text-victory" : "border-defeat/30 bg-defeat/20 text-defeat"}`}>
-              {player.streak.count}{player.streak.type}
-            </span>
+              <span className="live-player-peak-name truncate font-medium text-[var(--text-secondary)]">{player.peakRank}</span>
+            </div>
           )}
-          {player.rrEarned !== null && player.rrEarned !== undefined && (
-            <span className={`text-[11px] font-black uppercase tracking-wider num ${player.rrEarned >= 0 ? "text-victory" : "text-defeat"}`}>
-              {player.rrEarned >= 0 ? `+${player.rrEarned}` : player.rrEarned} RR
-            </span>
-          )}
-          <span className="scale-95 origin-right">
-            <FormDots form={player.form} />
-          </span>
-        </span>
-      </span>
-    </button>
+
+          <div className="flex shrink-0 items-center border-l border-[var(--border-subtle)] pl-2">
+            <RecentFormTiles
+              form={player.form}
+              latestRr={player.rrEarned}
+              recentDetails={recentDetails}
+              onRequestDetails={() => onRequestRecentDetails?.(player.puuid)}
+              testId={`player-${player.puuid}-recent-form`}
+            />
+          </div>
+        </div>
+        <div className="live-player-loadout"><WeaponLoadoutStrip weapons={player.weapons} compact /></div>
+      </div>
+    </div>
   );
 }

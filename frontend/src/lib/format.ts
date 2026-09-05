@@ -49,6 +49,16 @@ export function matchDate(ms: number | null | undefined): string {
   return new Date(norm).toLocaleDateString(undefined, { month: "short", day: "numeric" });
 }
 
+export function matchAgeLabel(ts: number | null | undefined, now = Date.now()): string {
+  if (!ts) return "—";
+  const ms = ts > 1e12 ? ts : ts * 1000;
+  const hours = Math.max(0, Math.floor((now - ms) / 3_600_000));
+  if (hours < 1) return "Less than 1 hour ago";
+  if (hours < 96) return `${hours} ${hours === 1 ? "hour" : "hours"} ago`;
+  const days = Math.floor(hours / 24);
+  return `${days} ${days === 1 ? "day" : "days"} ago`;
+}
+
 export function resultColor(result: string | null | undefined): string {
   if (result === "Victory") return "#10B981";
   if (result === "Defeat") return "#EF4444";

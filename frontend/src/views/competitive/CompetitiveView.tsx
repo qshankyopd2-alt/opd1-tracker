@@ -45,13 +45,13 @@ export function CompetitiveView() {
         <EmptyState
           icon={LineChart}
           title="No competitive history yet"
-          message="Keep OPD1 Tracker open while VALORANT runs. Your last competitive matches are pulled automatically and every new game is recorded — RR graph, splits and insights build up from there."
+          message="Open VALORANT to load your recent competitive matches. Your rank progress, map results, and insights will appear here."
           testId="competitive-empty"
         >
           <button
             data-testid="competitive-refresh-button"
             onClick={refresh}
-            className="inline-flex items-center gap-1.5 border border-edge rounded-sm px-3 py-1.5 text-[11px] uppercase tracking-wider font-semibold text-zinc-300 hover:bg-zinc-800 transition-colors"
+            className="inline-flex items-center gap-1.5 border border-edge rounded-sm px-3 py-1.5 text-[12px] font-semibold text-zinc-300 hover:bg-zinc-800 transition-colors"
           >
             <RotateCw size={12} /> Check again
           </button>
@@ -65,16 +65,16 @@ export function CompetitiveView() {
   return (
     <div className="p-5 space-y-4" data-testid="competitive-view">
       <PageHeader title="Competitive">
-        {account.riotId && <span className="text-[12px] text-zinc-500 mr-2">{account.riotId}</span>}
+        {account.riotId && <span className="text-[12px] text-zinc-400 mr-2">{account.riotId}</span>}
         {stale && (
           <Badge color="#F59E0B" testId="competitive-stale-badge">
-            saved data · VALORANT offline
+            Saved data · VALORANT offline
           </Badge>
         )}
         <button
           data-testid="competitive-refresh-button"
           onClick={refresh}
-          className="ml-auto inline-flex items-center gap-1.5 border border-edge rounded-sm px-2.5 py-1.5 text-[11px] uppercase tracking-wider font-semibold text-zinc-400 hover:bg-zinc-800 transition-colors"
+          className="ml-auto inline-flex items-center gap-1.5 border border-edge rounded-sm px-2.5 py-1.5 text-[12px] font-semibold text-zinc-400 hover:bg-zinc-800 transition-colors"
         >
           <RotateCw size={12} /> Refresh
         </button>
@@ -90,13 +90,13 @@ export function CompetitiveView() {
               <span className="w-14 h-14 border border-edge rounded-md" />
             )}
             <div>
-              <div className="font-display font-black text-2xl leading-tight" style={{ color: current?.color }}>
+              <div className="font-display font-semibold text-2xl leading-tight text-zinc-100">
                 {current?.name ?? "Unranked"}
               </div>
               <div className="text-[12px] text-zinc-400 num">
                 {current?.rr ?? 0} RR
                 {summary && summary.winRate !== null && (
-                  <span className="text-zinc-500">
+                  <span className="text-zinc-400">
                     {" "}
                     · {summary.wins}W–{summary.losses}L ({fmtNum(summary.winRate, 1)}%)
                   </span>
@@ -107,9 +107,9 @@ export function CompetitiveView() {
 
           {summary?.next && (
             <div className="mt-4" data-testid="next-rank-progress">
-              <div className="flex justify-between text-[10px] uppercase tracking-wider text-zinc-500 mb-1">
+              <div className="flex justify-between text-[12px] text-zinc-400 mb-1">
                 <span>
-                  Next: <span style={{ color: summary.next.color }}>{summary.next.name}</span>
+                  Next: <span className="text-zinc-200">{summary.next.name}</span>
                 </span>
                 <span className="num">{summary.next.rrNeeded} RR to go</span>
               </div>
@@ -121,36 +121,36 @@ export function CompetitiveView() {
 
           <div className="grid grid-cols-3 gap-2 mt-4 text-center">
             <div className="border border-edge rounded-sm py-2">
-              <div className={`font-display font-bold text-lg num ${summary && summary.net >= 0 ? "text-victory" : "text-defeat"}`}>
+              <div className={`font-display font-semibold text-[24px] num ${summary && summary.net >= 0 ? "text-victory" : "text-defeat"}`}>
                 {fmtDelta(summary?.net ?? 0)}
               </div>
-              <div className="text-[9px] uppercase tracking-wider text-zinc-500">Net RR</div>
+              <div className="text-[11px] text-zinc-400">Net RR</div>
             </div>
             <div className="border border-edge rounded-sm py-2">
-              <div className="font-display font-bold text-lg num text-victory">{summary?.avgWin !== null && summary?.avgWin !== undefined ? fmtDelta(Math.round(summary.avgWin)) : "—"}</div>
-              <div className="text-[9px] uppercase tracking-wider text-zinc-500">Avg win</div>
+              <div className="font-display font-semibold text-[24px] num text-victory">{summary?.avgWin !== null && summary?.avgWin !== undefined ? fmtDelta(Math.round(summary.avgWin)) : "—"}</div>
+              <div className="text-[11px] text-zinc-400">Avg win</div>
             </div>
             <div className="border border-edge rounded-sm py-2">
-              <div className="font-display font-bold text-lg num text-defeat">{summary?.avgLoss !== null && summary?.avgLoss !== undefined ? fmtDelta(Math.round(summary.avgLoss)) : "—"}</div>
-              <div className="text-[9px] uppercase tracking-wider text-zinc-500">Avg loss</div>
+              <div className="font-display font-semibold text-[24px] num text-defeat">{summary?.avgLoss !== null && summary?.avgLoss !== undefined ? fmtDelta(Math.round(summary.avgLoss)) : "—"}</div>
+              <div className="text-[11px] text-zinc-400">Avg loss</div>
             </div>
           </div>
 
           {data.rankChanges.length > 0 && (
             <div className="mt-4 border-t border-edge pt-3" data-testid="rank-changes">
-              <h4 className="text-[10px] uppercase tracking-[0.25em] text-zinc-500 mb-1.5">Rank changes</h4>
+              <h4 className="text-[12px] text-zinc-400 mb-1.5">Rank changes</h4>
               <div className="space-y-1">
                 {data.rankChanges.slice(-4).reverse().map((c) => {
                   const to = rankFromTier(c.toTier);
                   return (
-                    <div key={c.matchId} className="flex items-center gap-2 text-[11px]">
+                    <div key={c.matchId} className="flex items-center gap-2 text-[12px]">
                       {c.type === "promotion" ? (
                         <ArrowUp size={12} className="text-victory" />
                       ) : (
                         <ArrowDown size={12} className="text-defeat" />
                       )}
                       <span style={{ color: to.color }}>{to.name}</span>
-                      <span className="text-zinc-600 ml-auto">{timeAgo(c.ts)}</span>
+                      <span className="text-zinc-400 ml-auto">{timeAgo(c.ts)}</span>
                     </div>
                   );
                 })}
@@ -161,10 +161,10 @@ export function CompetitiveView() {
 
         {/* RR chart */}
         <Section
-          title="RR Progression"
+          title="RR progression"
           testId="rr-chart-section"
           actions={
-            <span className="text-[10px] text-zinc-500 num">
+            <span className="text-[12px] text-zinc-400 num">
               {data.dataQuality.exact} exact · {data.dataQuality.estimated} estimated results
             </span>
           }
@@ -198,7 +198,7 @@ export function CompetitiveView() {
 
         <Section title="Insights" testId="insights-section">
           {data.insights.length === 0 ? (
-            <p className="text-[12px] text-zinc-500">
+            <p className="text-[12px] text-zinc-400">
               Insights unlock after {data.insightsMinimum} rated matches ({summary?.matches ?? 0} recorded so far).
             </p>
           ) : (
@@ -207,7 +207,7 @@ export function CompetitiveView() {
                 <div key={i} className="flex gap-2.5">
                   <Lightbulb
                     size={14}
-                    className={`mt-0.5 shrink-0 ${ins.tone === "pos" ? "text-victory" : ins.tone === "neg" ? "text-defeat" : "text-zinc-500"}`}
+                    className={`mt-0.5 shrink-0 ${ins.tone === "pos" ? "text-victory" : ins.tone === "neg" ? "text-defeat" : "text-zinc-400"}`}
                   />
                   <div>
                     <div className="text-[12px] font-semibold text-zinc-200">{ins.title}</div>
@@ -224,11 +224,11 @@ export function CompetitiveView() {
                 const act = data.actComparison![k];
                 return (
                   <div key={k} className="border border-edge rounded-sm p-2.5">
-                    <div className="text-[9px] uppercase tracking-[0.2em] text-zinc-500">{k} act</div>
+                    <div className="text-[11px] text-zinc-400">{k === "current" ? "Current" : "Previous"} act</div>
                     <div className="text-[13px] font-semibold num" style={{ color: act.current.color }}>
                       {act.current.name}
                     </div>
-                    <div className="text-[11px] text-zinc-500 num">
+                    <div className="text-[12px] text-zinc-400 num">
                       {act.wins}W–{act.losses}L · {fmtDelta(act.net)} RR
                     </div>
                   </div>

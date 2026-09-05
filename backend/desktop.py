@@ -14,10 +14,12 @@ import threading
 os.environ.setdefault("OPD1_QUIET", "1")
 
 from app import app  # noqa: E402  (imports load .env and build the API)
+import encounter_reconciler  # noqa: E402
 from werkzeug.serving import make_server  # noqa: E402
 
 
 def main() -> None:
+    encounter_reconciler.start()
     requested_port = int(os.getenv("BACKEND_PORT", os.getenv("PORT", "5000")))
     server = make_server("127.0.0.1", requested_port, app, threaded=True)
 

@@ -40,3 +40,6 @@ credentials.json
 Thumbs.db
 desktop.ini
 ~$*
+
+# Agent working directories and local session artifacts (not project deliverables)
+.agents/

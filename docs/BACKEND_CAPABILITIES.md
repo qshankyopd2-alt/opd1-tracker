@@ -52,19 +52,19 @@ Board caches: 3.5 s build freshness, 90 s hold for INGAME payload gaps, 20 s lob
 |---|---|
 | `GET /api/health` | service ok, appVersion, `clientStatus: ok\|not_running`, data-source preference, official key present |
 | `GET /api/state` | `MENUS\|PREGAME\|INGAME\|OFFLINE` + label |
-| `GET /api/live?seed&state` | full board (above) + `queue`, `session`, `recap` (after a match), `notice`, `encounter`, `saved`, and `savedNote` per player. Falls back to deterministic demo board (`source:"demo"`) when the client isn't running |
+| `GET /api/live?seed&state` | full board (above) + `session`, `recap` (after a match), `notice`, `encounter`, `saved`, and `savedNote` per player. Returns an OFFLINE board (`source:"local"`, empty players, client notice) when the client isn't running or ready (demo fallback removed) |
 | `GET /api/profile/{puuid}` | career: last 8 matches (`pd match-history` + details), averages, agent pool, map stats, co-players, per-match RR deltas (60 s server cache) |
-| `GET /api/match/{id}?subject=` | full 10-player scoreboard: KDA/ACS/HS%, ranks (mmr), MVP flags, team avg ranks |
+| `GET /api/match/{id}?subject=` | full 10-player scoreboard: KDA/ACS/HS%, ranks (mmr), MVP flags, team avg ranks (returns 503 if client offline) |
 | `GET /api/performance?tz=` | persisted competitive history (`data/rr_history.json`): points (RR delta/tier/rr per match, enriched with KDA/ACS/HS% via match details), summary (current rank, next-rank progress), map/agent/schedule splits, automated insights, milestones, act comparison, sessions, matchMeta, encounters. Triggers async backfill (`/mmr competitiveupdates`, 10 min TTL) + enrichment |
 | `GET /api/insights?tz=` | same payload without enrichment kick |
 | `GET /api/encounters?scope=` | players met before (`data/encounters.json`): with/against counts, W/L records both sides, rank/peak/KD/WR/level, teammate-stat aggregates, timeline |
 | `GET /api/saved-players` | account-scoped local watchlist built from the encounter store; includes note, counters, and encounter-game timeline; makes no Riot request |
 | `PUT /api/saved-players/{puuid}` | save/edit/remove a player note already observed in Live Match; makes no Riot request |
 | `GET /api/inventory` | owned skins (`pd /store/v1/entitlements/{puuid}/{type}`) priced via valorant-api content tiers → total VP + ≈USD, wallet (`pd /store/v1/wallet`: VP/RAD/KC), counts (buddies/cards/sprays/agents), tier breakdown, top/recent skins. 10 min cache, stale-cache fallback |
-| `GET/POST /api/settings` | persisted UI settings (`data/settings.json`): region, agent, mode, delay, dryRun, perMap, autoRefresh |
+| `GET/POST /api/settings` | persisted UI settings (`data/settings.json`): region, autoRefresh (pick/instalock settings agent, mode, delay, dryRun, perMap removed) |
 | `GET /api/region` | detected shard + region list |
 | `GET /api/agents` | agent roster (uuid, role, color, portraits) |
-| `GET/POST /api/queue` | party/queue snapshot + select/start/stop (glz parties API) |
+| `GET/POST /api/queue` | `GET`: party/queue snapshot from glz parties API; `POST`: returns 501 Not Implemented (queue controls removed, postponed feature) |
 | `GET /api/recap` | last finished match recap (detected on INGAME→MENUS transition) |
 | `GET/POST/DELETE /api/session*` | session tracker (net RR per sitting, archive) |
 | `PUT /api/matches/{id}/meta` | per-match note/tags/bookmark (`data/match_meta.json`) |
@@ -72,10 +72,10 @@ Board caches: 3.5 s build freshness, 90 s hold for INGAME payload gaps, 20 s lob
 ## Data availability matrix
 
 - **Only while in a match**: loadouts/skins, enemy identities, selection state, score, side, lock progress.
-- **Anytime the client runs**: lobby party board, rank/career/history for any PUUID, inventory, queue state.
+- **Anytime the client runs**: lobby party board, rank/career/history for any PUUID, inventory, queue snapshot.
 - **Persisted across restarts**: rr_history, encounters/saved players, sessions, match_meta, settings. Source development uses `backend/data/`; installed builds use per-user AppData and ship without data files.
-- **Demo fallback**: when VALORANT isn't running (or `DATA_SOURCE=demo`) `/api/live`, `/api/match`, `/api/profile`, `/api/recap`, `/api/encounters(demo)` return deterministic generated data marked `source:"demo"` / `demo:true`. The desktop UI rejects demo payloads and renders an offline state.
-- **Unsupported / not exposed**: official val-match-v1 without a production key (403 handled), name reveal for Incognito players without `RIOT_API_KEY`, per-round timelines (fetched but only aggregated).
+- **Demo / sample data removed**: `sample_data.py`, `sample_match.py`, and `pick_advisor.py` have been removed. When VALORANT isn't running or client is not ready, `/api/live` returns an empty OFFLINE board with `source:"local"` and an informational client notice, `/api/match` returns 503, and `/api/profile` returns an unavailable source indicator. The desktop UI renders an offline state.
+- **Unsupported / not exposed**: official val-match-v1 without a production key (403 handled), name reveal for Incognito players without `RIOT_API_KEY`, per-round timelines (fetched but only aggregated), queue start/stop/selection mutations (removed).
 
 ## Asset sources
 
