@@ -4,6 +4,24 @@ Entry point for AI agents and new developers working on this repository.
 Read this first, then `docs/BACKEND_CAPABILITIES.md` (the audited API/data
 contract).
 
+## Graphify — hosted code exploration
+
+Use the connected Graphify MCP at `https://api.graphify.com/mcp` for this
+repository (`qshankyopd2-alt/opd1-tracker`). For codebase discovery, query it
+before broad file searches: `query_graph` for questions, `graphify_callers`
+and `graphify_callees` for calls, and `graphify_file_neighbors` for dependencies.
+Start with a small token budget and expand only the relevant results.
+
+Check `graph_stats.commitSha` against the local checkout before relying on the
+index. Read current source for edits, uncommitted changes, missing results, or
+a stale/unavailable index; state the limitation and continue locally. Graph
+results do not replace tests or the source-of-truth rules below.
+
+Use the existing hosted index; do not install the local Graphify skill, build
+`graphify-out/`, or add local rebuild hooks unless explicitly requested.
+This adapts Graphify's instruction-file-first Codex guidance to our hosted MCP:
+https://graphify.com/integrations/codex
+
 ## What this is
 
 A Windows desktop VALORANT tracker: Tauri 2 shell + React 18 / TypeScript /
