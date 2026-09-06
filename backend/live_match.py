@@ -1116,7 +1116,8 @@ class LiveMatch:
                         "level": (pl or {}).get("accountLevel"),
                     })
             except Exception as e:
-                entry["error"] = str(e)
+                _log(f"diagnose_reveal failed: {e}")
+                entry["error"] = "Failed to read match history details."
             entry["nameEverPresent"] = any(x["namePresent"] for x in entry["matches"])
             report.append(entry)
 

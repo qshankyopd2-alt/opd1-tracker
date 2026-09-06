@@ -85,7 +85,7 @@ export function Sidebar() {
       </div>
 
       {/* Nav items */}
-      <nav className="flex-1 py-3 px-2 space-y-1 overflow-y-auto overflow-x-hidden">
+      <nav aria-label="Main navigation" className="flex-1 py-3 px-2 space-y-1 overflow-y-auto overflow-x-hidden">
         {NAV.map(({ id, label, icon: Icon }) => {
           const active = view === id;
           return (

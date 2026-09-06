@@ -180,9 +180,9 @@ def settings_post():
         merged.update(incoming)
         try:
             _save_settings(merged)
-        except Exception as e:
+        except Exception:
             app.logger.exception("settings save failed")
-            return jsonify({"ok": False, "message": str(e),
+            return jsonify({"ok": False, "message": "Failed to save settings.",
                             "settings": merged}), 200
     return jsonify({"ok": True, "settings": merged})
 
@@ -263,7 +263,7 @@ def build_live(seed: int = 7, want_state: str | None = None) -> dict:
                     return _LAST_GOOD["board"]
                 notice = _client_notice()
                 return {"state": "OFFLINE", "stateLabel": "Offline", "source": "local",
-                        "error": str(e), "players": [], "teams": {}, "parties": [],
+                        "error": "Failed to read live match data.", "players": [], "teams": {}, "parties": [],
                         "notice": notice, "appVersion": APP_VERSION}
 
     notice = _client_notice()
@@ -279,9 +279,10 @@ def state():
             lm = live_match.LiveMatch(LocalAuth())
             st = lm.game_state(lm._presences())
             return jsonify({"state": st, "stateLabel": STATES.get(st, st), "source": "local"})
-        except Exception as e:
+        except Exception:
+            app.logger.exception("game state fetch failed")
             return jsonify({"state": "OFFLINE", "stateLabel": "Offline",
-                            "source": "local", "error": str(e)})
+                            "source": "local", "error": "Failed to read game state."})
     return jsonify({"state": "OFFLINE", "stateLabel": "Offline", "source": "local"})
 
 @app.get("/api/live")
@@ -525,9 +526,9 @@ def debug_reveal():
         return jsonify({"error": "Live client not available — open VALORANT."}), 400
     try:
         return jsonify(live_match.LiveMatch(LocalAuth()).diagnose_reveal())
-    except Exception as e:
+    except Exception:
         app.logger.exception("debug reveal failed")
-        return jsonify({"error": str(e)}), 500
+        return jsonify({"error": "Failed to diagnose player names."}), 500
 
 @app.get("/api/profile/<puuid>")
 def profile(puuid: str):
@@ -569,9 +570,9 @@ def player(puuid: str):
 
     try:
         payload = build_player_payload(puuid)
-    except Exception as e:
+    except Exception:
         app.logger.exception("player payload failed")
-        return jsonify({"error": f"Failed to build player profile: {e}"}), 500
+        return jsonify({"error": "Failed to build player profile."}), 500
 
     _CACHE[puuid] = (now, payload)
     return jsonify(payload)
@@ -588,7 +589,10 @@ def region():
 
 @app.get("/api/queue")
 def queue_get():
-    return jsonify(client.party_state())
+    snapshot = client.party_state()
+    if not snapshot.get("available"):
+        snapshot = {**snapshot, "message": "Party unavailable — open VALORANT or try again shortly."}
+    return jsonify(snapshot)
 
 @app.post("/api/queue")
 def queue_post():

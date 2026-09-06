@@ -152,6 +152,7 @@ function MetaEditor({
         <button
           type="button"
           data-testid="meta-bookmark-toggle"
+          aria-pressed={bookmarked}
           disabled={busy}
           onClick={handleBookmarkToggle}
           className={`inline-flex items-center gap-1 rounded-sm border px-2.5 py-1.5 text-[12px] font-semibold transition-colors ${
@@ -299,7 +300,7 @@ export function MatchDetailContent({
           )}
           <button
             type="button"
-            aria-label="Close"
+            aria-label="Close match details"
             data-testid="match-detail-close"
             onClick={onClose}
             className="ml-auto flex h-8 w-8 items-center justify-center rounded-[var(--radius-sm)] border border-[var(--border-subtle)] bg-[var(--bg-panel)] text-[var(--text-secondary)] transition-colors hover:text-[var(--text-primary)] hover:bg-[var(--bg-card)] focus-visible:ring-2 focus-visible:ring-[var(--accent-info)] cursor-pointer"
