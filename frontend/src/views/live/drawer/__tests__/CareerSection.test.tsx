@@ -35,6 +35,9 @@ describe("Player Drawer sections", () => {
     expect(html).toContain("Rank history");
     expect(html).toContain("Most played agents");
     expect(html).toContain("Most played maps");
+    expect(html).toContain('class="sr-only"> win rate</span>');
+    expect(html).toContain("Jett");
+    expect(html).toContain("grid-cols-[repeat(auto-fit,minmax(132px,1fr))]");
     expect(html).toContain("Frequent teammates");
     expect(html).toContain("Connections");
     expect(html).toContain("Together");
@@ -63,8 +66,8 @@ describe("Player Drawer sections", () => {
 
     expect(html.match(/<li/g)).toHaveLength(6);
     expect(html).toContain("Player 8f1c2a7e");
-    expect(html).toContain("Jett · Raze");
-    expect(html).toContain("Agents unavailable");
+    expect(html).not.toContain("Jett · Raze");
+    expect(html).not.toContain("Agents unavailable");
     expect(html).toContain("Party");
     expect(html).toContain("1 match");
     expect(html).toContain("6 matches");

@@ -60,7 +60,8 @@ describe("PlayerRow hierarchy", () => {
 
     expect(html).not.toContain("Duelist");
     expect(html).toContain('data-testid="streak-w"');
-    expect(html).toContain("max-width:100%");
+    expect(html).toContain("max-w-full");
+    expect(html).toContain("#MOCK");
   });
 
   it("reserves threat classes for smurf and boosting while streak uses proper state", () => {

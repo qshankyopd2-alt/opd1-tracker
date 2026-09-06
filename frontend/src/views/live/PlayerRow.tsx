@@ -4,7 +4,7 @@ import { WeaponLoadoutStrip } from "../../components/domain/WeaponLoadoutStrip";
 import { AgentAvatar } from "../../components/domain/AgentAvatar";
 import { RecentFormTiles, type RecentFormDetail } from "../../components/domain/RecentFormTiles";
 import { StreakBadge } from "../../components/ui/StreakBadge";
-import { Truncate } from "../../components/ui/Truncate";
+import { PlayerIdentity } from "../../components/domain/PlayerIdentity";
 import { fmtNum, fmtPct } from "../../lib/format";
 
 export function PlayerRow({
@@ -49,6 +49,7 @@ export function PlayerRow({
       <button
         type="button"
         aria-label={`View profile for ${player.name}`}
+        title={player.name}
         data-testid={`player-row-open-${player.puuid}`}
         onClick={(event) => openFrom(event.currentTarget)}
         onFocus={() => onRequestRecentDetails?.(player.puuid)}
@@ -79,7 +80,7 @@ export function PlayerRow({
               player.isSelf ? "text-brand" : "text-[var(--text-primary)]"
             }`}
           >
-            <Truncate text={player.name} maxWidth="100%" tooltip={true} />
+            <PlayerIdentity name={player.name} />
           </span>
 
           {player.nameHidden && (

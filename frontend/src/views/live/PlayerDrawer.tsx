@@ -4,6 +4,7 @@ import * as Dialog from "@radix-ui/react-dialog";
 import { ApiError, backend } from "../../api/client";
 import type { Career, LivePlayer, MatchMeta } from "../../api/types";
 import { AgentAvatar } from "../../components/domain/AgentAvatar";
+import { PlayerIdentity } from "../../components/domain/PlayerIdentity";
 import { Badge } from "../../components/ui/Badge";
 import { StreakBadge } from "../../components/ui/StreakBadge";
 import { RANKS } from "../../lib/ranks";
@@ -185,9 +186,9 @@ export function PlayerDrawer({
               </span>
               <div className="relative min-w-0 flex-1">
                 {!openMatch ? (
-                  <Dialog.Title id="player-drawer-title" dir="auto" className="truncate font-display text-[26px] font-semibold leading-tight text-[var(--text-primary)]">{player.name}</Dialog.Title>
+                  <Dialog.Title id="player-drawer-title" dir="auto" className="min-w-0 font-display text-[26px] font-semibold leading-tight text-[var(--text-primary)]"><PlayerIdentity name={player.name} /></Dialog.Title>
                 ) : (
-                  <h2 id="player-drawer-title" dir="auto" className="truncate font-display text-[26px] font-semibold leading-tight text-[var(--text-primary)]">{player.name}</h2>
+                  <h2 id="player-drawer-title" dir="auto" className="min-w-0 font-display text-[26px] font-semibold leading-tight text-[var(--text-primary)]"><PlayerIdentity name={player.name} /></h2>
                 )}
                 {player.title && <div className="mt-1.5 truncate text-[13px] font-medium text-[var(--text-muted)]">{player.title}</div>}
                 <div className="mt-1 truncate text-[13px] font-medium text-[var(--text-secondary)]">

@@ -70,7 +70,8 @@ describe("design preview fixtures", () => {
     expect(snapshot.career.agentPool.length).toBeGreaterThan(0);
     expect(snapshot.career.mapStats.length).toBeGreaterThan(0);
     expect(snapshot.career.coPlayers).toHaveLength(6);
-    expect(snapshot.career.coPlayers.some((player) => player.name === "NovaFlux")).toBe(false);
+    expect(snapshot.career.coPlayers.some((player) => player.name === "NovaFlux#MOCK")).toBe(false);
+    expect(snapshot.career.coPlayers.filter((player) => player.name).every((player) => player.name?.includes("#"))).toBe(true);
     expect(snapshot.career.coPlayers.some((player) => !player.name && !player.puuid.startsWith("teammate-"))).toBe(true);
     expect(snapshot.board.players.some((player) => player.smurfReasons.some((reason) => /boost/i.test(reason)))).toBe(true);
     for (const skin of snapshot.inventory.top ?? []) expect(skin.icon).toBeTruthy();

@@ -264,7 +264,7 @@ export function CareerSection({
       {/* 5. Most Played Maps */}
       {careerUsable && career && career.mapStats.length > 0 && (
         <OverviewSection label="Most played maps" testId="drawer-maps">
-          <div className="flex flex-col gap-px overflow-hidden rounded-md bg-edge">
+          <div className="grid grid-cols-[repeat(auto-fit,minmax(132px,1fr))] gap-2">
             {career.mapStats.map((map) => (
               <MapStatCard
                 key={map.map}
@@ -281,11 +281,11 @@ export function CareerSection({
       {/* 4. Most Played Agents */}
       {careerUsable && career && career.agentPool.length > 0 && (
         <OverviewSection label="Most played agents" testId="drawer-agent-pool">
-          <div className="flex flex-col gap-px overflow-hidden rounded-md bg-edge">
+          <div className="grid grid-cols-[repeat(auto-fit,minmax(132px,1fr))] gap-2">
             {career.agentPool.map((agent) => (
               <div
                 key={agent.agent}
-                className="flex min-w-0 items-center gap-3 bg-panel px-3 py-2"
+                className="flex min-w-0 flex-col items-center gap-1.5 bg-panel px-2 py-2 text-center"
               >
                 <AgentAvatar
                   portrait={agent.portrait}
@@ -293,11 +293,11 @@ export function CareerSection({
                   color={agent.color}
                   size={24}
                 />
-                <span className="flex-1 truncate font-display text-[14px] font-semibold text-zinc-100">
+                <span className="max-w-full truncate font-display text-[14px] font-semibold text-zinc-100">
                   {agent.agent}
                 </span>
                 <span className="shrink-0 text-[12px] font-medium text-zinc-400 num">
-                  {agent.games} {agent.games === 1 ? "match" : "matches"} · <span className="text-victory font-semibold">{agent.winRate}%</span> win rate
+                  {agent.games} {agent.games === 1 ? "match" : "matches"} · <span className="text-victory font-semibold">{agent.winRate}%<span className="sr-only"> win rate</span></span>
                 </span>
               </div>
             ))}

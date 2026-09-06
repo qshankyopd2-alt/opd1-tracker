@@ -185,10 +185,10 @@ function makePlayer(index: number, opts: {
   return {
     puuid: `puuid-${opts.team}-${index}`,
     name: opts.longName
-      ? "XxX_" + (opts.name ?? pick(SAMPLE_NAMES, index)) + "_LONG_RADIANT_Pro_2026_XxX"
+      ? "XxX_" + (opts.name ?? pick(SAMPLE_NAMES, index)) + "_LONG_RADIANT_Pro_2026_XxX#MOCK"
       : opts.nameHidden
         ? "HiddenPlayer#????"
-        : opts.name ?? pick(SAMPLE_NAMES, index),
+        : `${opts.name ?? pick(SAMPLE_NAMES, index)}#MOCK`,
     nameHidden: Boolean(opts.nameHidden),
     team: opts.team === "ally" ? "Blue" : "Red",
     isSelf,
@@ -468,12 +468,12 @@ function makeCareer(): Career {
     matches,
     averages,
     coPlayers: [
-      { puuid: "teammate-1", name: "PixelRift", sharedMatches: 6, agents: ["Jett", "Raze"], isParty: true },
-      { puuid: "teammate-2", name: "MakoLine", sharedMatches: 4, agents: ["Killjoy", "Cypher"], isParty: false },
-      { puuid: "teammate-3", name: "VexOrbit", sharedMatches: 3, agents: ["Omen"], isParty: false },
-      { puuid: "teammate-4", name: "A Very Long Teammate Name That Must Truncate", sharedMatches: 3, agents: ["Sova", "Fade"], isParty: true },
+      { puuid: "teammate-1", name: "PixelRift#MOCK", sharedMatches: 6, agents: ["Jett", "Raze"], isParty: true },
+      { puuid: "teammate-2", name: "MakoLine#MOCK", sharedMatches: 4, agents: ["Killjoy", "Cypher"], isParty: false },
+      { puuid: "teammate-3", name: "VexOrbit#MOCK", sharedMatches: 3, agents: ["Omen"], isParty: false },
+      { puuid: "teammate-4", name: "A Very Long Teammate Name That Must Truncate#1234", sharedMatches: 3, agents: ["Sova", "Fade"], isParty: true },
       { puuid: "8f1c2a7e9d4b6083f761c5aa21bb94de", name: null, sharedMatches: 2, agents: ["Sage"], isParty: false },
-      { puuid: "teammate-6", name: "QuietOrbit", sharedMatches: 1, agents: [], isParty: false },
+      { puuid: "teammate-6", name: "QuietOrbit#MOCK", sharedMatches: 1, agents: [], isParty: false },
     ],
     agentPool,
     mapStats,
