@@ -182,7 +182,7 @@ def settings_post():
             _save_settings(merged)
         except Exception as e:
             app.logger.exception("settings save failed")
-            return jsonify({"ok": False, "message": str(e),
+            return jsonify({"ok": False, "message": "Failed to save settings.",
                             "settings": merged}), 200
     return jsonify({"ok": True, "settings": merged})
 
@@ -263,7 +263,7 @@ def build_live(seed: int = 7, want_state: str | None = None) -> dict:
                     return _LAST_GOOD["board"]
                 notice = _client_notice()
                 return {"state": "OFFLINE", "stateLabel": "Offline", "source": "local",
-                        "error": str(e), "players": [], "teams": {}, "parties": [],
+                        "error": "Failed to fetch live scoreboard.", "players": [], "teams": {}, "parties": [],
                         "notice": notice, "appVersion": APP_VERSION}
 
     notice = _client_notice()
@@ -280,8 +280,9 @@ def state():
             st = lm.game_state(lm._presences())
             return jsonify({"state": st, "stateLabel": STATES.get(st, st), "source": "local"})
         except Exception as e:
+            app.logger.exception("state fetch failed")
             return jsonify({"state": "OFFLINE", "stateLabel": "Offline",
-                            "source": "local", "error": str(e)})
+                            "source": "local", "error": "Failed to fetch game state."})
     return jsonify({"state": "OFFLINE", "stateLabel": "Offline", "source": "local"})
 
 @app.get("/api/live")
@@ -527,7 +528,7 @@ def debug_reveal():
         return jsonify(live_match.LiveMatch(LocalAuth()).diagnose_reveal())
     except Exception as e:
         app.logger.exception("debug reveal failed")
-        return jsonify({"error": str(e)}), 500
+        return jsonify({"error": "Failed to diagnose reveal."}), 500
 
 @app.get("/api/profile/<puuid>")
 def profile(puuid: str):
