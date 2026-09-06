@@ -19,7 +19,7 @@ export function LiveView() {
   const [selected, setSelected] = useState<{ player: LivePlayer; accountPuuid: string | null; restoreFocus: HTMLElement | null } | null>(null);
   const [savedOverrides, setSavedOverrides] = useState<Record<string, { saved: boolean; note: string }>>({});
   const [previewDrawerRequested, setPreviewDrawerRequested] = useState(false);
-  const { recentDetailsByPlayer, onRequestRecentDetails } = useRecentFormDetails();
+  const { recentDetailsByPlayer, onRequestRecentDetails } = useRecentFormDetails(`${board?.selfPuuid}:${board?.matchId}:${board?.state}`);
   const accountPuuid = board?.selfPuuid ?? null;
 
   useEffect(() => {
@@ -111,6 +111,7 @@ export function LiveView() {
           recentDetailsByPlayer={recentDetailsByPlayer}
           onRequestRecentDetails={onRequestRecentDetails}
           testId="ally-team-panel"
+          inferredGroups={board.inferredGroups}
         />
         {enemy.length > 0 ? (
           <TeamPanel
@@ -126,6 +127,7 @@ export function LiveView() {
             recentDetailsByPlayer={recentDetailsByPlayer}
             onRequestRecentDetails={onRequestRecentDetails}
             testId="enemy-team-panel"
+            inferredGroups={board.inferredGroups}
           />
         ) : (
           pregame && (
@@ -146,6 +148,7 @@ export function LiveView() {
           key={`${selected.accountPuuid}:${selected.player.puuid}`}
           player={selected.player}
           accountPuuid={selected.accountPuuid}
+          livePlayers={board.players}
           restoreFocus={selected.restoreFocus}
           onSavedChange={(saved, note) => {
             setSavedOverrides((current) => ({

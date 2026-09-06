@@ -104,6 +104,7 @@ export function Sidebar() {
             >
               <span className="flex h-5 w-5 shrink-0 items-center justify-center">
                 <Icon
+                  aria-hidden="true"
                   size={17}
                   className={active ? "text-brand" : "text-[var(--text-muted)]"}
                 />

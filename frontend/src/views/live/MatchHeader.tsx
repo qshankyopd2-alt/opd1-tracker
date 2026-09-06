@@ -1,9 +1,9 @@
 import type { LiveBoard } from "../../api/types";
 
 export function probabilityTone(value: number): string {
-  if (value >= 55) return "var(--accent-team-a)";
-  if (value <= 45) return "var(--accent-team-b)";
-  return "var(--text-secondary)";
+  if (value >= 60) return "var(--color-win)";
+  if (value < 40) return "var(--color-loss)";
+  return "#ff9800";
 }
 
 export function MatchHeader({ board }: { board: LiveBoard }) {
@@ -30,7 +30,7 @@ export function MatchHeader({ board }: { board: LiveBoard }) {
             style={{ width: `${probability}%`, backgroundColor: probabilityTone(probability) }}
           />
         </div>
-        <span className="num w-12 shrink-0 text-right text-[18px] font-semibold text-[var(--text-primary)]">{probability}%</span>
+        <span style={{ color: probabilityTone(probability) }} className="num w-12 shrink-0 text-right text-[18px] font-semibold">{probability}%</span>
       </section>
     );
   }

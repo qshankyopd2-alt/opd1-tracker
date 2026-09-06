@@ -290,7 +290,12 @@ def live():
         seed = int(request.args.get("seed", 7))
     except (TypeError, ValueError):
         seed = 7
-    return jsonify(build_live(seed, request.args.get("state")))
+    board = dict(build_live(seed, request.args.get("state")))
+    # Recompute only derived evidence, including on a cached board; never bypass Riot throttling.
+    if board.get("state") not in ("PREGAME", "INGAME"):
+        live_match.inferred_groups.activate(board.get("selfPuuid"), None)
+    board["inferredGroups"] = live_match.inferred_groups.for_board(board)
+    return jsonify(board)
 
 
 def _refresh_encounter_history(owner: str | None) -> None:

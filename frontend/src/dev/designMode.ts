@@ -8,7 +8,7 @@
 // still gates rendering on `source === "local"`, so the dev harness cannot
 // accidentally present fixtures as Riot data in a production build.
 
-import type { Health, MatchMeta } from "../api/types";
+import type { Career, Health, MatchMeta } from "../api/types";
 import { makeSnapshot, type PreviewSnapshot } from "./previewFixtures";
 
 export interface BackendConnection {
@@ -20,6 +20,7 @@ export interface BackendConnection {
 export type PreviewViewId =
   | "live-pregame"
   | "live-ingame"
+  | "live-groups"
   | "live-menus"
   | "live-offline"
   | "live-drawer"
@@ -38,6 +39,7 @@ export type PreviewViewId =
 export const PREVIEW_VIEWS: { id: PreviewViewId; label: string; group: string }[] = [
   { id: "live-pregame", label: "Live · PREGAME (own team only)", group: "Live" },
   { id: "live-ingame", label: "Live · INGAME (both teams)", group: "Live" },
+  { id: "live-groups", label: "Groups · open NovaFlux, then PixelRift (1 → 3 matches)", group: "Live" },
   { id: "live-menus", label: "Live · MENUS (lobby)", group: "Live" },
   { id: "live-offline", label: "Live · OFFLINE", group: "Live" },
   { id: "live-drawer", label: "Live · Player Drawer open", group: "Live" },
@@ -63,9 +65,13 @@ export const isDesignMode = (): boolean => {
 let snapshot: PreviewSnapshot = makeSnapshot("INGAME", 1);
 let healthOverride: Health | null = null;
 let errorOverride: { error: string } | null = null;
+let groupPreview = false;
+const groupProfiles = new Map<string, Career>();
 
 export function setDesignSnapshot(next: PreviewSnapshot): void {
   snapshot = next;
+  groupPreview = false;
+  groupProfiles.clear();
 }
 
 export function setDesignHealth(next: Health | null): void {
@@ -79,6 +85,11 @@ export function setDesignError(next: { error: string } | null): void {
 export function applyDesignView(view: PreviewViewId): void {
   setDesignError(null);
   switch (view) {
+    case "live-groups":
+      setDesignSnapshot(makeSnapshot("INGAME", 1));
+      snapshot.board.inferredGroups = [];
+      groupPreview = true;
+      break;
     case "live-pregame":
       setDesignSnapshot(makeSnapshot("PREGAME", 1));
       break;
@@ -198,8 +209,32 @@ export async function designApi<T>(kind: string, path: string, init?: RequestIni
       return snap.savedPlayers as unknown as T;
     case "inventory":
       return snap.inventory as unknown as T;
-    case "profile":
-      return snap.career as unknown as T;
+    case "profile": {
+      const puuid = decodeURIComponent(path.split("/")[3]);
+      if (!groupPreview) return { ...snap.career, puuid } as T;
+      const allies = snap.board.players.filter((p) => p.team === snap.board.players[0].team);
+      const pair = [allies[0], allies[3]];
+      const index = pair.findIndex((p) => p.puuid === puuid);
+      const career = structuredClone(snap.career);
+      career.puuid = puuid;
+      career.matches = career.matches.map((match, i) => ({ ...match,
+        matchId: i >= 5 && index >= 0 && (index === 1 || i === 7) ? `shared-${i}` : `${puuid}-${i}`,
+        teammates: i >= 5 && index >= 0 && (index === 1 || i === 7)
+          ? pair.filter((p) => p.puuid !== puuid).map((p) => ({ puuid: p.puuid, name: p.name, agent: p.agent ?? "Unknown" })) : [],
+      }));
+      groupProfiles.set(puuid, career);
+      const shared = new Map<string, number>();
+      for (const profile of groupProfiles.values()) {
+        for (const match of profile.matches) {
+          if (match.matchId.startsWith("shared-")) shared.set(match.matchId, match.startMillis);
+        }
+      }
+      snapshot = { ...snap, board: { ...snap.board, inferredGroups: shared.size ? [{
+        id: "G1", team: pair[0].team, members: pair.map((p) => p.puuid), sharedMatches: shared.size,
+        partyMatches: 0, examinedMatches: 8, latestMillis: Math.max(...shared.values()),
+      }] : [] } };
+      return career as T;
+    }
     case "match": {
       const url = new URL(path, "http://localhost");
       const matchId = url.pathname.split("/")[3]?.split("?")[0] || "preview-match-1";

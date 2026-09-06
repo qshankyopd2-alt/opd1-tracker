@@ -1,4 +1,4 @@
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import type { Career, CareerMatch } from "../api/types";
 import { backend } from "../api/client";
 
@@ -26,18 +26,29 @@ export function mapRecentFormDetails(career: Career | null | undefined): RecentF
 }
 
 /** Fetches a player's recent match metadata only when requested, with cache/in-flight dedupe. */
-export function useRecentFormDetails() {
+export function useRecentFormDetails(contextKey = "") {
   const [recentDetailsByPlayer, setRecentDetailsByPlayer] = useState<RecentDetailsByPlayer>({});
   const cache = useRef(new Map<string, RecentFormDetail[]>());
   const inFlight = useRef(new Map<string, Promise<RecentFormDetail[]>>());
+  const generation = useRef(0);
+
+  useEffect(() => {
+    generation.current++;
+    cache.current.clear();
+    inFlight.current.clear();
+    setRecentDetailsByPlayer({});
+    return () => { generation.current++; };
+  }, [contextKey]);
 
   const onRequestRecentDetails = useCallback((puuid: string) => {
     if (!puuid || cache.current.has(puuid) || inFlight.current.has(puuid)) return;
+    const requestedGeneration = generation.current;
     const request = backend.profile(puuid)
       .then((career) => mapRecentFormDetails(career))
       .catch(() => [])
       .then((details) => {
-        cache.current.set(puuid, details);
+        if (requestedGeneration !== generation.current) return details;
+        if (details.length) cache.current.set(puuid, details);
         setRecentDetailsByPlayer((current) => ({ ...current, [puuid]: details }));
         inFlight.current.delete(puuid);
         return details;

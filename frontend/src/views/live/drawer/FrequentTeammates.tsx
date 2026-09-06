@@ -1,5 +1,5 @@
-import type { Career } from "../../../api/types";
-import { Truncate } from "../../../components/ui/Truncate";
+import type { Career, LivePlayer } from "../../../api/types";
+import { PlayerName } from "../../../components/domain/PlayerName";
 
 type Teammate = Career["coPlayers"][number];
 
@@ -7,7 +7,7 @@ function teammateName(teammate: Teammate): string {
   return teammate.name?.trim() || `Player ${teammate.puuid.slice(0, 8)}`;
 }
 
-export function FrequentTeammates({ teammates, embedded = false }: { teammates: Teammate[]; embedded?: boolean }) {
+export function FrequentTeammates({ teammates, embedded = false, livePlayers = [] }: { teammates: Teammate[]; embedded?: boolean; livePlayers?: LivePlayer[] }) {
   if (teammates.length === 0) return null;
 
   return (
@@ -17,7 +17,8 @@ export function FrequentTeammates({ teammates, embedded = false }: { teammates: 
         {teammates.map((teammate) => (
           <li key={teammate.puuid} className="min-w-0 bg-panel px-2.5 py-2">
             <div className="flex min-w-0 items-baseline gap-2">
-              <span className="min-w-0 flex-1"><Truncate text={teammateName(teammate)} maxWidth={180} className="text-[14px] font-semibold text-zinc-100" /></span>
+              <span className="min-w-0 flex-1"><PlayerName name={teammateName(teammate)} /></span>
+              {livePlayers.filter((player) => player.puuid === teammate.puuid && player.rankIcon).map((player) => <img key={player.puuid} src={player.rankIcon!} alt={player.rank} width="16" height="16" loading="lazy" />)}
               <span className="shrink-0 text-[12px] text-zinc-400 tabular-nums">{teammate.sharedMatches} {teammate.sharedMatches === 1 ? "match" : "matches"}</span>
             </div>
             <div className="mt-1 flex min-w-0 items-center gap-1.5">

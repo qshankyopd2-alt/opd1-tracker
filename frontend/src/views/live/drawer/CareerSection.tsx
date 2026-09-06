@@ -140,6 +140,7 @@ export function CareerSection({
   mapSplashes,
   previousRankIcon,
   previousRankColor,
+  livePlayers = [],
 }: {
   player: LivePlayer;
   career: Career | null;
@@ -149,6 +150,7 @@ export function CareerSection({
   mapSplashes: Map<string, string>;
   previousRankIcon: string | null;
   previousRankColor: string;
+  livePlayers?: LivePlayer[];
 }) {
   const matches = career?.matches ?? [];
   const wins = matches.filter((match) => match.result === "Victory").length;
@@ -162,9 +164,9 @@ export function CareerSection({
     <div className="profile-dossier-grid" data-testid="drawer-career">
       {/* 7. Loadout */}
       <div className="profile-dossier-loadout">
-        <OverviewSection label="Loadout" testId="drawer-loadout">
+        <details data-testid="drawer-loadout" className="rounded border border-edge p-3"><summary data-testid="drawer-loadout-toggle" className="cursor-pointer text-[12px] font-semibold">Loadout</summary>
           <WeaponLoadoutStrip weapons={player.weapons} />
-        </OverviewSection>
+        </details>
       </div>
       <div className="profile-dossier-column">
 
@@ -308,7 +310,7 @@ export function CareerSection({
       {/* 6. Frequent Teammates */}
       {careerUsable && career && career.coPlayers.length > 0 && (
         <OverviewSection label="Frequent teammates" testId="drawer-frequent-connections">
-          <FrequentTeammates teammates={career.coPlayers} embedded />
+          <FrequentTeammates livePlayers={livePlayers} teammates={career.coPlayers} embedded />
         </OverviewSection>
       )}
 

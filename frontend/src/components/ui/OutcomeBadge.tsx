@@ -13,16 +13,16 @@ export function normalizeOutcome(result: string | null | undefined): Outcome {
 }
 
 const outcomeClasses: Record<Outcome, string> = {
-  win: "border-win-ring bg-win-subtle text-win",
-  loss: "border-loss-ring bg-loss-subtle text-loss",
-  draw: "border-white/15 bg-white/[0.06] text-white/75",
+  win: "border-transparent bg-[var(--color-win)] text-[#101710]",
+  loss: "border-transparent bg-[var(--color-loss)] text-[#180c0c]",
+  draw: "border-transparent bg-[var(--color-draw)] text-[#151515]",
   unresolved: "border-white/10 bg-white/[0.03] text-white/45",
 };
 
 const sizeClasses: Record<BadgeSize, string> = {
-  xs: "h-5 gap-1 rounded-md px-1.5 text-[11px]",
-  sm: "h-8 gap-1.5 rounded-md px-3 text-[12px]",
-  lg: "min-w-[176px] gap-3 rounded-md px-5 py-3 text-[15px]",
+  xs: "h-5 gap-1 rounded-[var(--chip-radius)] px-1.5 text-[11px]",
+  sm: "h-8 gap-1.5 rounded-[var(--chip-radius)] px-3 text-[12px]",
+  lg: "min-w-[176px] gap-3 rounded-[var(--chip-radius)] px-5 py-3 text-[15px]",
 };
 
 const icons = { win: CheckCircle2, loss: XCircle, draw: MinusCircle, unresolved: CircleHelp };
@@ -44,7 +44,7 @@ export function OutcomeBadge({
   return (
     <span
       className={clsx(
-        "inline-flex shrink-0 items-center justify-center border font-semibold",
+        "inline-flex shrink-0 items-center justify-center border font-bold tabular-nums tracking-[var(--chip-letter-spacing)]",
         outcomeClasses[outcome],
         sizeClasses[size],
         className

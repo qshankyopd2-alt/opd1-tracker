@@ -11,6 +11,7 @@ import requests
 
 import riot_client
 import valapi
+import inferred_groups
 from agents import UUID_TO_NAME, resolve_agent
 from vconstants import (GAMEMODES, party_color, rank_from_tier,
                         map_name_from_path, STATES)
@@ -686,8 +687,10 @@ class LiveMatch:
             _LEVEL_CACHE[puuid] = level
         return level
 
-    def kd_hs(self, puuid, count=5):
+    def kd_hs(self, puuid, count=5, evidence_ticket=None):
         pass
+        if evidence_ticket is None:
+            evidence_ticket = inferred_groups.ticket(self.self_puuid)
         try:
             rr_earned = None
 
@@ -698,6 +701,7 @@ class LiveMatch:
             cached = _cache_get(_KD_CACHE, puuid)
             if (cached and cached[2] >= count
                     and list(cached[1])[:count] == mids):
+                inferred_groups.remember(evidence_ticket, puuid, (cached[0][4] or {}).get("historyEvidence", []))
                 return cached[0]
 
             def fetch_detail(mid):
@@ -719,6 +723,9 @@ class LiveMatch:
 
             with ThreadPoolExecutor(max_workers=min(3, len(mids))) as ex:
                 details = list(ex.map(fetch_detail, mids))
+            history_evidence = [row for mid, md in zip(mids, details)
+                                if (row := inferred_groups.snapshot(mid, md))]
+            inferred_groups.remember(evidence_ticket, puuid, history_evidence)
             for md in details:
                 if md == "throttled":
                     throttled = True
@@ -764,6 +771,7 @@ class LiveMatch:
                 "streak": form_streak(form),
                 "mapWins": map_wins,
                 "recentMatches": used,
+                "historyEvidence": history_evidence,
             }
             result = (kd, hs, rr_earned, "ok", intel)
             if not throttled and used == len(mids):
@@ -774,6 +782,7 @@ class LiveMatch:
 
     def _spawn_kd_fill(self, match_id, puuids, season, prev_season) -> None:
         pass
+        evidence_ticket = inferred_groups.ticket(self.self_puuid)
         with _KD_FILL_LOCK:
             if match_id in _KD_FILLING:
                 return
@@ -787,7 +796,7 @@ class LiveMatch:
                     if entry is None or entry.get("kd_done"):
                         return
 
-                    kd, hs, _, status, intel = self.kd_hs(puuid, count=5)
+                    kd, hs, _, status, intel = self.kd_hs(puuid, count=5, evidence_ticket=evidence_ticket)
 
                     latest = _cache_get(_CACHE, cache_key)
                     if not latest:
@@ -836,7 +845,7 @@ class LiveMatch:
                             _cache_put(_RR_CACHE, _KD_CACHE_MAX, puuid,
                                        (rr_earned, rr_key))
 
-                    kd, hs, _, status, intel = self.kd_hs(puuid, count=5)
+                    kd, hs, _, status, intel = self.kd_hs(puuid, count=5, evidence_ticket=evidence_ticket)
 
                     latest = _cache_get(_CACHE, cache_key)
                     if not latest:
@@ -888,6 +897,7 @@ class LiveMatch:
                             "source": "local", "players": [], "teams": {}, "parties": []}
 
         raw_players, match_id, map_id, queue = current
+        inferred_groups.activate(self.self_puuid, match_id)
         puuids = [p["Subject"] for p in raw_players]
 
         if match_id not in _MATCH_META:
@@ -1195,6 +1205,7 @@ class LiveMatch:
 
     def player_career(self, puuid: str, count: int = 8) -> dict:
         pass
+        evidence_ticket = inferred_groups.ticket(self.self_puuid)
         try:
             hist = self.auth.pd_get(
                 f"/match-history/v1/history/{puuid}?startIndex=0&endIndex={count}")
@@ -1205,8 +1216,9 @@ class LiveMatch:
 
         def fetch_detail(mid):
             try:
-                return self._career_match(
-                    self.auth.pd_get(f"/match-details/v1/matches/{mid}"), puuid, mid)
+                detail = self.auth.pd_get(f"/match-details/v1/matches/{mid}")
+                inferred_groups.remember(evidence_ticket, puuid, [inferred_groups.snapshot(mid, detail)])
+                return self._career_match(detail, puuid, mid)
             except Exception:
                 return None
 

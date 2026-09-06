@@ -53,6 +53,7 @@ export function apiBase(): Promise<string> {
 }
 
 const inflight = new Map<string, Promise<unknown>>();
+let liveContext = "";
 
 async function api<T>(path: string, init?: RequestInit & { timeoutMs?: number }): Promise<T> {
   const method = init?.method ?? "GET";
@@ -138,12 +139,14 @@ const tz = () => {
 export const backend = {
   health: () => api<Health>("/api/health", { timeoutMs: 6000 }),
   state: () => api<StateInfo>("/api/state", { timeoutMs: 8000 }),
-  live: (seed?: number, state?: string) => {
+  live: async (seed?: number, state?: string) => {
     const q = new URLSearchParams();
     if (seed !== undefined) q.set("seed", String(seed));
     if (state) q.set("state", state);
     const qs = q.toString();
-    return api<LiveBoard>(`/api/live${qs ? `?${qs}` : ""}`, { timeoutMs: 30000 });
+    const board = await api<LiveBoard>(`/api/live${qs ? `?${qs}` : ""}`, { timeoutMs: 30000 });
+    liveContext = `${board.selfPuuid ?? ""}:${board.matchId}:${board.state}`;
+    return board;
   },
   performance: (richLimit = 20) =>
     api<PerformancePayload>(`/api/performance?tz=${encodeURIComponent(tz())}&richLimit=${richLimit}`, {
@@ -158,7 +161,15 @@ export const backend = {
       body: JSON.stringify(body),
     }),
   inventory: () => api<Inventory>("/api/inventory", { timeoutMs: 30000 }),
-  profile: (puuid: string) => api<Career>(`/api/profile/${encodeURIComponent(puuid)}`, { timeoutMs: 30000 }),
+  profile: async (puuid: string) => {
+    const context = liveContext;
+    const career = await api<Career>(`/api/profile/${encodeURIComponent(puuid)}`, { timeoutMs: 30000 });
+    // Wait out any older live response before asking the shared poller for fresh evidence.
+    void Promise.allSettled([...inflight].filter(([path]) => path.startsWith("/api/live")).map(([, pending]) => pending)).then(() => {
+      if (career.source === "local" && context === liveContext) window.dispatchEvent(new Event("opd1:profile-loaded"));
+    });
+    return career;
+  },
   match: (matchId: string, subject?: string | null) =>
     api<MatchDetail>(
       `/api/match/${encodeURIComponent(matchId)}${subject ? `?subject=${encodeURIComponent(subject)}` : ""}`,

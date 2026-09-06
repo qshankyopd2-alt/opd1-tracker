@@ -39,6 +39,19 @@ export function LiveDataProvider({ children }: { children: ReactNode }) {
   );
 
   useEffect(() => {
+    let timer: number | undefined;
+    const refreshEvidence = () => {
+      window.clearTimeout(timer);
+      timer = window.setTimeout(poll.refresh, 50);
+    };
+    window.addEventListener("opd1:profile-loaded", refreshEvidence);
+    return () => {
+      window.clearTimeout(timer);
+      window.removeEventListener("opd1:profile-loaded", refreshEvidence);
+    };
+  }, [poll.refresh]);
+
+  useEffect(() => {
     if (!designModeEnabled) return;
     const refreshPreview = () => poll.refresh();
     window.addEventListener("opd1:design-view", refreshPreview);

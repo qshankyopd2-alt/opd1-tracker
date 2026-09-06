@@ -21,19 +21,17 @@ describe("PlayerRow hierarchy", () => {
   });
   it("keeps two rosters of horizontal player rows with responsive secondary statistics", () => {
     expect(styles).toContain(".player-row");
-    expect(styles).toContain('"avatar identity rank stats"');
-    expect(styles).toContain('"avatar alerts detail detail"');
+    expect(styles).toContain('"avatar identity rank stats detail toggle"');
+    expect(styles).toContain('"alerts alerts detail detail detail"');
     expect(styles).toContain("background: var(--bg-card);");
     expect(styles).not.toContain('[data-team-tone="defeat"] .player-row');
-    expect(styles).toContain("grid-template-rows: repeat(var(--live-player-count), minmax(96px, 1fr));");
+    expect(styles).toContain("grid-auto-rows: max-content;");
     expect(styles).toContain(".matchup-board { grid-template-columns: repeat(2, minmax(0, 1fr));");
     expect(styles).toContain("@container (max-width: 520px)");
     expect(styles).toContain("@container (max-width: 440px)");
     expect(renderPlayerRow()).toContain('data-testid="player-row-kd"');
     expect(renderPlayerRow()).toContain('data-testid="player-row-hs"');
     expect(styles).toContain(".match-chip");
-    expect(styles).toContain(".match-chip.win");
-    expect(styles).toContain(".match-chip.loss");
   });
 
   it("uses an opaque solid surface with the player's real artwork", () => {
@@ -60,7 +58,9 @@ describe("PlayerRow hierarchy", () => {
 
     expect(html).not.toContain("Duelist");
     expect(html).toContain('data-testid="streak-w"');
-    expect(html).toContain("max-width:100%");
+    expect(html).toContain("player-name-main");
+    expect(html).toContain('aria-expanded="false"');
+    expect(html).toContain('hidden="" class="live-player-loadout"');
   });
 
   it("reserves threat classes for smurf and boosting while streak uses proper state", () => {

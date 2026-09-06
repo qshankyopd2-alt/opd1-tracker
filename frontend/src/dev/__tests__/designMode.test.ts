@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import type { MatchDetail, MatchMeta } from "../../api/types";
-import { designApi, setDesignError, setDesignSnapshot } from "../designMode";
+import type { Career, LiveBoard, MatchDetail, MatchMeta } from "../../api/types";
+import { applyDesignView, designApi, setDesignError, setDesignSnapshot } from "../designMode";
 import { makeSnapshot } from "../previewFixtures";
 
 beforeEach(() => {
@@ -70,5 +70,22 @@ describe("preview note persistence", () => {
     setDesignError(null);
     const performance = await request<{ matchMeta: Record<string, MatchMeta> }>("performance", "/api/performance");
     expect(performance.matchMeta["preview-match-0"].note).not.toBe("lost");
+  });
+});
+
+
+describe("late group evidence", () => {
+  it("starts empty, finds the eighth match, then merges a second profile without double counting", async () => {
+    applyDesignView("live-groups");
+    expect((await request<LiveBoard>("live", "/api/live")).inferredGroups).toEqual([]);
+    const first = await request<Career>("profile", "/api/profile/puuid-ally-0");
+    expect(first.matches.slice(0, 7).every((m) => !m.matchId.startsWith("shared-"))).toBe(true);
+    expect(first.matches[7].matchId).toBe("shared-7");
+    expect((await request<LiveBoard>("live", "/api/live")).inferredGroups?.[0].sharedMatches).toBe(1);
+    await request<Career>("profile", "/api/profile/puuid-ally-3");
+    await request<Career>("profile", "/api/profile/puuid-ally-0");
+    expect((await request<LiveBoard>("live", "/api/live")).inferredGroups?.[0]).toMatchObject({ id: "G1", sharedMatches: 3 });
+    applyDesignView("live-groups");
+    expect((await request<LiveBoard>("live", "/api/live")).inferredGroups).toEqual([]);
   });
 });

@@ -1,6 +1,6 @@
 import type { CSSProperties } from "react";
 import { AlertTriangle } from "lucide-react";
-import type { LivePlayer, Party, PartyDetectionTeam, TeamStats } from "../../api/types";
+import type { InferredGroup, LivePlayer, Party, PartyDetectionTeam, TeamStats } from "../../api/types";
 import { fmtNum, fmtPct } from "../../lib/format";
 import { PlayerRow } from "./PlayerRow";
 import type { RecentDetailsByPlayer } from "../../hooks/useRecentFormDetails";
@@ -18,6 +18,7 @@ export function TeamPanel({
   recentDetailsByPlayer,
   onRequestRecentDetails,
   testId,
+  inferredGroups = [],
 }: {
   label: string;
   accent: string;
@@ -31,6 +32,7 @@ export function TeamPanel({
   recentDetailsByPlayer: RecentDetailsByPlayer;
   onRequestRecentDetails: (puuid: string) => void;
   testId: string;
+  inferredGroups?: InferredGroup[];
 }) {
   const playerIds = new Set(players.map((player) => player.puuid));
   const visibleParties = parties.filter((party) => party.members.some((member) => playerIds.has(member)));
@@ -124,7 +126,7 @@ export function TeamPanel({
         )}
       </div>
       <div
-        className="live-roster grid min-h-0 flex-1 gap-1 overflow-hidden p-1"
+        className="live-roster grid min-h-0 flex-1 gap-1 overflow-y-auto p-1"
         style={{ "--live-player-count": Math.max(players.length, 1) } as CSSProperties}
       >
         {orderedPlayers.map((p) => (
@@ -135,6 +137,8 @@ export function TeamPanel({
                 saved: savedOverrides[p.puuid].saved,
                 savedNote: savedOverrides[p.puuid].note,
               } : p}
+              inferredGroups={inferredGroups.filter((group) => group.members.includes(p.puuid))}
+              teamPlayers={players}
               pregame={pregame}
               onSelect={onSelect}
               recentDetails={recentDetailsByPlayer[p.puuid]}

@@ -203,7 +203,18 @@ export interface Recap {
   demo?: boolean;
 }
 
+export interface InferredGroup {
+  id: string;
+  team: string;
+  members: string[];
+  sharedMatches: number;
+  partyMatches: number;
+  examinedMatches: number;
+  latestMillis: number | null;
+}
+
 export interface LiveBoard {
+  inferredGroups?: InferredGroup[];
   state: GameState;
   stateLabel: string;
   source: string;

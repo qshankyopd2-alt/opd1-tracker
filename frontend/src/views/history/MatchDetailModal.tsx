@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { ArrowLeft, Bookmark, X } from "lucide-react";
 import * as Dialog from "@radix-ui/react-dialog";
+import { PlayerName } from "../../components/domain/PlayerName";
 import { ApiError, backend } from "../../api/client";
 import type { DetailPlayer, MatchDetail, MatchMeta } from "../../api/types";
 import { AgentAvatar } from "../../components/domain/AgentAvatar";
@@ -62,7 +63,7 @@ function DetailTable({ players, accent, label }: { players: DetailPlayer[]; acce
                 <span className="flex items-center gap-2 min-w-0">
                   <AgentAvatar portrait={p.agentPortrait} name={p.agent} color={p.agentColor} size={24} />
                   {p.rankIcon && <img src={p.rankIcon} alt={p.rank} title={p.rank} className="w-4 h-4 shrink-0" loading="lazy" />}
-                  <span className={`truncate font-semibold ${p.isSubject ? "text-brand" : "text-zinc-200"}`} title={p.name}>{p.name}</span>
+                  <span className={`truncate font-semibold ${p.isSubject ? "text-brand" : "text-zinc-200"}`}><PlayerName name={p.name} /></span>
                   {p.isMatchMvp && <Badge color="#FBBF24" filled>MVP</Badge>}
                   {p.isTeamMvp && !p.isMatchMvp && <Badge color="#A1A1AA">Team MVP</Badge>}
                 </span>
@@ -146,9 +147,9 @@ function MetaEditor({
   };
 
   return (
-    <div className="border border-edge rounded-md p-3 space-y-2" data-testid="match-meta-editor">
+    <details key={matchId} className="border border-edge rounded-md p-3 space-y-2" data-testid="match-meta-editor">
+      <summary data-testid="match-notes-toggle" className="cursor-pointer text-[12px] font-semibold text-zinc-300">Match notes</summary>
       <div className="flex items-center gap-2">
-        <h4 className="flex-1 text-[12px] font-semibold text-zinc-300">Match notes</h4>
         <button
           type="button"
           data-testid="meta-bookmark-toggle"
@@ -193,7 +194,7 @@ function MetaEditor({
         </button>
       </div>
       {msg && <p role="status" data-testid="meta-save-status" className="text-[12px] text-zinc-300">{msg}</p>}
-    </div>
+    </details>
   );
 }
 

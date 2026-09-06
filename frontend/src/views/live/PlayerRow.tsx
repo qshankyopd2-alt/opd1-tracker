@@ -1,10 +1,12 @@
-import { AlertTriangle, Bookmark, Check, Eye, EyeOff } from "lucide-react";
-import type { LivePlayer } from "../../api/types";
+import { useState } from "react";
+import { AlertTriangle, Bookmark, Check, ChevronDown, Eye, EyeOff } from "lucide-react";
+import type { InferredGroup, LivePlayer } from "../../api/types";
 import { WeaponLoadoutStrip } from "../../components/domain/WeaponLoadoutStrip";
 import { AgentAvatar } from "../../components/domain/AgentAvatar";
 import { RecentFormTiles, type RecentFormDetail } from "../../components/domain/RecentFormTiles";
 import { StreakBadge } from "../../components/ui/StreakBadge";
-import { Truncate } from "../../components/ui/Truncate";
+import { PlayerName } from "../../components/domain/PlayerName";
+import { InferredGroupBadge } from "../../components/domain/InferredGroupBadge";
 import { fmtNum, fmtPct } from "../../lib/format";
 
 export function PlayerRow({
@@ -13,13 +15,18 @@ export function PlayerRow({
   onSelect,
   recentDetails,
   onRequestRecentDetails,
+  inferredGroups = [],
+  teamPlayers = [],
 }: {
   player: LivePlayer;
   pregame: boolean;
   onSelect: (p: LivePlayer, opener: HTMLElement) => void;
   recentDetails?: RecentFormDetail[];
   onRequestRecentDetails?: (puuid: string) => void;
+  inferredGroups?: InferredGroup[];
+  teamPlayers?: LivePlayer[];
 }) {
+  const [expanded, setExpanded] = useState(false);
   const locked = pregame && player.selection === "locked";
   const encounterCount = player.encounter ? player.encounter.withCount + player.encounter.againstCount : 0;
   const boostingReasons = player.smurfReasons.filter((reason) => /boost/i.test(reason));
@@ -30,7 +37,7 @@ export function PlayerRow({
   return (
     <div
       data-testid={`player-row-${player.puuid}`}
-      className={`player-row relative select-none cursor-pointer group/row ${player.isSelf ? "player-row-self" : ""}`}
+      className={`player-row relative select-none group/row ${expanded ? "player-row-expanded" : ""} ${player.isSelf ? "player-row-self" : ""}`}
     >
       <span className="live-player-background pointer-events-none absolute inset-0 overflow-hidden" aria-hidden="true">
         {player.playerCard && (
@@ -49,6 +56,7 @@ export function PlayerRow({
       <button
         type="button"
         aria-label={`View profile for ${player.name}`}
+        title={player.name}
         data-testid={`player-row-open-${player.puuid}`}
         onClick={(event) => openFrom(event.currentTarget)}
         onFocus={() => onRequestRecentDetails?.(player.puuid)}
@@ -60,7 +68,7 @@ export function PlayerRow({
           portrait={player.agentPortrait}
           name={player.agent ?? player.name}
           color={player.agentColor}
-          size={44}
+          size={32}
         />
         {locked && (
           <span
@@ -79,7 +87,7 @@ export function PlayerRow({
               player.isSelf ? "text-brand" : "text-[var(--text-primary)]"
             }`}
           >
-            <Truncate text={player.name} maxWidth="100%" tooltip={true} />
+            <PlayerName name={player.name} />
           </span>
 
           {player.nameHidden && (
@@ -114,7 +122,8 @@ export function PlayerRow({
         </div>
       </div>
 
-      {hasAlerts && <div className="live-player-alerts relative z-[2] flex min-w-0 items-center gap-1 pointer-events-none">
+      {(hasAlerts || inferredGroups.length > 0) && <div className="live-player-alerts relative z-[2] flex min-w-0 items-center gap-1">
+        <InferredGroupBadge groups={inferredGroups} players={teamPlayers} />
         {player.smurf && (
           <span
             data-testid={`smurf-flag-${player.puuid}`}
@@ -155,7 +164,7 @@ export function PlayerRow({
         {player.rankIcon && (
           <img
             src={player.rankIcon}
-            alt=""
+            alt={player.rank}
             draggable={false}
             className="live-current-rank-icon h-8 w-8 shrink-0 object-contain"
             loading="lazy"
@@ -215,7 +224,7 @@ export function PlayerRow({
               {player.peakIcon && (
                 <img
                   src={player.peakIcon}
-                  alt=""
+                  alt={player.peakRank}
                   draggable={false}
                   className="h-4 w-4 shrink-0 object-contain"
                   loading="lazy"
@@ -238,8 +247,13 @@ export function PlayerRow({
             />
           </div>
         </div>
-        <div className="live-player-loadout"><WeaponLoadoutStrip weapons={player.weapons} compact /></div>
+        <div id={`loadout-${player.puuid}`} hidden={!expanded} className="live-player-loadout"><WeaponLoadoutStrip weapons={player.weapons} compact /></div>
       </div>
+      <button type="button" className="loadout-toggle relative z-[3]" data-testid={`loadout-toggle-${player.puuid}`}
+        aria-label={`${expanded ? "Hide" : "Show"} weapons for ${player.name}`} aria-expanded={expanded}
+        aria-controls={`loadout-${player.puuid}`} onClick={() => setExpanded((value) => !value)}>
+        <ChevronDown size={16} aria-hidden="true" className={expanded ? "rotate-180" : ""} />
+      </button>
     </div>
   );
 }

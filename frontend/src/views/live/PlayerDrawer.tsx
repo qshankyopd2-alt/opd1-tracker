@@ -1,3 +1,4 @@
+import { PlayerName } from "../../components/domain/PlayerName";
 import { useEffect, useRef, useState } from "react";
 import { AlertTriangle, Bookmark, X } from "lucide-react";
 import * as Dialog from "@radix-ui/react-dialog";
@@ -31,12 +32,14 @@ export function PlayerDrawer({
   onSavedChange,
   onClose,
   restoreFocus,
+  livePlayers = [],
 }: {
   player: LivePlayer;
   accountPuuid: string | null;
   onSavedChange: (saved: boolean, note: string) => void;
   onClose: () => void;
   restoreFocus?: HTMLElement | null;
+  livePlayers?: LivePlayer[];
 }) {
   const [career, setCareer] = useState<Career | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -185,7 +188,7 @@ export function PlayerDrawer({
               </span>
               <div className="relative min-w-0 flex-1">
                 {!openMatch ? (
-                  <Dialog.Title id="player-drawer-title" dir="auto" className="truncate font-display text-[26px] font-semibold leading-tight text-[var(--text-primary)]">{player.name}</Dialog.Title>
+                  <Dialog.Title id="player-drawer-title" dir="auto" className="truncate font-display text-[26px] font-semibold leading-tight text-[var(--text-primary)]"><PlayerName name={player.name} /></Dialog.Title>
                 ) : (
                   <h2 id="player-drawer-title" dir="auto" className="truncate font-display text-[26px] font-semibold leading-tight text-[var(--text-primary)]">{player.name}</h2>
                 )}
@@ -208,7 +211,7 @@ export function PlayerDrawer({
                   <div className="whitespace-nowrap font-display text-[18px] font-semibold leading-tight" style={{ color: player.rankColor }}>{player.rank}</div>
                   {player.rankTier > 2 && <div className="font-mono text-[12px] font-semibold text-[var(--text-secondary)] tabular-nums">{player.rr} RR</div>}
                 </div>
-                {player.rankIcon && <img src={player.rankIcon} alt="" className="h-11 w-11 shrink-0" loading="lazy" onError={(event) => { event.currentTarget.style.display = "none"; }} />}
+                {player.rankIcon && <img src={player.rankIcon} alt={player.rank} className="h-11 w-11 shrink-0" loading="lazy" onError={(event) => { event.currentTarget.style.display = "none"; }} />}
               </div>
               {!player.isSelf && accountPuuid && (
                 <button type="button" data-testid="drawer-save-action" aria-label="Open player note" title="Player note" onClick={openNoteEditor} className="absolute bottom-3 right-3 rounded-sm border border-edge bg-panel p-1.5 text-text-secondary hover:bg-zinc-800">
@@ -268,6 +271,7 @@ export function PlayerDrawer({
                   )}
                   <CareerSection
                     player={player}
+                    livePlayers={livePlayers}
                     career={career}
                     careerUsable={careerUsable}
                     loading={loading}
