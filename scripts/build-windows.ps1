@@ -39,6 +39,40 @@ try {
     Pop-Location
 }
 
+# A broken legacy uninstaller should not block the replacement installer.
+# The preinstall hook below removes the old program directory after this page.
+$nsisRoot = Join-Path $root "frontend\src-tauri\target\release\nsis\x64"
+$nsisSource = Join-Path $nsisRoot "installer.nsi"
+if (-not (Test-Path -LiteralPath $nsisSource)) {
+    throw "NSIS script was not produced: $nsisSource"
+}
+$nsisText = Get-Content -LiteralPath $nsisSource -Raw -Encoding UTF8
+$fallbackPattern = '      MessageBox MB_ICONEXCLAMATION "\$\(unableToUninstall\)"\r?\n      Abort'
+$fallbackMatches = [regex]::Matches($nsisText, $fallbackPattern)
+if ($fallbackMatches.Count -ne 1) {
+    throw "Expected one NSIS uninstall fallback block, found $($fallbackMatches.Count)"
+}
+$nsisText = [regex]::Replace($nsisText, $fallbackPattern, "      Goto reinst_done", 1)
+$utf8 = New-Object System.Text.UTF8Encoding($true)
+[IO.File]::WriteAllText($nsisSource, $nsisText, $utf8)
+
+$makensis = Join-Path $env:LOCALAPPDATA "tauri\NSIS\makensis.exe"
+if (-not (Test-Path -LiteralPath $makensis)) {
+    throw "makensis was not found: $makensis"
+}
+$patchedInstaller = Join-Path $nsisRoot "nsis-output.exe"
+Remove-Item -LiteralPath $patchedInstaller -Force -ErrorAction SilentlyContinue
+Push-Location $nsisRoot
+try {
+    & $makensis "/V2" "installer.nsi"
+    Assert-NativeSuccess "Rebuilding patched NSIS installer"
+} finally {
+    Pop-Location
+}
+if (-not (Test-Path -LiteralPath $patchedInstaller)) {
+    throw "Patched NSIS installer was not produced: $patchedInstaller"
+}
+
 $bundle = Join-Path $root "frontend\src-tauri\target\release\bundle\nsis"
 if (-not (Test-Path -LiteralPath $bundle)) {
     throw "NSIS output directory was not produced: $bundle"
@@ -49,6 +83,7 @@ $installer = Get-ChildItem -LiteralPath $bundle -Filter "*.exe" -File |
 if (-not $installer) {
     throw "No NSIS installer was produced in $bundle"
 }
+Copy-Item -LiteralPath $patchedInstaller -Destination $installer.FullName -Force
 
 $forbiddenNames = @(
     "encounters.json", "rr_history.json", "sessions.json", "session.json",
