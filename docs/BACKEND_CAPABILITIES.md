@@ -148,3 +148,7 @@ profile agent grouping, and long teammate names. Compact rows use 86px in short 
 to keep the fifth player fully visible. Minimize/restore retained the selected content mode.
 The frontend suite passed 128 tests; TypeScript/Vite production build and fixture exclusion
 passed. These synthetic native checks do not verify a live Riot match or Windows 125% scaling.
+
+Installer cleanup (2026-09-08): the NSIS preinstall hook removes stale files from the
+previous program directory before copying the new build. Tauri runtime data remains in
+the per-user app-data directory (`data` and `logs`), outside the install directory.
