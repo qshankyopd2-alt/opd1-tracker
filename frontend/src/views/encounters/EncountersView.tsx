@@ -73,11 +73,13 @@ export function EncountersView() {
           />
         </label>
         <button
+          type="button"
+          aria-label="Refresh saved players"
           data-testid="saved-players-refresh-button"
           onClick={refresh}
-          className="inline-flex items-center gap-1.5 border border-edge rounded-sm px-2.5 py-1.5 text-[12px] font-semibold text-zinc-400 hover:bg-zinc-800 transition-colors"
+          className="inline-flex items-center gap-1.5 border border-edge rounded-sm px-2.5 py-1.5 text-[12px] font-semibold text-zinc-400 hover:bg-zinc-800 transition-colors focus-visible:ring-2 focus-visible:ring-brand"
         >
-          <RotateCw size={12} /> Refresh
+          <RotateCw size={12} aria-hidden="true" /> Refresh
         </button>
       </PageHeader>
       <div className="flex flex-wrap items-end gap-3">
@@ -120,6 +122,7 @@ export function EncountersView() {
                 const timeline = player.timeline ?? [];
                 const isEditing = editing === player.puuid;
                 const isExpanded = expanded === player.puuid;
+                const playerName = player.name ?? "saved player";
                 return (
                   <Fragment key={player.puuid}>
                     <tr className="border-b border-edge transition-colors hover:bg-zinc-800/35 group/row">
@@ -199,45 +202,45 @@ export function EncountersView() {
                               disabled={busy === player.puuid}
                               onClick={() => void mutate(player, true, draft)}
                               title="Save note"
-                              aria-label="Save note"
+                              aria-label={`Save note for ${playerName}`}
                               data-testid={`saved-player-save-${player.puuid}`}
-                              className="rounded-sm p-1.5 text-zinc-100 hover:bg-zinc-700 disabled:opacity-50 transition-colors"
+                              className="rounded-sm p-1.5 text-zinc-100 hover:bg-zinc-700 disabled:opacity-50 transition-colors focus-visible:ring-2 focus-visible:ring-brand"
                             >
-                              <Save size={14} />
+                              <Save size={14} aria-hidden="true" />
                             </button>
                           ) : (
                             <button
                               type="button"
                               onClick={() => { setEditing(player.puuid); setDraft(player.note); }}
                               title="Edit note"
-                              aria-label="Edit note"
+                              aria-label={`Edit note for ${playerName}`}
                               data-testid={`saved-player-edit-${player.puuid}`}
-                              className="rounded-sm p-1.5 text-zinc-400 hover:bg-zinc-700 hover:text-zinc-100 transition-colors"
+                              className="rounded-sm p-1.5 text-zinc-400 hover:bg-zinc-700 hover:text-zinc-100 transition-colors focus-visible:ring-2 focus-visible:ring-brand"
                             >
-                              <Pencil size={14} />
+                              <Pencil size={14} aria-hidden="true" />
                             </button>
                           )}
                           <button
                             type="button"
                             onClick={() => setExpanded(isExpanded ? null : player.puuid)}
                             title="Encounter games"
-                            aria-label={isExpanded ? "Collapse encounter games" : "Expand encounter games"}
+                            aria-label={isExpanded ? `Collapse encounter games for ${playerName}` : `Expand encounter games for ${playerName}`}
                             aria-expanded={isExpanded}
                             data-testid={`saved-player-expand-${player.puuid}`}
-                            className="rounded-sm p-1.5 text-zinc-400 hover:bg-zinc-700 hover:text-zinc-100 transition-colors"
+                            className="rounded-sm p-1.5 text-zinc-400 hover:bg-zinc-700 hover:text-zinc-100 transition-colors focus-visible:ring-2 focus-visible:ring-brand"
                           >
-                            {isExpanded ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
+                            {isExpanded ? <ChevronUp size={14} aria-hidden="true" /> : <ChevronDown size={14} aria-hidden="true" />}
                           </button>
                           <button
                             type="button"
                             disabled={busy === player.puuid}
                             onClick={() => void mutate(player, false, "")}
                             title="Remove saved player"
-                            aria-label="Remove saved player"
+                            aria-label={`Remove ${playerName} from saved players`}
                             data-testid={`saved-player-remove-${player.puuid}`}
-                            className="rounded-sm p-1.5 text-zinc-400 hover:bg-defeat/10 hover:text-defeat disabled:opacity-50 transition-colors"
+                            className="rounded-sm p-1.5 text-zinc-400 hover:bg-defeat/10 hover:text-defeat disabled:opacity-50 transition-colors focus-visible:ring-2 focus-visible:ring-brand"
                           >
-                            <Trash2 size={14} />
+                            <Trash2 size={14} aria-hidden="true" />
                           </button>
                         </span>
                       </td>
