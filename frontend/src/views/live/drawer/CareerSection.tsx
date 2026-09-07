@@ -183,7 +183,7 @@ export function CareerSection({
           <div className="space-y-2.5">
             <div className="flex items-center justify-between">
               <span className="text-[12px] font-semibold text-zinc-400">
-                Last 8 matches
+                Last {matches.length} matches
               </span>
               <span className="text-[12px] font-semibold text-zinc-400">
                 {wins}W – {losses}L{draws > 0 ? ` · ${draws}D` : ""}
@@ -281,17 +281,17 @@ export function CareerSection({
       {/* 4. Most Played Agents */}
       {careerUsable && career && career.agentPool.length > 0 && (
         <OverviewSection label="Most played agents" testId="drawer-agent-pool">
-          <div className="grid grid-cols-[repeat(auto-fit,minmax(132px,1fr))] gap-2">
+          <div className="flex flex-wrap gap-2">
             {career.agentPool.map((agent) => (
               <div
                 key={agent.agent}
-                className="flex min-w-0 flex-col items-center gap-1.5 bg-panel px-2 py-2 text-center"
+                className="flex w-[104px] min-w-0 flex-col items-center gap-1.5 rounded bg-card px-1 py-2 text-center"
               >
                 <AgentAvatar
                   portrait={agent.portrait}
                   name={agent.agent}
                   color={agent.color}
-                  size={24}
+                  size={48}
                 />
                 <span className="max-w-full truncate font-display text-[14px] font-semibold text-zinc-100">
                   {agent.agent}

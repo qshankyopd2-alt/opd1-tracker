@@ -1,7 +1,9 @@
 import { useEffect, useState } from "react";
 import { PREVIEW_VIEWS, applyDesignView, isDesignMode, type PreviewViewId } from "./designMode";
+import { useApp, type ViewId } from "../state/AppContext";
 
 export function DesignModeBar() {
+  const { setView: navigate } = useApp();
   const enabled = isDesignMode();
   const [view, setView] = useState<PreviewViewId>("live-ingame");
   const [open, setOpen] = useState(false);
@@ -56,9 +58,13 @@ export function DesignModeBar() {
                     <button
                       key={item.id}
                       type="button"
+                      data-testid={`design-${item.id}`}
                       onClick={() => {
                         setView(item.id);
                         applyDesignView(item.id);
+                        const page = item.id.split("-")[0];
+                        navigate(page === "saved" ? "encounters" : page === "error" ? "live" : page as ViewId);
+                        setOpen(false);
                       }}
                       className={`text-left rounded-sm border px-2 py-1.5 text-[11px] transition-colors ${
                         view === item.id

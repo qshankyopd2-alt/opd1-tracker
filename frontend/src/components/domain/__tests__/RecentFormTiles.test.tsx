@@ -2,99 +2,47 @@ import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
 import { RecentFormTiles, type RecentFormDetail } from "../RecentFormTiles";
 
-function render(form: ("W" | "L")[], latestRr: number | null = null, recentDetails?: RecentFormDetail[]): string {
-  return renderToStaticMarkup(
-    <RecentFormTiles form={form} latestRr={latestRr} recentDetails={recentDetails} testId="recent" />,
-  );
+function render(form: ("W" | "L" | "D" | "?")[], latestRr: number | null = null, recentDetails?: RecentFormDetail[]) {
+  return renderToStaticMarkup(<RecentFormTiles form={form} latestRr={latestRr} recentDetails={recentDetails} testId="recent" />);
 }
 
 describe("RecentFormTiles", () => {
-  it.each([
-    { form: [] as ("W" | "L")[], placeholders: 5 },
-    { form: ["W", "L", "W"] as ("W" | "L")[], placeholders: 2 },
-    { form: ["W", "L", "W", "L", "W"] as ("W" | "L")[], placeholders: 0 },
-    { form: ["W", "L", "W", "L", "W", "L"] as ("W" | "L")[], placeholders: 0 },
-  ])("renders five slots for $form.length results", ({ form, placeholders }) => {
-    const html = render(form);
-
+  it.each([0, 3, 5, 7])("keeps five equally sized slots for %i results", (count) => {
+    const html = render(Array.from({ length: count }, () => "W"));
     expect(html.match(/data-testid="recent-tile-/g)).toHaveLength(5);
-    expect(html.match(/data-testid="outcome-unresolved"/g) ?? []).toHaveLength(placeholders);
+    expect(html.match(/data-outcome="unresolved"/g) ?? []).toHaveLength(Math.max(0, 5 - count));
+    expect(html.match(/class="recent-result"/g)).toHaveLength(5);
   });
-
-  it("preserves newest-to-oldest order and exposes a text summary", () => {
-    const html = render(["W", "L", "L", "W", "W"], 24);
-
-    expect(html).toContain("Recent form, newest to oldest: Win, Loss, Loss, Win, Win. Newest match RR +24.");
-    expect(html).not.toContain(">Newest<");
-    expect(html).not.toContain(">Oldest<");
-    expect(html).not.toContain(">→<");
-    expect(html).not.toContain('data-testid="recent-recency-scale"');
-    expect(html).not.toContain('data-testid="recent-recency-rail"');
-    expect(html).not.toContain("data-recency-marker");
-    expect(html).toContain("flex-row-reverse");
-    expect(html.match(/data-recency="current"/g)).toHaveLength(1);
-    expect(html).toContain('data-size="20"');
-    expect(html).toContain('data-size="19"');
-    expect(html).toContain('data-size="18"');
-    expect(html).toContain('data-size="17"');
-    expect(html).toContain('data-size="16"');
-    expect(html).not.toContain("live-alert-badge");
-    expect(html).toContain("motion-reduce:transition-none");
-    expect(html).toContain("group-focus-within/row:opacity-100");
-    expect(html).not.toContain("group-focus-visible/card");
-    expect(html.indexOf('data-testid="recent-tile-0"')).toBeLessThan(html.indexOf('data-testid="recent-tile-4"'));
-    expect(html.indexOf("+24 RR")).toBeLessThan(html.indexOf('id="recent-tooltip-1"'));
-    expect(html.lastIndexOf("+24 RR")).toBeLessThan(html.indexOf('id="recent-tooltip-1"'));
+  it("shows newest first with explicit chronology and keyboard-readable descriptions", () => {
+    const html = render(["W", "L", "D", "?", "L"], 24);
+    expect(html).toContain("newest to oldest: Victory, Defeat, Draw, Unavailable, Defeat");
+    expect(html).not.toContain("flex-row-reverse");
+    expect(html.match(/tabindex="0"/g)).toHaveLength(5);
+    expect(html).toContain('title="Newest match');
+    expect(html).not.toContain('role="tooltip"');
+    expect(html.indexOf('recent-tile-0')).toBeLessThan(html.indexOf('recent-tile-4'));
   });
-
-  it("clips results after the fifth match", () => {
-    const html = render(["W", "W", "W", "W", "W", "L"]);
-
-    expect(html).toContain("Recent form, newest to oldest: Win, Win, Win, Win, Win.");
+  it.each([24, -18, 0])("keeps a real newest RR of %i", (rr) => {
+    const html = render(["W", "L"], rr);
+    expect(html).toContain(`${rr > 0 ? "+" : ""}${rr} RR`);
+    expect(html).toContain("Match 2 · Defeat · RR unavailable");
+  });
+  it("does not fabricate an absent delta", () => {
+    expect(render(["W"])).toContain("Victory · RR unavailable");
+  });
+  it("uses one coherent career source for result, RR and age", () => {
+    const html = render(["L"], -18, [{ result: "W", rrDelta: 22, startMillis: Date.now() - 7 * 3_600_000 }]);
+    expect(html).toContain("Recent matches, all modes");
+    expect(html).toContain("Victory · +22 RR · 7 hours ago");
+    expect(html).not.toContain("-18 RR");
     expect(html).not.toContain("Defeat");
   });
-
-  it.each([
-    { rr: 24, expected: "+24 RR" },
-    { rr: -18, expected: "-18 RR" },
-    { rr: 0, expected: "0 RR" },
-  ])("shows only the newest available RR value: $expected", ({ rr, expected }) => {
-    const html = render(["W", "L", "W", "L", "W"], rr);
-
-    expect(html).toContain(expected);
-    expect(html.lastIndexOf(expected)).toBeLessThan(html.indexOf('id="recent-tooltip-1"'));
+  it("preserves null career RR rather than falling back to unrelated live RR", () => {
+    expect(render(["W"], 24, [{ result: "D", rrDelta: null }])).toContain("Draw · RR unavailable");
+    expect(render(["W"], 24, [{ result: "D", rrDelta: null }])).not.toContain("+24 RR");
   });
-
-  it("omits RR when the newest delta is unavailable", () => {
-    const html = render(["W", "L", "W", "L", "W"], null);
-
-    expect(html).not.toContain(" RR");
-  });
-
-  it("shows real RR and elapsed time for every loaded match", () => {
-    const now = Date.now();
-    const html = render(["W", "L", "W"], null, [
-      { result: "W", rrDelta: 22, startMillis: now - 7 * 3_600_000 },
-      { result: "L", rrDelta: -18, startMillis: now - 26 * 3_600_000 },
-      { result: "W", rrDelta: 19, startMillis: now - 96 * 3_600_000 },
-    ]);
-
-    expect(html).toContain("+22 RR");
-    expect(html).toContain("-18 RR");
-    expect(html).toContain("+19 RR");
-    expect(html).toContain("7 hours ago");
-    expect(html).toContain("26 hours ago");
-    expect(html).toContain("4 days ago");
-    expect(html).not.toContain("matches ago");
-  });
-
-  it("keeps the live form authoritative when delayed career details belong to a different result", () => {
-    const html = render(["L"], -18, [
-      { result: "W", rrDelta: 22, startMillis: Date.now() - 3_600_000 },
-    ]);
-
-    expect(html).toContain("Defeat");
-    expect(html).toContain("-18 RR");
-    expect(html).not.toContain("+22 RR");
+  it("caps details to five without manufacturing results", () => {
+    const html = render([], null, Array.from({ length: 6 }, (_, index) => ({ result: index === 5 ? "L" : "W" })));
+    expect(html).not.toContain("Defeat");
   });
 });

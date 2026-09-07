@@ -1,4 +1,4 @@
-import { Fragment, useEffect, useMemo, useState } from "react";
+import { Fragment, useEffect, useMemo, useRef, useState } from "react";
 import { Bookmark, ChevronDown, ChevronUp, Pencil, RotateCw, Save, Search, Trash2 } from "lucide-react";
 import { ApiError, backend } from "../../api/client";
 import type { SavedPlayer } from "../../api/types";
@@ -9,6 +9,7 @@ import { TableSkeleton } from "../../components/ui/Skeleton";
 import { PageHeader } from "../../components/shell/PageHeader";
 import { usePoll } from "../../hooks/usePoll";
 import { timeAgo } from "../../lib/format";
+import { OutcomeBadge, normalizeOutcome } from "../../components/ui/OutcomeBadge";
 
 const designModeEnabled = import.meta.env.DEV && import.meta.env.VITE_DESIGN_MODE === "true";
 
@@ -19,7 +20,15 @@ export function EncountersView() {
   const [expanded, setExpanded] = useState<string | null>(null);
   const [busy, setBusy] = useState<string | null>(null);
   const [mutationError, setMutationError] = useState<string | null>(null);
+  const mutationRef = useRef(0);
   const { data, error, loading, refresh } = usePoll(() => backend.savedPlayers(), null);
+
+  useEffect(() => {
+    mutationRef.current += 1;
+    setEditing(null);
+    setDraft("");
+    setExpanded(null);
+  }, [data?.accountPuuid]);
 
   useEffect(() => {
     if (!designModeEnabled) return;
@@ -37,20 +46,24 @@ export function EncountersView() {
 
   const mutate = async (player: SavedPlayer, saved: boolean, note: string) => {
     if (!data?.accountPuuid) return;
+    const mutationId = ++mutationRef.current;
     setBusy(player.puuid);
     setMutationError(null);
     try {
-      await backend.updateSavedPlayer(player.puuid, {
+      const result = await backend.updateSavedPlayer(player.puuid, {
         accountPuuid: data.accountPuuid,
         saved,
         note,
       });
+      if (!result.ok) throw new ApiError("The player note was not saved.");
+      if (mutationId !== mutationRef.current) return;
       setEditing(null);
       refresh();
     } catch (err) {
+      if (mutationId !== mutationRef.current) return;
       setMutationError(err instanceof ApiError ? err.message : "Could not update this player.");
     } finally {
-      setBusy(null);
+      if (mutationId === mutationRef.current) setBusy(null);
     }
   };
 
@@ -173,8 +186,9 @@ export function EncountersView() {
                       <td className="text-right num text-[12px] text-zinc-400 py-2 align-middle">
                         <div className="flex flex-col items-end gap-0.5">
                           <div>K/D: <span className="text-zinc-200 font-medium">{player.withKd?.toFixed(2) ?? "—"}</span></div>
-                          <div>ACS: <span className="text-zinc-200 font-medium">{player.withAcs ? Math.round(player.withAcs) : "—"}</span></div>
-                          <div>HS%: <span className="text-zinc-200 font-medium">{player.withHsPct ? Math.round(player.withHsPct) + "%" : "—"}</span></div>
+                          <div>ACS: <span className="text-zinc-200 font-medium">{player.withAcs != null ? Math.round(player.withAcs) : "—"}</span></div>
+                          <div>HS%: <span className="text-zinc-200 font-medium">{player.withHsPct != null ? Math.round(player.withHsPct) + "%" : "—"}</span></div>
+                          <div className="text-text-muted">{player.withStatGames ?? 0} shared games</div>
                         </div>
                       </td>
                       <td className="text-right num py-2 align-middle">
@@ -188,6 +202,8 @@ export function EncountersView() {
                             <span className="text-victory font-medium">{(player.winsWith ?? 0) + (player.winsAgainst ?? 0)}W</span>
                             <span className="text-zinc-600 mx-1">–</span>
                             <span className="text-defeat font-medium">{(player.lossesWith ?? 0) + (player.lossesAgainst ?? 0)}L</span>
+                            <span className="ml-2">{(player.drawsWith ?? 0) + (player.drawsAgainst ?? 0)}D</span>
+                            <span className="ml-2 text-text-muted">{(player.pendingWith ?? 0) + (player.pendingAgainst ?? 0)} pending</span>
                           </div>
                         </div>
                       </td>
@@ -253,11 +269,7 @@ export function EncountersView() {
                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2">
                               {[...timeline].reverse().map((item) => (
                                 <div key={item.matchId} className="flex items-center gap-2 rounded-sm border border-edge bg-panel px-2.5 py-2 text-[12px]">
-                                  <div className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-sm text-[12px] font-semibold ${
-                                    item.result === "win" ? "bg-victory/10 text-victory" : item.result === "loss" ? "bg-defeat/10 text-defeat" : "bg-zinc-800 text-zinc-400"
-                                  }`}>
-                                    {item.result === "win" ? "W" : item.result === "loss" ? "L" : "–"}
-                                  </div>
+                                  <OutcomeBadge size="xs" outcome={normalizeOutcome(item.result)} />
                                   <div className="min-w-0 flex-1">
                                     <div className="flex items-baseline justify-between gap-2">
                                       <span className="font-medium text-zinc-200 capitalize truncate">{item.side}</span>

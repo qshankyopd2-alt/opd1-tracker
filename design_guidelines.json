@@ -10,7 +10,7 @@
         "600",
         "700"
       ],
-      "usage": "Preserve the approved 35546ae design with Segoe UI for the live interface and Bahnschrift for the enhanced player profile and its embedded details; Arabic falls back to Segoe UI."
+      "usage": "Segoe UI body and controls at 14px, secondary labels 12px. Bahnschrift for headings and tabular numbers; Arabic falls back to Segoe UI."
     },
     "outcome_score": {
       "fontFamily": "Bahnschrift, Segoe UI, system-ui, sans-serif",
@@ -24,21 +24,21 @@
   },
   "colors": {
     "background": {
-      "app": "#111111",
-      "panel": "#181818",
-      "card": "#202020",
-      "hover": "#292929",
-      "modal": "#181818",
-      "popover": "#202020"
+      "app": "#14171B",
+      "panel": "#1D2228",
+      "card": "#242B33",
+      "hover": "#2D3640",
+      "modal": "#1D2228",
+      "popover": "#242B33"
     },
     "text": {
-      "primary": "#f2f2f2",
-      "secondary": "#bdbdbd",
-      "muted": "#999999"
+      "primary": "#F2F4F6",
+      "secondary": "#B6C0CA",
+      "muted": "#A1ADBA"
     },
     "accents": {
-      "brand": "#eeeeee",
-      "brand_hover": "#d7d7d7",
+      "brand": "#B8D5EA",
+      "brand_hover": "#D4E8F5",
       "danger": "#ed8793",
       "warning": "#bb3650",
       "success": "#76c9a5"
@@ -52,12 +52,12 @@
     "radius": "4px controls, 6px rows, 8px panels."
   },
   "component_guidance": {
-    "list_rows": "Two opposing five-player rosters from the approved redesign. Preserve identity, rank, WR/KD/HS, party and recent form. Four real featured weapon skins remain visible at 1200x700 and larger.",
+    "list_rows": "Two real team rosters. Dedicated full-color artwork rail with agent portrait; no artwork behind text. Statistics are the default; the shared Statistics/Loadouts switch replaces statistics with all four real weapon slots at the owner request. Equal recent-result markers read newest first with native accessible descriptions. Compact cards at fixed size; columns rearrange when maximized.",
     "drawer": "Centered profile workspace up to 1120px, with independent body scroll, a featured loadout first, two overview columns, full-color map thumbnails, and embedded match detail preserving drafts and focus.",
     "modal": "Match details render in a dialog modal in HistoryView (MatchDetailModal) while sharing the identical MatchDetailContent view when embedded within PlayerDrawer, ensuring fixed column alignment, accessible truncation, and draft persistence across view transitions.",
     "outcomes": "Keep win, loss, draw, and unresolved distinct. Use OutcomeBadge sizes consistently.",
     "player_names": "Truncate long names without displacing rank. Keep the complete name in the profile opener accessible label and native title.",
-    "alerts": "Rose threat badges, neutral streaks, actual rank and party colors.",
+    "alerts": "Heuristic indicators with accessible qualified labels and detailed reasons in the player profile. Actual rank and party colors remain independent.",
     "texture": "Use real VALORANT artwork. contour.png is a generated decorative fallback when the profile card is unavailable; it never represents game data."
   },
   "motion": {

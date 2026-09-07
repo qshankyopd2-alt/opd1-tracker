@@ -40,15 +40,18 @@ function career(source: string, matches: CareerMatch[]): Career {
 }
 
 describe("mapRecentFormDetails", () => {
-  it("sorts newest-first, excludes draws, and keeps real RR and time", () => {
+  it("sorts newest-first, preserves draws, and keeps real RR and time", () => {
     const details = mapRecentFormDetails(career("local", [
       match("older", 1_000, "Defeat", -18),
       match("draw", 4_000, "Draw", 0),
+      match("unresolved", 4_500, null, null),
       match("newest", 5_000, "Victory", 22),
     ]));
 
     expect(details).toEqual([
       { result: "W", rrDelta: 22, startMillis: 5_000 },
+      { result: "?", rrDelta: null, startMillis: 4_500 },
+      { result: "D", rrDelta: 0, startMillis: 4_000 },
       { result: "L", rrDelta: -18, startMillis: 1_000 },
     ]);
   });

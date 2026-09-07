@@ -14,19 +14,23 @@ describe("MatchHeader", () => {
 
     expect(probabilityTone(value)).toBe(color);
     expect(html).toContain('role="meter"');
+    expect(html).toContain("Estimated win chance");
+    expect(html).toContain('aria-label="Your team estimated win chance"');
     expect(html).toContain(`aria-valuenow="${value}"`);
     expect(html).toContain(`${value}%`);
     expect(html).toContain(color);
     expect(html).not.toContain("<img");
-    expect(html).not.toContain(board.map ?? "Missing map");
-    expect(html).not.toContain(board.mode);
-    expect(html).not.toContain("match-score");
+    expect(html).toContain(board.map ?? "Missing map");
+    expect(html).toContain(board.mode);
+    expect(html).toContain("match-score");
     expect(html).not.toContain("match-state-badge");
   });
 
-  it("renders nothing for an in-game board without probability data", () => {
+  it("keeps match context without inventing a probability", () => {
     const board = { ...makeSnapshot("INGAME", 1).board, winProb: null };
-    expect(renderToStaticMarkup(<MatchHeader board={board} />)).toBe("");
+    const html = renderToStaticMarkup(<MatchHeader board={board} />);
+    expect(html).toContain("match-context");
+    expect(html).not.toContain('role="meter"');
   });
 
   it("keeps compact functional pregame and menus states", () => {

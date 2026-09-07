@@ -91,7 +91,7 @@ export function applyDesignView(view: PreviewViewId): void {
     case "live-offline":
       {
         const offline = makeSnapshot("OFFLINE", 1);
-        setDesignSnapshot({ ...offline, board: { ...offline.board, source: "demo" } });
+        setDesignSnapshot({ ...offline, board: { ...offline.board, source: "local" } });
       }
       break;
     case "live-drawer": {
@@ -194,8 +194,23 @@ export async function designApi<T>(kind: string, path: string, init?: RequestIni
       return snap.board as unknown as T;
     case "performance":
       return snap.performance as unknown as T;
-    case "savedPlayers":
+    case "savedPlayers": {
+      if (init?.method === "PUT") {
+        const body = JSON.parse(String(init.body)) as { accountPuuid: string; saved: boolean; note: string };
+        if (body.accountPuuid !== snap.savedPlayers.accountPuuid) throw new Error("Active account changed.");
+        if (typeof body.note !== "string" || body.note.length > 500 || typeof body.saved !== "boolean") throw new Error("Invalid player note.");
+        const puuid = decodeURIComponent(path.split("/")[3]);
+        const player = snap.board.players.find((candidate) => candidate.puuid === puuid);
+        if (!player) throw new Error("Player not observed in this preview.");
+        const saved = { ...player, saved: true as const, note: body.note.trim(), savedAt: Date.now() / 1000, updatedAt: Date.now() / 1000 };
+        snap.savedPlayers.players = snap.savedPlayers.players.filter((candidate) => candidate.puuid !== puuid);
+        if (body.saved) snap.savedPlayers.players.push(saved);
+        player.saved = body.saved;
+        player.savedNote = body.saved ? saved.note : "";
+        return { ok: true, saved: body.saved, player: body.saved ? saved : null } as T;
+      }
       return snap.savedPlayers as unknown as T;
+    }
     case "inventory":
       return snap.inventory as unknown as T;
     case "profile":

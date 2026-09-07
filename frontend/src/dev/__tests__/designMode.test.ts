@@ -72,3 +72,28 @@ describe("preview note persistence", () => {
     expect(performance.matchMeta["preview-match-0"].note).not.toBe("lost");
   });
 });
+
+
+describe("preview saved-player acknowledgements", () => {
+  it("saves and removes an observed player inside the harness", async () => {
+    const snap = makeSnapshot("INGAME", 1);
+    setDesignSnapshot(snap);
+    const puuid = snap.board.players[1].puuid;
+    const path = `/api/saved-players/${puuid}`;
+    const body = { accountPuuid: snap.savedPlayers.accountPuuid, saved: true, note: " Review aim " };
+    const result = await request<{ ok: boolean; player: { note: string } }>("savedPlayers", path, { method: "PUT", body: JSON.stringify(body) });
+    expect(result).toMatchObject({ ok: true, player: { note: "Review aim" } });
+    await request("savedPlayers", path, { method: "PUT", body: JSON.stringify({ ...body, saved: false }) });
+    expect(snap.savedPlayers.players.some((player) => player.puuid === puuid)).toBe(false);
+  });
+  it("rejects an account mismatch without mutating saved players", async () => {
+    const snap = makeSnapshot("INGAME", 1);
+    setDesignSnapshot(snap);
+    const before = JSON.stringify(snap.savedPlayers);
+    const pending = designApi("savedPlayers", `/api/saved-players/${snap.board.players[0].puuid}`, { method: "PUT", body: JSON.stringify({ accountPuuid: "other", saved: true, note: "Wrong owner" }) });
+    const rejected = expect(pending).rejects.toThrow("Active account changed");
+    await vi.runAllTimersAsync();
+    await rejected;
+    expect(JSON.stringify(snap.savedPlayers)).toBe(before);
+  });
+});

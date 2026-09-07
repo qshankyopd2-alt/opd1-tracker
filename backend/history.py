@@ -510,7 +510,10 @@ def payload(puuid: str | None = None, timezone_name: str | None = None) -> dict:
         account = _ensure_account(puuid, timezone_name=timezone_name) if puuid else {}
         if puuid:
             _save()
-        points = list(account.get("points", []))
+        # Backfill RR signs are not match outcomes. Keep the stored reference
+        # data intact, but exclude inferred results from every UI aggregate.
+        points = [{**point, "result": None} if point.get("resultExact") is False
+                  else dict(point) for point in account.get("points", [])]
         if not timezone_name:
             zone_name, _ = _valid_timezone(account.get("timezone"))
         account_info = {

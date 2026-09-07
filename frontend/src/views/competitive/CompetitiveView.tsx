@@ -68,7 +68,7 @@ export function CompetitiveView() {
         {account.riotId && <span className="text-[12px] text-zinc-400 mr-2">{account.riotId}</span>}
         {stale && (
           <Badge color="#F59E0B" testId="competitive-stale-badge">
-            Saved data · VALORANT offline
+            Saved data · refresh unavailable
           </Badge>
         )}
         <button
@@ -80,7 +80,8 @@ export function CompetitiveView() {
         </button>
       </PageHeader>
 
-      <div className="grid grid-cols-1 xl:grid-cols-[320px_1fr] gap-4">
+      {error && <ErrorBanner message={error} onRetry={refresh} testId="competitive-refresh-error" />}
+      <div className="competitive-overview">
         {/* rank card */}
         <Section testId="rank-card">
           <div className="flex items-center gap-3">
@@ -94,7 +95,7 @@ export function CompetitiveView() {
                 {current?.name ?? "Unranked"}
               </div>
               <div className="text-[12px] text-zinc-400 num">
-                {current?.rr ?? 0} RR
+                {fmtNum(current?.rr)} RR
                 {summary && summary.winRate !== null && (
                   <span className="text-zinc-400">
                     {" "}
@@ -165,7 +166,7 @@ export function CompetitiveView() {
           testId="rr-chart-section"
           actions={
             <span className="text-[12px] text-zinc-400 num">
-              {data.dataQuality.exact} exact · {data.dataQuality.estimated} estimated results
+              {data.dataQuality.exact} confirmed · {data.dataQuality.estimated} awaiting result
             </span>
           }
         >
@@ -212,6 +213,7 @@ export function CompetitiveView() {
                   <div>
                     <div className="text-[12px] font-semibold text-zinc-200">{ins.title}</div>
                     <div className="text-[12px] text-zinc-400">{ins.text}</div>
+                    <div className="mt-1 text-[12px] text-text-muted">{ins.samples ?? "Unknown"} matches · {ins.confidence ?? "Unknown"} confidence</div>
                   </div>
                 </div>
               ))}

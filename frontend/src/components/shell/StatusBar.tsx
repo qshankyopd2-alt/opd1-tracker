@@ -24,7 +24,7 @@ export function StatusBar() {
   return (
     <footer
       data-testid="status-bar"
-      className="relative z-10 flex h-10 shrink-0 items-center gap-3 border-t border-edge bg-panel px-4 text-[12px] text-[var(--text-secondary)]"
+      className={`relative z-10 flex h-10 shrink-0 items-center gap-3 border-t border-edge bg-panel px-4 text-[12px] text-[var(--text-secondary)] ${import.meta.env.DEV && import.meta.env.VITE_DESIGN_MODE === "true" ? "pr-[200px]" : ""}`}
     >
       <div className="flex min-w-0 flex-1 items-center gap-3">
         <span

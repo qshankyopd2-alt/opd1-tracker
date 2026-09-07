@@ -8,6 +8,7 @@ import { PlayerIdentity } from "../../components/domain/PlayerIdentity";
 import { Badge } from "../../components/ui/Badge";
 import { StreakBadge } from "../../components/ui/StreakBadge";
 import { RANKS } from "../../lib/ranks";
+import { usePerformance } from "../../hooks/usePerformance";
 import { MatchDetailContent, type MatchMetaDraft } from "../history/MatchDetailModal";
 import { CareerSection } from "./drawer/CareerSection";
 import { MatchesSection } from "./drawer/MatchesSection";
@@ -39,6 +40,7 @@ export function PlayerDrawer({
   onClose: () => void;
   restoreFocus?: HTMLElement | null;
 }) {
+  const { data: performance } = usePerformance();
   const [career, setCareer] = useState<Career | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
@@ -54,6 +56,11 @@ export function PlayerDrawer({
   const [cardFailed, setCardFailed] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
   const tabRefs = useRef<Array<HTMLButtonElement | null>>([]);
+  const mountedRef = useRef(true);
+
+  useEffect(() => () => {
+    mountedRef.current = false;
+  }, []);
 
   useEffect(() => {
     setCardFailed(false);
@@ -76,13 +83,11 @@ export function PlayerDrawer({
   }, [player.puuid]);
 
   useEffect(() => {
-    setSaved(Boolean(player.saved));
-    setNote(player.savedNote ?? "");
     setSavedMessage(null);
     setActiveTab("overview");
     setNoteExpanded(false);
     scrollRef.current?.scrollTo({ top: 0 });
-  }, [player.puuid, player.saved, player.savedNote]);
+  }, [player.puuid]);
 
   const handleTabKeyDown = (event: React.KeyboardEvent<HTMLButtonElement>, index: number) => {
     const nextIndex = nextDrawerTabIndex(index, event.key);
@@ -97,7 +102,7 @@ export function PlayerDrawer({
   const closeMatch = () => {
     const opener = openMatch?.opener;
     setOpenMatch(null);
-    setTimeout(() => { if (opener?.isConnected) opener.focus(); }, 0);
+    setTimeout(() => { if (opener?.isConnected) opener.focus({ preventScroll: true }); }, 0);
   };
 
   const selectTab = (tab: DrawerTab) => {
@@ -115,16 +120,19 @@ export function PlayerDrawer({
         saved: keep,
         note: keep ? note : "",
       });
+      if (!result.ok) throw new ApiError("The player note was not saved.");
+      if (!mountedRef.current) return;
       setSaved(result.saved);
-      const updatedNote = result.saved ? note.trim() : "";
+      const updatedNote = result.saved ? result.player?.note ?? "" : "";
       setNote(updatedNote);
       onSavedChange(result.saved, updatedNote);
       setSavedMessage(result.saved ? "Player and note saved." : "Player removed from Saved Players.");
       if (!result.saved) setNoteExpanded(false);
     } catch (nextError) {
+      if (!mountedRef.current) return;
       setSavedMessage(nextError instanceof ApiError ? nextError.message : "Could not save this player.");
     } finally {
-      setSavedBusy(false);
+      if (mountedRef.current) setSavedBusy(false);
     }
   };
 
@@ -200,7 +208,7 @@ export function PlayerDrawer({
                       Party P{player.party.number}
                     </span>
                   )}
-                  {player.smurf && <Badge color="#ed8793" testId="drawer-smurf-badge">Smurf</Badge>}
+                  {player.smurf && <Badge color="#ed8793" testId="drawer-smurf-badge">Possible smurf</Badge>}
                 </div>
               </div>
               <div className="relative flex w-[180px] shrink-0 items-center justify-end gap-3 pr-8" data-testid="drawer-current-rank">
@@ -260,8 +268,8 @@ export function PlayerDrawer({
                   {hasDrawerAlerts && (
                     <section className={hasThreatAlerts ? "mb-2.5 border-l-[3px] border-rose-500 bg-[#241217] px-3 py-2" : "mb-2.5"} data-testid="drawer-smurf-reasons" data-alert-kind={hasThreatAlerts ? "threat" : "streak"}>
                       <div className="flex flex-wrap items-center gap-1.5">
-                        {player.smurf && <span className="live-alert-badge live-alert-smurf inline-flex items-center gap-1 rounded-sm border px-2 py-1 text-[12px] font-semibold text-white"><AlertTriangle size={12} strokeWidth={3} />Smurf</span>}
-                        {boostingReasons.length > 0 && <span className="live-alert-badge live-alert-boosting inline-flex items-center gap-1 rounded-sm border px-2 py-1 text-[12px] font-semibold text-white"><AlertTriangle size={12} strokeWidth={3} />Boosting</span>}
+                        {player.smurf && <span className="live-alert-badge live-alert-smurf inline-flex items-center gap-1 rounded-sm border px-2 py-1 text-[12px] font-semibold text-white"><AlertTriangle size={12} strokeWidth={3} />Possible smurf</span>}
+                        {boostingReasons.length > 0 && <span className="live-alert-badge live-alert-boosting inline-flex items-center gap-1 rounded-sm border px-2 py-1 text-[12px] font-semibold text-white"><AlertTriangle size={12} strokeWidth={3} />Possible boosting</span>}
                         {player.streak && player.streak.count >= 3 && <StreakBadge type={player.streak.type} count={player.streak.count} />}
                       </div>
                       {hasThreatAlerts && player.smurfReasons.length > 0 && <p className="mt-1.5 text-[12px] font-medium leading-relaxed text-zinc-300">{player.smurfReasons.join(" · ")}</p>}
@@ -304,7 +312,7 @@ export function PlayerDrawer({
               matchId={openMatch.id}
               subject={player.puuid}
               expected={career?.matches.find((match) => match.matchId === openMatch.id)}
-              meta={metaOverrides[openMatch.id]}
+              meta={metaOverrides[openMatch.id] ?? (performance?.account.puuid === accountPuuid ? performance.matchMeta?.[openMatch.id] : undefined)}
               draft={matchDrafts[openMatch.id]}
               onDraftChange={(draft) => {
                 setMatchDrafts((prev) => ({ ...prev, [openMatch.id]: draft }));

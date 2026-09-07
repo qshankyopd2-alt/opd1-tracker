@@ -27,6 +27,7 @@ function notify() {
 
 /** Restore the last good payload from localStorage so history survives restarts. */
 function hydrate(): void {
+  if (designModeEnabled) return;
   if (store.data) return;
   try {
     localStorage.removeItem(LEGACY_CACHE_KEY);
@@ -48,6 +49,7 @@ function hydrate(): void {
 }
 
 function persist(): void {
+  if (designModeEnabled) return;
   if (!store.data) return;
   try {
     const account = store.data.account?.puuid;

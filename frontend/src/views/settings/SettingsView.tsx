@@ -3,39 +3,23 @@ import { PageHeader } from "../../components/shell/PageHeader";
 import { useApp } from "../../state/AppContext";
 
 export function SettingsView() {
-  const { health } = useApp();
-
+  const { health, healthError } = useApp();
   return (
-    <div className="p-5 space-y-4 max-w-5xl" data-testid="settings-view">
+    <div className="p-6 space-y-6" data-testid="settings-view">
       <PageHeader title="Settings" />
-
-      <Section title="About" testId="settings-about-section">
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 text-[14px]">
-          <div>
-            <div className="text-[12px] text-zinc-400">App</div>
-            <div className="text-zinc-200 font-semibold">OPD1 Tracker {health?.appVersion ? `v${health.appVersion}` : ""}</div>
-          </div>
-          <div>
-            <div className="text-[12px] text-zinc-400">Data source</div>
-            <div className="text-zinc-200 font-semibold">{health?.dataSourcePreference ?? "—"}</div>
-          </div>
-          <div>
-            <div className="text-[12px] text-zinc-400">Riot client</div>
-            <div className={`font-semibold ${health?.clientStatus === "ok" ? "text-victory" : "text-zinc-400"}`}>
-              {health?.clientStatus === "ok" ? "Detected" : "Not running"}
-            </div>
-          </div>
-          <div>
-            <div className="text-[12px] text-zinc-400">Region</div>
-            <div className="text-zinc-200 font-semibold">Detected automatically</div>
-          </div>
-        </div>
-        <p className="text-[12px] text-zinc-400 mt-4 max-w-3xl leading-relaxed">
-          OPD1 Tracker reads data from the VALORANT client running on this PC. It is not endorsed by Riot Games and
-          does not reflect the views of Riot Games or anyone officially involved in producing or managing Riot Games
-          properties.
-        </p>
-      </Section>
+      <div className="settings-layout">
+        <div><p className="text-brand text-[12px] tracking-widest">APPLICATION</p><h2 className="font-display text-[38px] mt-3">OPD1 Tracker</h2><p className="mt-2 text-text-secondary">{health?.appVersion ? `Version ${health.appVersion}` : "Version unavailable"}</p><p className="mt-6 max-w-sm text-[14px] leading-relaxed text-text-secondary">A local workspace for your VALORANT matches, competitive progress and player notes.</p></div>
+        <Section title="Connection" testId="settings-about-section">
+          <dl className="settings-facts">
+            <div><dt>Data service</dt><dd>{healthError ? "Unavailable" : health ? "Connected" : "Checking…"}</dd></div>
+            <div><dt>Riot client</dt><dd>{health?.clientStatus === "ok" ? "Detected" : "Not running or not ready"}</dd></div>
+            <div><dt>Data source</dt><dd>{health?.dataSourcePreference ?? "—"}</dd></div>
+            <div><dt>Region</dt><dd>Detected automatically</dd></div>
+          </dl>
+          <p className="text-[12px] text-text-secondary mt-5">Region follows the local game log. Player notes and match annotations stay on this PC.</p>
+        </Section>
+      </div>
+      <p className="border-t border-edge pt-5 text-[12px] text-text-secondary max-w-4xl">OPD1 Tracker is not endorsed by Riot Games and does not reflect the views of Riot Games or anyone officially involved in producing or managing Riot Games properties.</p>
     </div>
   );
 }

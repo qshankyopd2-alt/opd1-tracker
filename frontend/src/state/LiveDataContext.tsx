@@ -46,7 +46,8 @@ export function LiveDataProvider({ children }: { children: ReactNode }) {
   }, [poll.refresh]);
 
   const value = useMemo<LiveData>(() => {
-    const isLive = poll.data?.source === "local";
+    const local = poll.data?.source === "local";
+    const isLive = local && poll.data?.state !== "OFFLINE";
     return {
       board: poll.data,
       error: poll.error,
@@ -54,7 +55,7 @@ export function LiveDataProvider({ children }: { children: ReactNode }) {
       updatedAt: poll.updatedAt,
       refresh: poll.refresh,
       isLive,
-      showBoard: isLive,
+      showBoard: local,
     };
   }, [poll.data, poll.error, poll.loading, poll.updatedAt, poll.refresh]);
 

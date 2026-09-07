@@ -41,8 +41,7 @@ describe("TeamPanel", () => {
     expect(html).not.toContain("detected</span>");
 
     // Team averages & stats
-    expect(html).toContain("team-stats-compact");
-    expect(html).toContain("Team average K/D");
+    expect(html).toContain("Team averages");
     expect(html).toContain("Avg");
     expect(html).toContain("K/D");
     expect(html).toContain("WR");

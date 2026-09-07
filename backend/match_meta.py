@@ -25,7 +25,7 @@ def _load() -> dict:
     return {"version": 1, "accounts": {}}
 
 
-def _save() -> None:
+def _save() -> bool:
     try:
         os.makedirs(_DATA_DIR, exist_ok=True)
         fd, tmp = tempfile.mkstemp(dir=_DATA_DIR, prefix=".match-meta-", suffix=".tmp")
@@ -39,8 +39,9 @@ def _save() -> None:
                     os.remove(tmp)
                 except OSError:
                     pass
+        return True
     except Exception:
-        pass
+        return False
 
 
 _STORE = _load()
@@ -60,7 +61,14 @@ def get_one(puuid: str | None, match_id: str) -> dict:
 def update(puuid: str | None, match_id: str, payload: object) -> dict:
     if not puuid or not match_id:
         return {"ok": False, "message": "An active account and match are required."}
-    body = payload if isinstance(payload, dict) else {}
+    if not isinstance(payload, dict):
+        return {"ok": False, "message": "Invalid match note."}
+    body = payload
+    if (not isinstance(body.get("note", ""), str)
+            or not isinstance(body.get("tags", []), list)
+            or any(not isinstance(tag, str) for tag in body.get("tags", []))
+            or not isinstance(body.get("bookmarked", False), bool)):
+        return {"ok": False, "message": "Invalid match note."}
     note = str(body.get("note") or "").strip()[:500]
     tags = []
     for raw in body.get("tags") or []:
@@ -73,9 +81,15 @@ def update(puuid: str | None, match_id: str, payload: object) -> dict:
             "updatedAt": int(time.time())}
     with _LOCK:
         account = _STORE.setdefault("accounts", {}).setdefault(str(puuid), {})
+        previous = account.get(match_id)
         if note or tags or meta["bookmarked"]:
             account[match_id] = meta
         else:
             account.pop(match_id, None)
-        _save()
+        if not _save():
+            if previous is None:
+                account.pop(match_id, None)
+            else:
+                account[match_id] = previous
+            return {"ok": False, "message": "The match-note file could not be written."}
     return {"ok": True, "matchId": match_id, "meta": meta}

@@ -20,9 +20,9 @@ export function AsciiStudioView() {
     <div className="p-5 space-y-4" data-testid="ascii-studio-view">
       <PageHeader title="ASCII studio" />
 
-      <nav
+      <div className="ascii-workspace"><nav
         aria-label="ASCII Studio mode"
-        className="grid gap-2 rounded-md border border-edge bg-panel p-2 sm:grid-cols-3"
+        className="ascii-modes"
         data-testid="ascii-tabs"
       >
         {TABS.map(({ id, label, icon: Icon }) => {
@@ -33,7 +33,7 @@ export function AsciiStudioView() {
               data-testid={`ascii-tab-${id}`}
               aria-pressed={active}
               onClick={() => setTab(id)}
-              className={`flex items-center gap-3 rounded-sm border px-4 py-3 text-left transition-colors ${
+              className={`flex items-center gap-3 rounded-sm border px-3 py-3 text-left transition-colors ${
                 active
                   ? "border-brand/40 bg-brand text-ink"
                   : "border-transparent text-zinc-400 hover:bg-zinc-800/40 hover:text-zinc-100"
@@ -52,9 +52,9 @@ export function AsciiStudioView() {
         })}
       </nav>
 
-      {tab === "gallery" && <GalleryPanel />}
+      <div className="min-w-0">{tab === "gallery" && <GalleryPanel />}
       {tab === "text" && <TextGeneratorPanel />}
-      {tab === "draw" && <DrawStudioPanel />}
+      {tab === "draw" && <DrawStudioPanel />}</div></div>
     </div>
   );
 }

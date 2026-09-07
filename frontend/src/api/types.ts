@@ -108,7 +108,7 @@ export interface LivePlayer {
   smurf: boolean;
   smurfReasons: string[];
   topAgents: { agent: string; games: number }[];
-  form: ("W" | "L")[];
+  form: ("W" | "L" | "D" | "?")[];
   streak: { type: "W" | "L"; count: number } | null;
   mapWinRate: { winRate: number; games: number } | null;
   encounter?: EncounterCounts | null;
@@ -253,7 +253,7 @@ export interface CareerMatch {
   mapSplash: string | null;
   mode: string;
   startMillis: number;
-  result: "Victory" | "Defeat" | "Draw";
+  result: "Victory" | "Defeat" | "Draw" | null;
   score: number;
   opponentScore: number | null;
   agent: string;

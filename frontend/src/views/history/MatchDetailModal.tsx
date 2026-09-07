@@ -136,7 +136,7 @@ function MetaEditor({
         setMsg("Saved.");
         onSaved(res.meta);
       } else {
-        setMsg("Couldn't save — is VALORANT running?");
+        setMsg(res.message ?? "Could not save this note. Try again.");
       }
     } catch (e) {
       setMsg(e instanceof ApiError ? e.message : "Couldn't save.");

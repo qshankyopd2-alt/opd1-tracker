@@ -26,8 +26,8 @@ export default {
         victory: "var(--accent-team-a)",
         defeat: "var(--accent-team-b)",
         brand: {
-          DEFAULT: "#eeeeee",
-          hover: "#FFFFFF",
+          DEFAULT: "#B8D5EA",
+          hover: "#D4E8F5",
         },
         "accent-gold": "var(--accent-gold)",
         "accent-info": "var(--accent-info)",
@@ -61,7 +61,7 @@ export default {
       },
       fontFamily: {
         sans: ['"Segoe UI Variable Text"', '"Segoe UI"', "system-ui", "sans-serif"],
-        display: ['"Segoe UI Variable Display"', '"Segoe UI"', "system-ui", "sans-serif"],
+        display: ["Bahnschrift", '"Segoe UI"', "system-ui", "sans-serif"],
         body: ['"Segoe UI Variable Text"', '"Segoe UI"', "system-ui", "sans-serif"],
         mono: ['"Segoe UI Variable Text"', '"Segoe UI"', "system-ui", "sans-serif"],
         code: ['"Cascadia Mono"', "Consolas", "ui-monospace", "monospace"],

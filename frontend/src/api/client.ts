@@ -167,7 +167,7 @@ export const backend = {
   sessionStart: () => api<ActionResult & { session?: SessionView }>("/api/session/start", { method: "POST", body: "{}" }),
   sessionEnd: () => api<ActionResult & { session?: SessionView }>("/api/session/end", { method: "POST", body: "{}" }),
   updateMatchMeta: (matchId: string, meta: Partial<MatchMeta>) =>
-    api<{ ok: boolean; meta: MatchMeta }>(`/api/matches/${encodeURIComponent(matchId)}/meta`, {
+    api<{ ok: boolean; meta: MatchMeta; message?: string }>(`/api/matches/${encodeURIComponent(matchId)}/meta`, {
       method: "PUT",
       body: JSON.stringify(meta),
     }),

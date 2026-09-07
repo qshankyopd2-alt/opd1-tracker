@@ -101,6 +101,18 @@ def _fallback_name(puuid: str) -> str:
     pass
     return f"Player-{(puuid or '????')[:4].upper()}"
 
+
+def match_result(teams: dict, team_id: str | None) -> str | None:
+    """A result needs an explicit owner result and complete opponent results."""
+    if team_id not in teams or len(teams) < 2:
+        return None
+    results = [team.get("won") for team in teams.values()]
+    if any(type(result) is not bool for result in results):
+        return None
+    if teams[team_id]["won"]:
+        return "Victory"
+    return "Defeat" if any(results) else "Draw"
+
 def smurf_signals(*, level, peak_tier, rank_tier, kd, win_rate, games) -> list[str]:
     pass
     reasons: list[str] = []
@@ -117,7 +129,7 @@ def smurf_signals(*, level, peak_tier, rank_tier, kd, win_rate, games) -> list[s
 
 def form_streak(form: list) -> dict | None:
     pass
-    if not form:
+    if not form or form[0] not in ("W", "L"):
         return None
     t, n = form[0], 1
     for r in form[1:]:
@@ -225,15 +237,10 @@ class LiveMatch:
         teams = [team for team in (md.get("teams") or []) if team.get("teamId")]
         if not owner_team or len(teams) < 2 or any("won" not in team for team in teams):
             return {"outcome": None, "sides": {}, "status": "not_ready"}
-        winners = {team["teamId"] for team in teams if team.get("won") is True}
-        if owner_team in winners:
-            outcome = "win"
-        elif winners:
-            outcome = "loss"
-        elif all(team.get("won") is False for team in teams):
-            outcome = "draw"
-        else:
+        result = match_result({team["teamId"]: team for team in teams}, owner_team)
+        if result is None:
             return {"outcome": None, "sides": {}, "status": "not_ready"}
+        outcome = {"Victory": "win", "Defeat": "loss", "Draw": "draw"}[result]
         sides = {str(player["subject"]):
                  ("with" if player.get("teamId") == owner_team else "against")
                  for player in md["players"] if player.get("subject") != self.self_puuid}
@@ -742,14 +749,14 @@ class LiveMatch:
                         if aname:
                             agent_counts[aname] = agent_counts.get(aname, 0) + 1
                         teams = {t.get("teamId"): t for t in md.get("teams", [])}
-                        won = (teams.get(pl.get("teamId")) or {}).get("won")
-                        if won is not None:
-                            form.append("W" if won else "L")
+                        result = match_result(teams, pl.get("teamId"))
+                        form.append({"Victory": "W", "Defeat": "L", "Draw": "D"}.get(result, "?"))
+                        if result in ("Victory", "Defeat"):
                             mapn = map_name_from_path(
                                 (md.get("matchInfo", {}) or {}).get("mapId", ""))
                             mw = map_wins.setdefault(mapn, [0, 0])
                             mw[1] += 1
-                            if won:
+                            if result == "Victory":
                                 mw[0] += 1
                         break
             if used == 0:
@@ -1264,7 +1271,6 @@ class LiveMatch:
         team_id = subj.get("teamId")
         teams = {t.get("teamId"): t for t in md.get("teams", []) if t.get("teamId")}
         mine = teams.get(team_id, {})
-        won = mine.get("won")
         rounds = max((t.get("roundsWon", 0) for t in teams.values()), default=0) +            min((t.get("roundsWon", 0) for t in teams.values()), default=0)
 
         hits_by_player: dict[str, int] = {}
@@ -1319,7 +1325,7 @@ class LiveMatch:
             "mapSplash": valapi.map_splash(map_name),
             "mode": _mode_label(queue),
             "startMillis": info.get("gameStartMillis", 0),
-            "result": "Victory" if won is True else "Defeat" if won is False else "Draw",
+            "result": match_result(teams, team_id),
             "team": team_id,
             "score": mine.get("roundsWon", 0),
             "opponentScore": opponent_score,
@@ -1402,11 +1408,6 @@ class LiveMatch:
             })
         players.sort(key=lambda x: -x["acs"])
 
-        won = None
-        if subject:
-            sp = next((p for p in raw if p.get("subject") == subject), None)
-            if sp:
-                won = teams.get(sp.get("teamId"), {}).get("won")
         subject_team = next((p.get("team") for p in players if p.get("isSubject")), None)
         if players:
             players[0]["isMatchMvp"] = True
@@ -1429,8 +1430,7 @@ class LiveMatch:
             "mapSplash": valapi.map_splash(map_name),
             "mode": _mode_label(info.get("queueID") or info.get("queueId") or ""),
             "scores": {tid: t.get("roundsWon", 0) for tid, t in teams.items()},
-            "result": ("Victory" if won is True else "Defeat" if won is False
-                       else ("Draw" if won is not None else None)),
+            "result": match_result(teams, subject_team),
             "players": players, "teamStats": team_stats,
         }
 

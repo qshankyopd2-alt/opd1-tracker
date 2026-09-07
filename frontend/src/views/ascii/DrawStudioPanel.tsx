@@ -124,7 +124,7 @@ export function DrawStudioPanel() {
 
   return (
     <section data-testid="ascii-draw-studio" className="space-y-4">
-      <div className="grid grid-cols-1 gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(340px,420px)]">
+      <div className="grid grid-cols-1 gap-4 2xl:grid-cols-[minmax(0,1fr)_minmax(340px,420px)]">
         <div className="rounded-md border border-edge bg-card p-4">
           <div className="mb-4 flex flex-wrap gap-2">
             <ToolButton label="Undo" icon={Undo2} onClick={undo} disabled={undoStack.length === 0} />
@@ -168,6 +168,7 @@ export function DrawStudioPanel() {
                   onChange={(event) => onCustomDraw(event.target.value)}
                   maxLength={2}
                   aria-label="Custom brush glyph"
+                  data-testid="ascii-custom-brush"
                   placeholder="+"
                   className="h-8 w-10 rounded-sm border border-edge bg-panel text-center font-code text-sm text-zinc-200 placeholder:text-zinc-500"
                 />
@@ -196,6 +197,7 @@ export function DrawStudioPanel() {
               </span>
               <input
                 type="range"
+                data-testid="ascii-draw-height"
                 min={MIN_ROWS}
                 max={MAX_ROWS}
                 value={height}
@@ -221,6 +223,9 @@ export function DrawStudioPanel() {
                     key={`${rowIndex}-${columnIndex}`}
                     type="button"
                     aria-label={`Canvas cell ${rowIndex + 1}, ${columnIndex + 1}`}
+                    aria-pressed={cell}
+                    data-testid={`ascii-cell-${rowIndex}-${columnIndex}`}
+                    onClick={(event) => { if (event.detail === 0) { beginPaint(rowIndex, columnIndex); paint.current.active = false; } }}
                     onPointerDown={() => beginPaint(rowIndex, columnIndex)}
                     onPointerEnter={() => continuePaint(rowIndex, columnIndex)}
                     className={`aspect-square w-full rounded-[2px] border border-white/[0.04] transition-colors ${
@@ -231,7 +236,7 @@ export function DrawStudioPanel() {
               )}
             </div>
           </div>
-          <p className="mt-2 text-[12px] text-zinc-400">Drag to paint. Start on a filled cell to erase.</p>
+          <p className="mt-2 text-[12px] text-zinc-400">Drag to paint. Start on a filled cell to erase. Keyboard: Tab to a cell, then Space to toggle.</p>
         </div>
 
         <div className="rounded-md border border-brand/20 bg-card p-4">
@@ -249,6 +254,7 @@ export function DrawStudioPanel() {
           <button
             type="button"
             onClick={() => void onCopy()}
+            data-testid="ascii-draw-copy"
             className={`mt-3 flex w-full items-center justify-center gap-1.5 rounded-sm px-4 py-2.5 text-[12px] font-semibold transition-colors ${
               copied ? "bg-victory text-ink" : "bg-brand text-ink hover:bg-brand-hover"
             }`}
@@ -276,6 +282,7 @@ function ToolButton({ label, icon: Icon, onClick, disabled = false }: ToolButton
     <button
       type="button"
       disabled={disabled}
+      data-testid={`ascii-tool-${label.toLowerCase().replaceAll(" ", "-")}`}
       onClick={onClick}
       className="rounded-sm border border-edge bg-panel px-2.5 py-1.5 text-[12px] font-semibold text-zinc-300 transition-colors hover:text-zinc-100 disabled:cursor-not-allowed disabled:opacity-30"
     >
@@ -296,6 +303,8 @@ function GlyphButton({ glyph, selected, onClick }: GlyphButtonProps) {
   return (
     <button
       type="button"
+      data-testid={`ascii-glyph-${glyph}`}
+      aria-pressed={selected}
       onClick={onClick}
       className={`grid h-8 w-8 place-items-center rounded-sm border font-code text-sm transition-colors ${
         selected ? "border-brand bg-brand text-ink" : "border-edge bg-panel text-zinc-300 hover:border-brand/40"

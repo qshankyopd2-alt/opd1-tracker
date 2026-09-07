@@ -73,8 +73,10 @@ the Python process. Polling is adaptive: ~4 s during agent select / matches, slo
 menus, and paused while the window is hidden. See `docs/BACKEND_CAPABILITIES.md` for the
 full endpoint and data-flow reference.
 
-When VALORANT isn't running the backend may report demo data flagged `source:"demo"`;
-the UI rejects it and renders an offline state. Generated data is never presented as real.
+When VALORANT isn't running or ready, the backend returns an empty OFFLINE board
+with `source:"local"`. The UI checks both source and game state; it never fills missing players.
+Synthetic fixtures are available only in development (`$env:VITE_DESIGN_MODE='true'; npm run tauri dev`)
+and are visibly labeled. They bypass the HTTP client and do not populate the persistent performance cache.
 
 ## Tests
 
@@ -106,8 +108,8 @@ Windows SmartScreen may therefore show an unknown-publisher warning when sharing
 
 | Key | Default | Meaning |
 |---|---|---|
-| `DATA_SOURCE` | `auto` | `auto` = local client when VALORANT runs; `demo` forces generated data; `local` requires the client |
-| `RIOT_REGION` | `na` | shard override (`na eu ap kr latam br`) — normally auto-detected |
+| `DATA_SOURCE` | `auto` | retained compatibility setting; no generated-data fallback |
+| `RIOT_REGION` | `na` | optional official-API fallback setting; local-client region is detected automatically from the game log |
 | `RIOT_API_KEY` | empty | optional official key; reveals hidden names via account-v1 |
 | `RIOT_MAX_RPS` | `10` | global Riot request rate limit (lower it when sharing the machine with other Riot-API tools) |
 | `BACKEND_PORT` | `5000` | standalone development port; Tauri passes `0` to choose an available port |

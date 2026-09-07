@@ -105,8 +105,7 @@ def loadout_weapons(items: dict) -> list:
                    .get("Item", {}).get("ID"))
         skin = skin_from_id(skin_id, wname) if skin_id else None
 
-        if (not skin or not skin.get("icon")
-                or (skin.get("name") or "").strip().lower() == "standard"):
+        if skin and (skin.get("name") or "").strip().lower() == "standard":
             skin = {"name": "Standard", "icon": weapon_icon(wuuid)}
         out.append({"weapon": wname, "skin": skin})
     order = {name: i for i, name in enumerate(WEAPON_ORDER)}

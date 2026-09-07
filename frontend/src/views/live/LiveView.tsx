@@ -19,7 +19,8 @@ export function LiveView() {
   const [selected, setSelected] = useState<{ player: LivePlayer; accountPuuid: string | null; restoreFocus: HTMLElement | null } | null>(null);
   const [savedOverrides, setSavedOverrides] = useState<Record<string, { saved: boolean; note: string }>>({});
   const [previewDrawerRequested, setPreviewDrawerRequested] = useState(false);
-  const { recentDetailsByPlayer, onRequestRecentDetails } = useRecentFormDetails();
+  const [showLoadouts, setShowLoadouts] = useState(false);
+  const { recentDetailsByPlayer, onRequestRecentDetails } = useRecentFormDetails(`${board?.selfPuuid}:${board?.matchId}:${board?.state}`);
   const accountPuuid = board?.selfPuuid ?? null;
 
   useEffect(() => {
@@ -73,7 +74,7 @@ export function LiveView() {
     );
   }
 
-  if (!showBoard || !board) {
+  if (!showBoard || !board || board.state === "OFFLINE") {
     return (
       <div className="h-full flex flex-col">
         <div className="flex-1">
@@ -93,7 +94,13 @@ export function LiveView() {
       data-testid="live-view"
       className={menus ? "w-full space-y-4 p-5" : "live-view flex h-full min-h-0 w-full flex-col gap-2 overflow-hidden p-2"}
     >
-      <MatchHeader board={board} />
+      <div className="live-toolbar"><MatchHeader board={board} />
+        <div role="group" aria-label="Player card content" className="live-content-switch">
+          <button type="button" data-testid="live-show-stats" aria-pressed={!showLoadouts} onClick={() => setShowLoadouts(false)}>Statistics</button>
+          <button type="button" data-testid="live-show-loadouts" aria-pressed={showLoadouts} onClick={() => setShowLoadouts(true)}>Loadouts</button>
+        </div>
+      </div>
+      {error && <ErrorBanner message={error} onRetry={refresh} testId="live-refresh-error" />}
 
       {menus && board.recap && <RecapCard recap={board.recap} />}
 
@@ -107,6 +114,7 @@ export function LiveView() {
           partyDetection={allyId ? board.partyDetection?.teams?.[allyId] : undefined}
           savedOverrides={savedOverrides}
           pregame={pregame}
+          showLoadouts={showLoadouts}
           onSelect={(player, restoreFocus) => setSelected({ player, accountPuuid, restoreFocus })}
           recentDetailsByPlayer={recentDetailsByPlayer}
           onRequestRecentDetails={onRequestRecentDetails}
@@ -122,6 +130,7 @@ export function LiveView() {
             partyDetection={enemyId ? board.partyDetection?.teams?.[enemyId] : undefined}
             savedOverrides={savedOverrides}
             pregame={pregame}
+            showLoadouts={showLoadouts}
             onSelect={(player, restoreFocus) => setSelected({ player, accountPuuid, restoreFocus })}
             recentDetailsByPlayer={recentDetailsByPlayer}
             onRequestRecentDetails={onRequestRecentDetails}

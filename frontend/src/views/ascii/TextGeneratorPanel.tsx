@@ -39,6 +39,7 @@ export function TextGeneratorPanel() {
               Your text
             </span>
             <input
+              data-testid="ascii-text-input"
               value={text}
               onChange={(event) => setText(event.target.value)}
               placeholder="Type up to 16 characters…"
@@ -56,6 +57,8 @@ export function TextGeneratorPanel() {
                 <button
                   key={glyph}
                   type="button"
+                  data-testid={`ascii-text-brush-${glyph}`}
+                  aria-pressed={draw === glyph}
                   onClick={() => setDraw(glyph)}
                   className={`grid h-8 w-8 place-items-center rounded-sm border font-code text-sm transition-colors ${
                     draw === glyph
@@ -79,6 +82,8 @@ export function TextGeneratorPanel() {
                   <button
                     key={glyph}
                     type="button"
+                    data-testid={`ascii-text-background-${glyph}`}
+                    aria-pressed={background === glyph}
                     onClick={() => setBackground(glyph)}
                     className={`grid h-8 w-8 place-items-center rounded-sm border font-code text-sm transition-colors ${
                       background === glyph
@@ -98,6 +103,7 @@ export function TextGeneratorPanel() {
               </span>
               <input
                 type="range"
+                data-testid="ascii-text-spacing"
                 min={1}
                 max={4}
                 value={gap}
@@ -128,6 +134,7 @@ export function TextGeneratorPanel() {
           </div>
           <button
             type="button"
+            data-testid="ascii-text-copy"
             disabled={rows.length === 0}
             onClick={() => void onCopy()}
             className={`mt-3 flex w-full items-center justify-center gap-1.5 rounded-sm px-4 py-2.5 text-[12px] font-semibold transition-colors disabled:opacity-40 ${

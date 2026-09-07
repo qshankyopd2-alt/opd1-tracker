@@ -14,11 +14,11 @@ export function AppShell({ children }: { children: ReactNode }) {
         data-window-mode={mode}
         data-is-maximized={isMaximized}
       >
-        <div className="flex-1 flex min-h-0 relative">
+        <div className="app-workspace flex-1 flex min-h-0 relative">
           <Sidebar />
           <main
             data-testid="main-content"
-            className="flex-1 min-w-0 ml-16 overflow-y-auto bg-[var(--bg-app)]"
+            className="opd-main flex-1 min-w-0 overflow-y-auto bg-[var(--bg-app)]"
           >
             <div className="w-full max-w-[1800px] mx-auto h-full flex flex-col">
               {children}

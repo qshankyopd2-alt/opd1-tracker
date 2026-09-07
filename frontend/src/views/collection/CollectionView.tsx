@@ -8,6 +8,7 @@ import { Section } from "../../components/ui/Section";
 import { PageHeader } from "../../components/shell/PageHeader";
 import { TableSkeleton } from "../../components/ui/Skeleton";
 import { usePoll } from "../../hooks/usePoll";
+import { fmtNum, timeAgo } from "../../lib/format";
 
 const designModeEnabled = import.meta.env.DEV && import.meta.env.VITE_DESIGN_MODE === "true";
 
@@ -93,7 +94,7 @@ export function CollectionView() {
       <PageHeader title="Collection">
         {data.stale && (
           <Badge color="#F59E0B" testId="collection-stale-badge">
-            Saved collection
+            Cached collection · refresh unavailable
           </Badge>
         )}
         <button
@@ -107,18 +108,19 @@ export function CollectionView() {
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 stagger">
         <ValueCard
-          label="Collection value"
-          value={`${(data.totalVp ?? 0).toLocaleString()} VP`}
-          sub={`≈ $${(data.usdApprox ?? 0).toLocaleString()} USD · ${counts?.skins ?? 0} paid skins`}
+          label="Estimated collection value"
+          value={`${fmtNum(data.totalVp)} VP`}
+          sub={`≈ $${fmtNum(data.usdApprox)} USD · ${counts?.skins ?? "—"} paid skins`}
           testId="collection-value-card"
           highlight={true}
         />
-        <ValueCard label="VALORANT Points" value={(data.wallet?.vp ?? 0).toLocaleString()} sub="Wallet balance" testId="wallet-vp-card" />
-        <ValueCard label="Radianite" value={(data.wallet?.rad ?? 0).toLocaleString()} sub="Upgrade currency" testId="wallet-rad-card" />
-        <ValueCard label="Kingdom Credits" value={(data.wallet?.kc ?? 0).toLocaleString()} sub="Agent currency" testId="wallet-kc-card" />
+        <ValueCard label="VALORANT Points" value={fmtNum(data.wallet?.vp)} sub="Wallet balance" testId="wallet-vp-card" />
+        <ValueCard label="Radianite" value={fmtNum(data.wallet?.rad)} sub="Upgrade currency" testId="wallet-rad-card" />
+        <ValueCard label="Kingdom Credits" value={fmtNum(data.wallet?.kc)} sub="Agent currency" testId="wallet-kc-card" />
       </div>
 
-      <div className="grid grid-cols-1 xl:grid-cols-[340px_1fr] gap-4">
+      <p className="text-[12px] text-text-secondary" data-testid="collection-estimate-note">Tier-based estimate, not actual spend or resale value. Snapshot {timeAgo(data.at)}.</p>
+      <div className="collection-layout">
         <Section title="Breakdown" testId="collection-breakdown">
           <div className="space-y-4" data-testid="tier-breakdown">
             <div className="flex h-3 w-full overflow-hidden rounded-full bg-zinc-800 ring-1 ring-inset ring-white/5">
@@ -132,14 +134,14 @@ export function CollectionView() {
               ))}
             </div>
 
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-y-2 gap-x-4">
+            <div className="grid grid-cols-[repeat(auto-fit,minmax(180px,1fr))] gap-y-2 gap-x-4">
               {tiers.map(([name, t]) => (
-                <div key={name} className="flex items-center justify-between text-[12px]">
+                <div key={name} className="flex items-center justify-between gap-3 text-[12px]">
                   <div className="flex items-center gap-1.5">
-                    <span className="h-2.5 w-2.5 rounded-sm" style={{ backgroundColor: TIER_COLORS[name] ?? "#A1A1AA" }} />
+                    <span className="h-2.5 w-2.5 shrink-0 rounded-sm" style={{ backgroundColor: TIER_COLORS[name] ?? "#A1A1AA" }} />
                     <span className="font-semibold text-zinc-200">{name}</span>
                   </div>
-                  <span className="text-zinc-400 num">{t.skins} skins</span>
+                  <span className="shrink-0 whitespace-nowrap text-zinc-400 num">{t.skins} skins</span>
                 </div>
               ))}
             </div>
@@ -153,15 +155,15 @@ export function CollectionView() {
           </div>
         </Section>
 
-        <Section title="Most valuable skins" testId="collection-top-skins">
+        <Section title="Featured collection" testId="collection-top-skins">
           {(data.top ?? []).length === 0 ? (
             <p className="text-[12px] text-zinc-400">No priced skins found in this collection.</p>
           ) : (
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 stagger" data-testid="top-skins-grid">
+            <div className="grid grid-cols-2 2xl:grid-cols-4 gap-3" data-testid="top-skins-grid">
               {(data.top ?? []).map((s) => (
                 <div key={s.name} className="flex flex-col rounded-sm border-b border-l border-r border-edge bg-panel p-3" style={{ borderTop: `2px solid ${TIER_COLORS[s.tier] ?? "#A1A1AA"}` }}>
                   {s.icon ? (
-                    <img src={s.icon} alt={s.name} className="h-10 object-contain self-center hover:scale-105 transition-transform duration-300" loading="lazy" draggable={false} onError={(event) => { event.currentTarget.style.display = "none"; }} />
+                    <img src={s.icon} alt={s.name} className="h-20 w-full object-contain self-center" loading="lazy" draggable={false} onError={(event) => { event.currentTarget.style.display = "none"; }} />
                   ) : (
                     <div className="h-10" />
                   )}

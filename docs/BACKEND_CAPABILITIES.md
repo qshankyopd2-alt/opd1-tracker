@@ -11,7 +11,7 @@ HTTP interface the desktop UI consumes. Format for key data:
 1. **Lockfile** — `%LOCALAPPDATA%\Riot Games\Riot Client\Config\lockfile` → `{name, PID, port, password, protocol}`. `LocalAuth.available()` = VALORANT/Riot client running.
 2. **Entitlements** — `GET https://127.0.0.1:{port}/entitlements/v1/token` with `Basic riot:{password}` → `{subject (self PUUID), accessToken, token}`. Not ready → `ClientNotReady`.
 3. **Headers** for pd/glz/shared endpoints: `Authorization: Bearer {accessToken}`, `X-Riot-Entitlements-JWT`, `X-Riot-ClientPlatform` (fixed base64), `X-Riot-ClientVersion` (from local presence → valorant-api.com/v1/version → ShooterGame.log).
-4. **Region/shard** — explicit `RIOT_REGION` or parsed from `ShooterGame.log`. Builds `pd.{shard}.a.pvp.net` and `glz-{r0}.{r1}.a.pvp.net` base URLs.
+4. **Region/shard** — parsed automatically from `ShooterGame.log` by LocalAuth; RIOT_REGION belongs to the optional official client. Builds `pd.{shard}.a.pvp.net` and `glz-{r0}.{r1}.a.pvp.net` base URLs.
 5. **Rate limiting** — token buckets (`RIOT_MAX_RPS`, separate 0.4 rps bucket for `/mmr/*`), `Retry-After` holds on 429.
 
 Tokens never leave the backend; Flask responses contain processed data only.
@@ -61,7 +61,7 @@ Board caches: 3.5 s build freshness, 90 s hold for INGAME payload gaps, 20 s lob
 | `GET /api/saved-players` | account-scoped local watchlist built from the encounter store; includes note, counters, and encounter-game timeline; makes no Riot request |
 | `PUT /api/saved-players/{puuid}` | save/edit/remove a player note already observed in Live Match; makes no Riot request |
 | `GET /api/inventory` | owned skins (`pd /store/v1/entitlements/{puuid}/{type}`) priced via valorant-api content tiers → total VP + ≈USD, wallet (`pd /store/v1/wallet`: VP/RAD/KC), counts (buddies/cards/sprays/agents), tier breakdown, top/recent skins. 10 min cache, stale-cache fallback |
-| `GET/POST /api/settings` | persisted UI settings (`data/settings.json`): region, autoRefresh (pick/instalock settings agent, mode, delay, dryRun, perMap removed) |
+| `GET/POST /api/settings` | persisted compatibility settings (`data/settings.json`); Settings UI currently shows About/client information only |
 | `GET /api/region` | detected shard + region list |
 | `GET /api/agents` | agent roster (uuid, role, color, portraits) |
 | `GET/POST /api/queue` | `GET`: party/queue snapshot from glz parties API; `POST`: returns 501 Not Implemented (queue controls removed, postponed feature) |
@@ -82,3 +82,69 @@ Board caches: 3.5 s build freshness, 90 s hold for INGAME payload gaps, 20 s lob
 All imagery via `https://media.valorant-api.com` (+ metadata `https://valorant-api.com/v1/*`,
 module-level cached): agent portraits, rank tier icons, map splashes, weapon/skin renders,
 player cards, titles, seasons. Agent uuid/role/color table lives in `backend/agents.py`.
+
+
+## Runtime audit and frontend ownership (2026-09-07)
+
+Hosted Graphify commit ac488254fadd3c611339f9f31c281fedb22c2c77 matched local HEAD.
+Uncommitted edits and missing graph callers were traced from current source.
+
+| Consumer | Data path and final values | Limits and caching |
+|---|---|---|
+| Live / status | desktop.py / app.py -> LocalAuth -> LiveMatch.build_scoreboard / finalize -> /api/live -> LiveDataContext -> roster | Shared adaptive usePoll. source local is necessary but OFFLINE is disconnected. No fabricated player slots. |
+| Player identity and rank | Lockfile Basic auth -> entitlements -> authenticated PD name service / MMR -> identity and rank parsers -> name, hidden flags, level, current/previous/peak rank, act WR | Existing bounded match/player caches. PREGAME only exposes the friendly team. |
+| Combat and recent form | PD match history -> match details -> kd_hs / career aggregation -> sampled K/D, HS, chronological form | Historical samples, not live combat telemetry. Existing on-demand frontend detail cache. Draw and unknown keep their chronological positions. |
+| Parties | Local presences / available match identifiers -> party_detector grouping -> per-team coverage -> badges and explanatory text | complete, partial, unavailable. Missing data does not prove solo; co-players are not confirmed parties. |
+| Player profile | /api/profile/{puuid} -> LiveMatch.player_career -> recent detail aggregation -> Overview, Matches, maps, agents, frequent teammates | 60-second server cache. Unavailable source is not rendered as a career. |
+| Match detail | /api/match/{id}?subject= -> LiveMatch.match_detail -> subject perspective, score, KDA/ACS/HS, MVP -> shared MatchDetailContent | History dialog and embedded profile share content. Explicit complete team flags establish Victory/Defeat/Draw; missing flags yield unavailable. |
+| Competitive / History | PD competitive updates -> frozen history.refresh/enrich -> account rr_history -> history.payload -> /api/performance -> usePerformance | Shared 60-second frontend cache. Stored RR-sign backfills remain untouched, but inferred outcomes are excluded from UI results and aggregates until confirmed. |
+| Match metadata | Note/tags/bookmark -> PUT /api/matches/{id}/meta -> match_meta.update -> account store -> atomic file replacement -> acknowledgement | Failed writes roll back in-memory data and leave frontend drafts. No Riot request. |
+| Saved Players | Observed live players -> encounter_log -> saved-players GET/PUT -> local notes, with/against counters and game summaries | Account checked; only observed players can be saved. No new encounter drill-down. Failed saves retain edits. |
+| Collection | PD entitlements and wallet -> inventory -> tier pricing / valapi assets -> inventory payload -> counts, currencies, top/recent skins | Ten-minute cache with explicit stale fallback. Valuation is estimated, not actual spend or resale. Unknown skin is not Standard. |
+| Session / recap | Live state transitions -> session_tracker / history / encounter_reconciler -> existing session and recap payloads | Existing request cadence retained. Pending results stay pending. |
+| ASCII / Settings | Local Gallery, Text, Draw, clipboard; health payload for Settings | No new Riot requests or settings. Automatic region preserved. |
+
+### Native transport and storage
+
+main.rs launches source Python in development and the frozen backend in release.
+The backend binds a selected loopback port (port 0 request) and announces OPD1_READY;
+backend_connection IPC feeds the single API client with the per-launch X-OPD1-Token.
+Riot credentials remain inside Python. CSP, origins and loopback restrictions are unchanged.
+Shutdown uses stdin followed by the existing bounded kill fallback. No endpoints,
+IPC commands, WebSockets or event transports were added.
+
+runtime_paths supplies storage roots: standalone Python defaults to backend/data;
+Tauri development and installed builds supply per-user AppData directories. Histories,
+notes, sessions and settings persist locally. Release scripts exclude runtime data.
+Existing valapi, inventory, history and live caches remain the only data-fetching layers.
+
+### Data and UI semantics
+
+Current-act WR and recently sampled K/D/HS have different scopes. Smurf/boosting flags
+and winProb are heuristics, labeled as possible indicators / Estimated win chance.
+Insights retain sample/confidence context. Zero, hidden, missing, stale and unresolved
+are distinct states. Region derives from the game log. Settings does not expose a picker.
+
+Design Mode requires DEV and VITE_DESIGN_MODE. The shared API client intercepts it
+before HTTP; unsupported operations fail inside the harness. Synthetic performance
+never hydrates or persists the production localStorage cache. Fixture note saves remain
+in memory. Fixture checks and production bundle checks do not prove live Riot integration.
+
+
+### Latest UI refinement
+
+The owner requested reduced Live density: Statistics/Loadouts is a local display toggle,
+not a fetch or a new API feature. All four real weapon slots remain available together.
+Recent-result descriptions use a coherent source: before on-demand loading they describe
+the sampled live form; after loading they use the all-mode career result, RR and timestamp
+together. Their rows are never joined by result/index across the two sources. The existing
+on-demand cache is cleared at account/match/state transitions; stale in-flight generations
+cannot overwrite the new view. Frequent teammate labels are full-width rows; player
+profile agent portraits are grouped at 48px. Profile navigation and shared detail remain intact.
+
+Native review (2026-09-08): fixed 1200x700 and maximized Live layouts were inspected,
+including Statistics/Loadouts, all ten player rows, recent-result hover text and Tab focus,
+profile agent grouping, and long teammate names. Compact rows use 86px in short windows
+to keep the fifth player fully visible. Minimize/restore retained the selected content mode.
+The frontend suite passed 128 tests; TypeScript/Vite production build and fixture exclusion
+passed. These synthetic native checks do not verify a live Riot match or Windows 125% scaling.

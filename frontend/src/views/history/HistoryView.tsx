@@ -34,16 +34,16 @@ function MatchRow({
       data-testid={`history-row-${point.matchId}`}
       aria-label={ariaLabel}
       onClick={(event) => onOpen(event.currentTarget)}
-      className="group relative min-h-[92px] w-full overflow-hidden rounded-md border border-white/10 bg-card text-left transition-colors hover:border-white/20 hover:bg-card-hover"
+      className="history-entry group relative min-h-[96px] w-full overflow-hidden border-b border-edge bg-panel text-left transition-colors hover:bg-card-hover"
     >
       {splash && (
         <span className="absolute inset-y-0 left-0 w-[300px] overflow-hidden">
-          <img src={splash} alt="" className="h-full w-full object-cover opacity-20 transition-opacity group-hover:opacity-30" draggable={false} />
+          <img src={splash} alt="" className="h-full w-full object-cover opacity-70 transition-opacity group-hover:opacity-90" draggable={false} onError={(event) => { event.currentTarget.style.display = "none"; }} />
           <span className="absolute inset-0 bg-gradient-to-r from-black/20 via-card/45 to-card" />
         </span>
       )}
       <div className="absolute inset-y-0 left-0 w-1" style={{ backgroundColor: resultColor(point.result) }} />
-      <div className="relative grid grid-cols-[minmax(160px,1.25fr)_76px_minmax(130px,1fr)_126px_104px_92px_48px] items-center gap-4 px-4 py-3">
+      <div className="history-row-content relative items-center gap-4 px-4 py-3">
         <span className="min-w-0">
           <span className="block truncate font-display text-[17px] font-semibold leading-tight">{point.map ?? "Unknown"}</span>
           <span className="mt-1 block text-[12px] font-medium text-zinc-400">
@@ -108,6 +108,9 @@ export function HistoryView() {
 
   useEffect(() => {
     const puuid = data?.account.puuid;
+    setMetaOverrides({});
+    setOpenMatch(null);
+    setRecentModes([]);
     if (!puuid) {
       setRecentModes([]);
       return;
@@ -214,7 +217,7 @@ export function HistoryView() {
         </div>
         {stale && (
           <Badge color="#F59E0B" testId="history-stale-badge">
-            Saved data · VALORANT offline
+            Saved data · refresh unavailable
           </Badge>
         )}
         <button
@@ -226,6 +229,8 @@ export function HistoryView() {
         </button>
       </PageHeader>
 
+      {error && <ErrorBanner message={error} onRetry={refresh} testId="history-refresh-error" />}
+      <p className="text-[12px] text-text-secondary">Latest {allPoints.length} available matches · Select a match to review its scoreboard and notes.</p>
       {points.length === 0 ? (
         <EmptyState
           icon={History}
@@ -238,7 +243,7 @@ export function HistoryView() {
           testId="history-empty"
         />
       ) : (
-        <div className="space-y-1.5 stagger" data-testid="history-list">
+        <div className="overflow-x-auto" data-testid="history-list">
           {points.map((p) => (
             <MatchRow
               key={p.matchId}

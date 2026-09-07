@@ -14,6 +14,7 @@ export function TeamPanel({
   partyDetection,
   savedOverrides,
   pregame,
+  showLoadouts = false,
   onSelect,
   recentDetailsByPlayer,
   onRequestRecentDetails,
@@ -27,6 +28,7 @@ export function TeamPanel({
   partyDetection?: PartyDetectionTeam;
   savedOverrides: Record<string, { saved: boolean; note: string }>;
   pregame: boolean;
+  showLoadouts?: boolean;
   onSelect: (p: LivePlayer, opener: HTMLElement) => void;
   recentDetailsByPlayer: RecentDetailsByPlayer;
   onRequestRecentDetails: (puuid: string) => void;
@@ -53,7 +55,7 @@ export function TeamPanel({
       className="live-team-panel flex h-full min-h-0 min-w-0 flex-col overflow-hidden border border-[var(--border-subtle)] bg-[var(--bg-panel)]"
       style={{ "--team-accent": accent === "victory" ? "var(--accent-team-a)" : "var(--accent-team-b)" } as CSSProperties}
     >
-      <header className="live-team-header flex min-h-12 shrink-0 flex-wrap items-center gap-x-3 gap-y-2 border-b border-[var(--border-subtle)] px-3 py-2">
+      <header className="live-team-header flex min-h-9 shrink-0 flex-wrap items-center gap-x-3 gap-y-1 border-b border-[var(--border-subtle)] px-3 py-1">
         <div className="live-team-heading flex shrink-0 items-center gap-2">
           <span
             className={`h-5 w-1 rounded-full ${accent === "victory" ? "bg-victory" : "bg-defeat"}`}
@@ -82,14 +84,9 @@ export function TeamPanel({
               <span className="font-medium text-[var(--text-secondary)]">WR</span>
               <span className="font-semibold text-[var(--text-primary)]">{fmtPct(stats.avgWinRate)}</span>
             </div>
-            <div className="team-stats-compact hidden items-center gap-1 text-[12px] font-medium text-[var(--text-secondary)]" title={`Team average K/D ${stats.avgKd !== null ? fmtNum(stats.avgKd, 2) : "unavailable"}; win rate ${fmtPct(stats.avgWinRate)}.`}>
-              <span>K/D</span><span className="text-[var(--text-primary)]">{stats.avgKd !== null ? fmtNum(stats.avgKd, 2) : "—"}</span>
-              <span className="text-[var(--text-muted)]">·</span>
-              <span>WR</span><span className="text-[var(--text-primary)]">{fmtPct(stats.avgWinRate)}</span>
-            </div>
             {stats.smurfCount > 0 && (
               <div className="team-stat-alert flex shrink-0 items-center gap-1 whitespace-nowrap font-medium text-flag" data-testid={`${testId}-smurf-count`}>
-                <AlertTriangle size={13} /> {stats.smurfCount} smurf{stats.smurfCount > 1 ? "s" : ""}
+                <AlertTriangle size={13} /> {stats.smurfCount} flagged
               </div>
             )}
           </div>
@@ -97,9 +94,10 @@ export function TeamPanel({
       </header>
       <div
         data-testid={`${testId}-parties`}
-        className="live-party-rail flex min-h-7 shrink-0 flex-wrap items-center gap-2 border-b border-edge px-3 py-1"
+        className="live-party-rail flex min-h-6 shrink-0 flex-wrap items-center gap-2 border-b border-edge px-3 py-0.5"
       >
         <span className="party-heading text-[12px] font-medium text-[var(--text-secondary)]">Parties</span>
+        {partyDetection && partyDetection.status !== "complete" && <span className="ml-auto text-[12px] text-text-muted" title="Missing party data does not establish that a player is solo.">{partyDetection.status === "partial" ? "Partial coverage" : "Coverage unavailable"}</span>}
         {visibleParties.length > 0 ? visibleParties.map((party) => {
           const teamPartySize = party.members.filter((member) => playerIds.has(member)).length;
           return (
@@ -136,6 +134,7 @@ export function TeamPanel({
                 savedNote: savedOverrides[p.puuid].note,
               } : p}
               pregame={pregame}
+              showLoadouts={showLoadouts}
               onSelect={onSelect}
               recentDetails={recentDetailsByPlayer[p.puuid]}
               onRequestRecentDetails={onRequestRecentDetails}
