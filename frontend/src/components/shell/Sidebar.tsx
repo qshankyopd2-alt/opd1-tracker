@@ -22,7 +22,8 @@ export function Sidebar() {
     }
   });
   const [isHovered, setIsHovered] = useState(false);
-  const isExpanded = isPinned || isHovered;
+  const [isFocused, setIsFocused] = useState(false);
+  const isExpanded = isPinned || isHovered || isFocused;
   const clientOk = health?.clientStatus === "ok";
 
   const togglePin = () => {
@@ -40,6 +41,12 @@ export function Sidebar() {
       data-testid="sidebar"
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
+      onFocus={() => setIsFocused(true)}
+      onBlur={(e) => {
+        if (!e.currentTarget.contains(e.relatedTarget as Node | null)) {
+          setIsFocused(false);
+        }
+      }}
       className={`fixed top-0 bottom-10 left-0 z-30 flex flex-col border-r border-[var(--border-subtle)] bg-[var(--bg-panel)] shadow-xl overflow-hidden transition-[width] select-none ${
         isExpanded ? "w-[220px]" : "w-16"
       }`}
