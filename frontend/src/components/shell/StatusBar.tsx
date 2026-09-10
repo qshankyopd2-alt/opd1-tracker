@@ -31,7 +31,7 @@ export function StatusBar() {
           data-testid="status-state"
           className={`inline-flex shrink-0 items-center gap-1.5 rounded-sm border px-2 py-0.5 text-[12px] font-medium ${st.bg} ${st.text} ${st.border}`}
         >
-          <span className={`w-1.5 h-1.5 rounded-full ${effectiveState !== 'OFFLINE' ? 'pulse-dot bg-current' : 'bg-current opacity-50'}`} />
+          <span className={`w-1.5 h-1.5 rounded-full ${effectiveState !== 'OFFLINE' ? 'pulse-dot bg-current' : 'bg-current opacity-50'}`} aria-hidden="true" />
           {st.label}
         </span>
 
@@ -70,17 +70,18 @@ export function StatusBar() {
             type="button"
             onClick={toggleMode}
             data-testid="window-mode-toggle"
+            aria-label={isMaximized ? "Switch to fixed window (1200×700)" : "Maximize window"}
             title={isMaximized ? "Switch to fixed window (1200×700)" : "Maximize window"}
             className="inline-flex items-center gap-1.5 rounded-sm border border-edge bg-card px-2 py-1 text-[12px] font-medium text-[var(--text-secondary)] transition-colors hover:bg-[var(--bg-card-hover)] hover:text-[var(--text-primary)] focus-visible:ring-2 focus-visible:ring-brand"
           >
             {isMaximized ? (
               <>
-                <Minimize2 size={14} />
+                <Minimize2 size={14} aria-hidden="true" />
                 <span>Fixed 1200×700</span>
               </>
             ) : (
               <>
-                <Maximize2 size={14} />
+                <Maximize2 size={14} aria-hidden="true" />
                 <span>Maximize</span>
               </>
             )}
