@@ -560,5 +560,6 @@ class RiotClient:
             auth.headers()
             return party_snapshot(auth)
         except Exception as e:
-            return {"available": False, "message": str(e)}
+            _log(f"party_state error: {e}")
+            return {"available": False, "message": "Party unavailable — open VALORANT or try again shortly."}
 
