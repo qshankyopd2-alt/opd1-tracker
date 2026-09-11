@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import base64
 import json
+import logging
 import os
 import threading
 import time
@@ -160,7 +161,7 @@ class LocalAuth:
             # Local Riot client uses a self-signed certificate, so we must disable verification
             data = requests.get(
                 f"https://127.0.0.1:{self.lockfile['port']}/chat/v4/presences",
-                headers=local, verify=False, timeout=5).json()
+            headers=local, verify=False, timeout=5).json()  # nosec
             for pr in (data or {}).get("presences", []) or []:
                 if pr.get("product") != "valorant" or not pr.get("private"):
                     continue
@@ -204,7 +205,7 @@ class LocalAuth:
         # Local Riot client uses a self-signed certificate, so we must disable verification
         resp = requests.get(
             f"https://127.0.0.1:{self.lockfile['port']}/entitlements/v1/token",
-            headers=local, verify=False, timeout=5)
+            headers=local, verify=False, timeout=5)  # nosec
         try:
             ent = resp.json()
         except ValueError:
@@ -276,7 +277,7 @@ class LocalAuth:
         # Local Riot client uses a self-signed certificate, so we must disable verification
         return requests.get(
             f"https://127.0.0.1:{self.lockfile['port']}{endpoint}",
-            headers=local, verify=False, timeout=5).json()
+            headers=local, verify=False, timeout=5).json()  # nosec
 
 
 def chat_presences(auth: LocalAuth) -> list[dict]:
@@ -559,6 +560,7 @@ class RiotClient:
             auth = LocalAuth(region)
             auth.headers()
             return party_snapshot(auth)
-        except Exception as e:
-            return {"available": False, "message": str(e)}
+        except Exception:
+            logging.getLogger("backend").exception("party_state failed")
+            return {"available": False, "message": "Failed to get party state."}
 
