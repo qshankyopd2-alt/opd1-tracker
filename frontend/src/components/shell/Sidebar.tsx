@@ -122,6 +122,8 @@ export function Sidebar() {
       <div className="border-t border-[var(--border-subtle)] p-2">
         <div
           data-testid="sidebar-client-status"
+          role="status"
+          aria-label={clientOk ? "VALORANT client online" : "VALORANT client offline"}
           title={clientOk ? "Client detected" : "Client offline"}
           className={`flex h-8 items-center rounded-[var(--radius-sm)] border px-2 text-[12px] font-medium ${
             isExpanded ? "justify-start gap-2" : "justify-center"
@@ -132,6 +134,7 @@ export function Sidebar() {
           }`}
         >
           <span
+            aria-hidden="true"
             className={`h-2 w-2 shrink-0 rounded-full ${
               clientOk ? "bg-victory" : "bg-[var(--text-muted)]"
             }`}
