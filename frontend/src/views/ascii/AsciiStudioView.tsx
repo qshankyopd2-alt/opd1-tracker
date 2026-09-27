@@ -22,7 +22,7 @@ export function AsciiStudioView() {
 
       <nav
         aria-label="ASCII Studio mode"
-        className="grid gap-2 rounded-md border border-edge bg-panel p-2 sm:grid-cols-3"
+        className="grid gap-1.5 rounded-md border border-edge bg-panel p-1.5 sm:grid-cols-3"
         data-testid="ascii-tabs"
       >
         {TABS.map(({ id, label, icon: Icon }) => {
@@ -35,18 +35,18 @@ export function AsciiStudioView() {
               onClick={() => setTab(id)}
               className={`flex items-center gap-3 rounded-sm border px-4 py-3 text-left transition-colors ${
                 active
-                  ? "border-brand/40 bg-brand text-ink"
-                  : "border-transparent text-zinc-400 hover:bg-zinc-800/40 hover:text-zinc-100"
+                  ? "border-accent/40 bg-card text-text-primary"
+                  : "border-transparent text-text-muted hover:bg-card/60 hover:text-text-primary"
               }`}
             >
               <span
                 className={`grid h-9 w-9 shrink-0 place-items-center rounded-sm ${
-                  active ? "bg-ink/15 text-ink" : "bg-zinc-800/60 text-brand"
+                  active ? "bg-accent/15 text-accent" : "bg-inset text-text-secondary"
                 }`}
               >
                 <Icon size={17} />
               </span>
-              <span className="font-display font-semibold text-sm">{label}</span>
+              <span className="font-display font-bold text-sm">{label}</span>
             </button>
           );
         })}

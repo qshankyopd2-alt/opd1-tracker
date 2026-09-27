@@ -27,7 +27,7 @@ export function RRChart({ points }: { points: HistoryPoint[] }) {
 
   if (data.length < 2) {
     return (
-      <div className="h-[170px] flex items-center justify-center text-[12px] text-zinc-400" data-testid="rr-chart-empty">
+      <div className="h-[170px] flex items-center justify-center text-[12px] text-text-muted border border-dashed border-edge rounded-sm" data-testid="rr-chart-empty">
         Not enough rated matches for a chart yet.
       </div>
     );
@@ -62,8 +62,8 @@ export function RRChart({ points }: { points: HistoryPoint[] }) {
       <svg viewBox={`0 0 ${W} ${H}`} className="w-full h-[170px]" preserveAspectRatio="none">
         <defs>
           <linearGradient id="rrfill" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopColor="var(--text-secondary)" stopOpacity="0.16" />
-            <stop offset="100%" stopColor="var(--text-secondary)" stopOpacity="0" />
+            <stop offset="0%" stopColor="var(--accent)" stopOpacity="0.18" />
+            <stop offset="100%" stopColor="var(--accent)" stopOpacity="0" />
           </linearGradient>
         </defs>
         {[0.25, 0.5, 0.75].map((f) => (
@@ -78,29 +78,29 @@ export function RRChart({ points }: { points: HistoryPoint[] }) {
           />
         ))}
         <path d={area} fill="url(#rrfill)" />
-        <path d={path} fill="none" stroke="var(--text-primary)" strokeWidth="2" vectorEffect="non-scaling-stroke" />
+        <path d={path} fill="none" stroke="var(--accent)" strokeWidth="2" vectorEffect="non-scaling-stroke" />
         {h && hover !== null && (
           <>
             <line x1={x(hover)} x2={x(hover)} y1={PAD.top} y2={H - PAD.bottom} stroke="var(--text-muted)" strokeWidth="1" strokeDasharray="3 3" />
-            <circle cx={x(hover)} cy={y(h.rating)} r="4" fill="var(--text-primary)" stroke="var(--bg-panel)" strokeWidth="2" />
+            <circle cx={x(hover)} cy={y(h.rating)} r="4" fill="var(--accent)" stroke="var(--bg-panel)" strokeWidth="2" />
           </>
         )}
-        <circle cx={x(data.length - 1)} cy={y(data[data.length - 1].rating)} r="3.5" fill="var(--text-primary)" />
+        <circle cx={x(data.length - 1)} cy={y(data[data.length - 1].rating)} r="3.5" fill="var(--accent)" />
       </svg>
 
-      <div className="absolute top-1 left-2 text-[12px] text-zinc-400">{rankFromTier(Math.floor(hi / 100)).name}</div>
-      <div className="absolute bottom-4 left-2 text-[12px] text-zinc-400">{rankFromTier(Math.floor(lo / 100)).name}</div>
+      <div className="absolute top-1 left-2 text-[12px] text-text-muted font-medium">{rankFromTier(Math.floor(hi / 100)).name}</div>
+      <div className="absolute bottom-4 left-2 text-[12px] text-text-muted font-medium">{rankFromTier(Math.floor(lo / 100)).name}</div>
 
       {h && hRank && (
         <div
-          className="absolute -top-1 pointer-events-none bg-panel border border-edge rounded-sm px-2.5 py-1.5 text-[12px] shadow-lg z-10"
+          className="absolute -top-1 pointer-events-none bg-card border border-edge rounded-sm px-2.5 py-1.5 text-[12px] shadow-lg z-10"
           style={{ left: `${((hover ?? 0) / (data.length - 1)) * 82 + 4}%` }}
           data-testid="rr-chart-tooltip"
         >
           <div className="font-semibold" style={{ color: hRank.color }}>
             {hRank.name} · <span className="num">{h.point.rr} RR</span>
           </div>
-          <div className="text-zinc-400 num">
+          <div className="text-text-secondary num">
             {h.point.map ?? "—"}
             {h.point.result ? ` · ${h.point.result}` : ""}
             {typeof h.point.delta === "number" ? ` · ${fmtDelta(h.point.delta)}` : ""}

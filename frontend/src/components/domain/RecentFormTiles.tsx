@@ -1,5 +1,5 @@
+import { ChevronRight } from "lucide-react";
 import { fmtDelta, matchAgeLabel } from "../../lib/format";
-import { OutcomeBadge } from "../ui/OutcomeBadge";
 
 const SLOT_COUNT = 5;
 
@@ -9,6 +9,17 @@ export interface RecentFormDetail {
   startMillis?: number | null;
 }
 
+function normalizeResult(value: RecentFormDetail["result"] | "W" | "L" | null | undefined): "W" | "L" | null {
+  if (value === "W" || value === "Victory") return "W";
+  if (value === "L" || value === "Defeat") return "L";
+  return null;
+}
+
+/**
+ * Last-five form strip. Data is newest-first (form[0] = most recent); the
+ * strip renders oldest → newest left to right, so time flows toward the
+ * highlighted "now" tile on the right.
+ */
 export function RecentFormTiles({
   form,
   latestRr,
@@ -22,52 +33,82 @@ export function RecentFormTiles({
   onRequestDetails?: () => void;
   testId: string;
 }) {
-  const results = form.slice(0, SLOT_COUNT);
-  const slots = Array.from({ length: SLOT_COUNT }, (_, index) => results[index] ?? null);
+  const newest = form.slice(0, SLOT_COUNT);
+  // Display slots: position 0 (left) is the oldest of the available results.
+  const slots = Array.from({ length: SLOT_COUNT }, (_, position) => {
+    const dataIndex = SLOT_COUNT - 1 - position;
+    const result = dataIndex < newest.length ? newest[dataIndex] : null;
+    const detail = recentDetails?.[dataIndex];
+    const detailResult = normalizeResult(detail?.result);
+    const normalized = result ?? (detailResult ? detailResult : null);
+    const rr = normalized === detailResult ? (detail?.rrDelta ?? null) : (dataIndex === 0 ? (latestRr ?? null) : null);
+    const age = detail?.startMillis ? matchAgeLabel(detail.startMillis) : "Match age unavailable";
+    return { position, dataIndex, result: normalized, rr, age, isKnown: result !== null };
+  });
   const summary = slots
-    .map((result) => result === "W" ? "Win" : result === "L" ? "Loss" : "Unavailable")
+    .map((slot) => (slot.result === "W" ? "Win" : slot.result === "L" ? "Loss" : "Unavailable"))
     .join(", ");
-  const newestRr = latestRr === null || latestRr === undefined ? "" : ` Newest match RR ${fmtDelta(latestRr)}.`;
+  const newestNote =
+    latestRr === null || latestRr === undefined
+      ? "Newest-match rating change unavailable."
+      : `Newest match RR ${fmtDelta(latestRr)}.`;
 
   return (
-    <span className="recent-form relative flex h-6 w-[96px] shrink-0 items-center" data-testid={testId} onPointerEnter={onRequestDetails}>
-      <span className="sr-only">Recent form, newest to oldest: {summary}.{newestRr}</span>
-      <span aria-hidden="true" className="relative z-[1] flex w-full flex-row-reverse items-center justify-between gap-0.5">
-        {slots.map((result, index) => {
-          const detail = recentDetails?.[index];
-          const detailResult = detail?.result === "Victory" ? "W" : detail?.result === "Defeat" ? "L" : detail?.result;
-          const normalized = result ?? detailResult;
-          const detailRr = detailResult === normalized ? detail?.rrDelta : null;
-          const rr = detailRr ?? (index === 0 ? latestRr : null);
-          const age = detail?.startMillis ? matchAgeLabel(detail.startMillis) : "Match age unavailable";
+    <span
+      className="recent-form relative flex h-[18px] w-full min-w-0 items-center gap-1"
+      data-testid={testId}
+      onPointerEnter={onRequestDetails}
+      title="Last 5 matches — oldest to newest; the highlighted tile is the most recent."
+    >
+      <span className="sr-only">
+        Recent form, oldest to newest: {summary}. {newestNote}
+      </span>
+      <span aria-hidden="true" className="relative z-[1] flex min-w-0 flex-1 items-center justify-end gap-[3px]">
+        {slots.map((slot) => {
+          const size = 9 + slot.position;
+          if (!slot.isKnown) {
+            return (
+              <span
+                key={slot.dataIndex}
+                data-testid={`${testId}-tile-${slot.dataIndex}`}
+                data-recency={slot.dataIndex === 0 ? "current" : "past"}
+                data-size={size}
+                style={{ width: size, height: size }}
+                className="recent-form-tile match-chip unresolved group/form-tile relative shrink-0"
+              />
+            );
+          }
           return (
             <span
-              key={index}
-              data-testid={`${testId}-tile-${index}`}
-              data-recency={index === 0 ? "current" : "past"}
-              data-size={20 - index}
-              style={{ width: 20 - index, height: 20 - index }}
-              className={`recent-form-tile match-chip group/form-tile relative flex shrink-0 items-center justify-center ${index === 0 ? "ring-1 ring-zinc-300/80" : ""}`}
+              key={slot.dataIndex}
+              data-testid={`${testId}-tile-${slot.dataIndex}`}
+              data-recency={slot.dataIndex === 0 ? "current" : "past"}
+              data-size={size}
+              style={{ width: size, height: size }}
+              className={`recent-form-tile match-chip ${slot.result === "W" ? "win" : "loss"} group/form-tile relative flex shrink-0 items-center justify-center ${
+                slot.dataIndex === 0 ? "recent-form-tile-newest" : ""
+              }`}
             >
-              <OutcomeBadge size="xs" outcome={normalized === "W" ? "win" : normalized === "L" ? "loss" : "unresolved"} className="h-full w-full px-0 [&>svg]:hidden" />
-              {normalized && (
-                <span
-                  id={`${testId}-tooltip-${index}`}
-                  role="tooltip"
-                  className={`pointer-events-none absolute bottom-[calc(100%+6px)] right-0 z-30 w-max max-w-[140px] rounded-sm border border-zinc-700 bg-zinc-950 px-2 py-1.5 text-left font-body normal-case tracking-normal text-zinc-100 opacity-0 shadow-[0_6px_18px_rgba(0,0,0,0.45)] transition-opacity duration-150 motion-reduce:transition-none group-hover/form-tile:opacity-100 ${index === 0 ? "group-focus-within/row:opacity-100" : ""}`}
-                >
-                  <span className={`block text-[12px] font-bold ${normalized === "W" ? "text-victory" : "text-defeat"}`}>
-                    {normalized === "W" ? "Victory" : "Defeat"}
-                  </span>
-                  {rr !== null && rr !== undefined
-                    ? <span className={`block text-[12px] font-bold num ${rr >= 0 ? "text-victory" : "text-defeat"}`}>{fmtDelta(rr)} RR</span>
-                    : <span className="block text-[12px] text-zinc-500">RR unavailable</span>}
-                  <span className="block text-[12px] text-zinc-400">{age}</span>
+              <span
+                role="tooltip"
+                className={`pointer-events-none absolute right-0 bottom-[calc(100%+6px)] z-30 w-max max-w-[150px] rounded-sm border border-border-strong bg-inset px-2 py-1.5 text-left font-body normal-case tracking-normal text-text-primary opacity-0 shadow-[0_6px_18px_rgba(0,0,0,0.5)] transition-opacity duration-150 motion-reduce:transition-none group-hover/form-tile:opacity-100 group-focus-within/form-tile:opacity-100`}
+              >
+                <span className={`block font-display text-[11px] font-bold uppercase ${slot.result === "W" ? "text-victory" : "text-defeat"}`}>
+                  {slot.result === "W" ? "Victory" : "Defeat"}
                 </span>
-              )}
+                {slot.rr !== null && slot.rr !== undefined ? (
+                  <span className={`block text-[11px] font-semibold tabular-nums ${slot.rr >= 0 ? "text-victory" : "text-defeat"}`}>
+                    {fmtDelta(slot.rr)} RR
+                  </span>
+                ) : (
+                  <span className="block text-[11px] text-text-muted">RR unavailable</span>
+                )}
+                <span className="block text-[11px] text-text-secondary">{slot.age}</span>
+              </span>
             </span>
           );
         })}
+        <ChevronRight size={9} className="shrink-0 text-text-muted" aria-hidden="true" />
       </span>
     </span>
   );

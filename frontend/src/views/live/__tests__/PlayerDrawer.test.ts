@@ -32,6 +32,10 @@ describe("shared modal behavior", () => {
     expect(playerDrawerSource).toContain("onCloseAutoFocus");
     expect(playerDrawerSource).toContain("restoreFocus.focus()");
     expect(matchModalSource).toContain("onCloseAutoFocus");
+    // Closing the embedded match restores focus to the match row that opened it
+    expect(playerDrawerSource).toContain("onEscapeKeyDown");
+    expect(playerDrawerSource).toContain("opener?.isConnected");
+    expect(playerDrawerSource).toContain("opener.focus()");
   });
 
   it("opens a wide profile workspace over the unchanged roster", () => {
@@ -65,10 +69,14 @@ describe("PlayerDrawer alert hierarchy", () => {
     expect(playerDrawerSource).toContain("live-alert-boosting");
     expect(playerDrawerSource).toContain("<StreakBadge");
     expect(playerDrawerSource).toContain('data-alert-kind={hasThreatAlerts ? "threat" : "streak"}');
+    // Reasons are shown as heuristic indicators, never as fact
+    expect(playerDrawerSource).toContain("Heuristic indicators");
+    expect(playerDrawerSource).toContain("smurfReasons.join");
   });
 
   it("uses no callout surface when streak is the only signal", () => {
-    expect(playerDrawerSource).toContain('hasThreatAlerts ? "mb-2.5 border-l-[3px] border-rose-500 bg-[#241217] px-3 py-2" : "mb-2.5"');
-    expect(playerDrawerSource).not.toContain("border-amber-400/45");
+    expect(playerDrawerSource).toContain('"mb-3 border-l-[3px] border-accent bg-[#2a1418] px-3 py-2"');
+    expect(playerDrawerSource).toContain('"mb-3 border-l-[3px] border-edge bg-card px-3 py-2"');
+    expect(playerDrawerSource).not.toContain("border-rose-500");
   });
 });

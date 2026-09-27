@@ -2,30 +2,74 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ------------------------------------------------------------------ */
+/* OPD1 Command design system                                          */
+/* Deep blue-black tactical console. Sharp geometry, accent spines,    */
+/* Bahnschrift for display + telemetry, Segoe UI for body.             */
+/* ------------------------------------------------------------------ */
+
 :root {
   color-scheme: dark;
 
-  --bg-app: #111111;
-  --bg-panel: #181818;
-  --bg-card: #202020;
-  --bg-card-hover: #292929;
-  --border-subtle: #333333;
-  --border-strong: #525252;
+  /* Surfaces */
+  --bg-app: #0c0e12;
+  --bg-panel: #141821;
+  --bg-card: #1a2029;
+  --bg-card-hover: #222a37;
+  --bg-inset: #0f1319;
+  --border-subtle: #252c39;
+  --border-strong: #3a4453;
 
-  --text-primary: #f2f2f2;
-  --text-secondary: #bdbdbd;
-  --text-muted: #999999;
+  /* Text — muted stays legible: no ghost text on this console. */
+  --text-primary: #f2f5f8;
+  --text-secondary: #a9b3c1;
+  --text-muted: #96a1b1;
 
-  --accent-team-a: #76c9a5;
-  --accent-team-b: #ed8793;
-  --accent-gold: #bb3650;
-  --accent-info: #eeeeee;
+  /* Identity */
+  --brand: #f2f5f8;
+  --brand-hover: #ffffff;
+  --accent: #ff4655;
+  --accent-soft: rgba(255, 70, 85, 0.12);
 
-  --space-1: 4px;  --space-2: 8px;  --space-3: 12px;
-  --space-4: 16px; --space-5: 24px; --space-6: 32px;
-  --radius-sm: 4px; --radius-md: 6px; --radius-lg: 8px;
+  /* Teams & results */
+  --ally: #4cc2ff;
+  --enemy: #ff4655;
+  --win: #43d17c;
+  --loss: #ff4655;
+  --draw: #8a93a2;
+  --gold: #f0b429;
+  --warn: #f5a524;
+
+  /* RGB channel twins of the tokens above, so Tailwind can compose
+     opacity variants (bg-inset/40, border-edge/60, …). */
+  --bg-app-rgb: 12 14 18;
+  --bg-panel-rgb: 20 24 33;
+  --bg-card-rgb: 26 32 41;
+  --bg-card-hover-rgb: 34 42 55;
+  --bg-inset-rgb: 15 19 25;
+  --border-subtle-rgb: 37 44 57;
+  --border-strong-rgb: 58 68 83;
+  --text-primary-rgb: 242 245 248;
+  --text-secondary-rgb: 169 179 193;
+  --text-muted-rgb: 150 161 177;
+  --brand-rgb: 242 245 248;
+  --brand-hover-rgb: 255 255 255;
+  --accent-rgb: 255 70 85;
+  --ally-rgb: 76 194 255;
+  --enemy-rgb: 255 70 85;
+  --win-rgb: 67 209 124;
+  --loss-rgb: 255 70 85;
+  --draw-rgb: 138 147 162;
+  --gold-rgb: 240 180 41;
+  --warn-rgb: 245 165 36;
+
+  /* Shape & motion */
+  --radius-sm: 2px;
+  --radius-md: 4px;
+  --radius-lg: 6px;
   --ease: cubic-bezier(0.4, 0, 0.2, 1);
-  --dur-fast: 150ms; --dur-normal: 250ms;
+  --dur-fast: 150ms;
+  --dur-normal: 250ms;
 }
 
 html,
@@ -37,14 +81,14 @@ body,
 body {
   @apply bg-canvas font-sans;
   color: var(--text-primary);
-  font-size: 14px;
-  line-height: 1.5;
+  font-size: 13.5px;
+  line-height: 1.45;
   font-variant-numeric: tabular-nums;
   overflow: hidden;
 }
 
 ::selection {
-  background: rgba(226, 231, 235, 0.28);
+  background: rgba(255, 70, 85, 0.35);
 }
 
 *::-webkit-scrollbar {
@@ -55,15 +99,15 @@ body {
   background: transparent;
 }
 *::-webkit-scrollbar-thumb {
-  background: #27272a;
+  background: #2a3140;
   border-radius: 4px;
 }
 *::-webkit-scrollbar-thumb:hover {
-  background: #3f3f46;
+  background: #3a4453;
 }
 
 :focus-visible {
-  outline: 2px solid var(--accent-info);
+  outline: 2px solid var(--accent);
   outline-offset: 2px;
 }
 
@@ -71,21 +115,134 @@ body {
   font-variant-numeric: tabular-nums;
 }
 
-/* A match is two aligned rosters; each row keeps identity ahead of telemetry. */
+/* Micro labels: uppercase, tracked. Body typeface so they stay readable. */
+.micro-label {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-secondary);
+}
+
+/* Accent tick used by section headings. */
+.section-tick {
+  display: inline-block;
+  width: 3px;
+  height: 12px;
+  background: var(--accent);
+  flex: none;
+}
+
+.bar-track {
+  background: var(--bg-inset);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+}
+.bar-fill {
+  height: 100%;
+  transition: width var(--dur-normal) var(--ease);
+}
+
+/* ------------------------------------------------------------------ */
+/* Live match — command strip                                          */
+/* ------------------------------------------------------------------ */
+
+.matchup-board {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.live-match-header {
+  background: var(--bg-panel);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  position: relative;
+  overflow: hidden;
+}
+.live-match-header-splash {
+  position: absolute;
+  inset: 0;
+  object-fit: cover;
+  object-position: center;
+  opacity: 0.16;
+  filter: saturate(0.7);
+}
+.live-match-header-matte {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, var(--bg-panel) 30%, rgba(20, 24, 33, 0.72) 65%, rgba(20, 24, 33, 0.4));
+}
+
+.win-chance-track {
+  background: var(--bg-inset);
+  border-radius: var(--radius-sm);
+  position: relative;
+}
+.match-chip {
+  border-radius: 2px;
+}
+.match-chip.win {
+  background: var(--win);
+}
+.match-chip.loss {
+  background: var(--loss);
+}
+.match-chip.draw {
+  background: var(--draw);
+}
+.match-chip.unresolved {
+  background: transparent;
+  border: 1px dashed var(--border-strong);
+}
+
+/* ------------------------------------------------------------------ */
+/* Live match — team panels (the required 5v5 matchup)                 */
+/* ------------------------------------------------------------------ */
+
+.live-team-panel {
+  border-radius: var(--radius-lg);
+  container-type: inline-size;
+  overflow: hidden;
+}
+.live-team-header {
+  background: var(--bg-panel);
+}
+.live-roster {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-rows: repeat(var(--live-player-count), minmax(92px, 1fr));
+  gap: 6px;
+  padding: 6px;
+}
+.live-roster-lobby {
+  grid-template-rows: repeat(var(--live-player-count), minmax(88px, auto));
+}
+.live-player-slot {
+  container-type: inline-size;
+  min-width: 0;
+}
+
+/* ------------------------------------------------------------------ */
+/* Live match — player card                                            */
+/* Identity leads, telemetry follows, loadout anchors the card.        */
+/* ------------------------------------------------------------------ */
+
 .player-row {
   display: grid;
-  grid-template-columns: 44px minmax(130px, 1fr) 144px 140px;
-  grid-template-rows: minmax(42px, 1fr) 18px 20px;
+  /* The identity column takes all remaining width so the full Riot ID
+     (max 16 chars + tag at the fixed 1200px window) renders uncut. */
+  grid-template-columns: 54px minmax(0, 1fr) minmax(122px, 140px) minmax(132px, 148px);
+  grid-template-rows: minmax(50px, 1fr) 30px;
   grid-template-areas:
     "avatar identity rank stats"
-    "avatar alerts detail detail"
     "loadout loadout loadout loadout";
   align-items: center;
   gap: 2px 8px;
   width: 100%;
   height: 100%;
   min-width: 0;
-  padding: 4px 10px;
+  padding: 7px 9px 6px;
   overflow: hidden;
   background: var(--bg-card);
   border: 1px solid var(--border-subtle);
@@ -99,86 +256,190 @@ body {
 }
 
 .player-row-self {
-  border-left: 3px solid var(--accent-team-a);
-  padding-left: 8px;
+  border-left: 3px solid var(--ally);
+  padding-left: 7px;
 }
 
-.live-player-background { z-index: 0; }
+.live-player-background {
+  z-index: 0;
+}
 .live-player-art {
   left: auto;
-  width: 58%;
-  opacity: 0.2;
-  filter: saturate(0.65);
+  width: 55%;
+  opacity: 0.16;
+  filter: saturate(0.6);
   transition: opacity var(--dur-fast) var(--ease);
 }
-.player-row:hover .live-player-art { opacity: 0.26; }
+.player-row:hover .live-player-art {
+  opacity: 0.22;
+}
+/* Matte keeps the card art decorative: text areas sit on an almost-solid
+   surface so nothing reads through the numbers. */
 .live-player-matte {
-  background: linear-gradient(90deg, var(--bg-card) 36%, transparent 100%);
+  background: linear-gradient(90deg, var(--bg-card) 0%, var(--bg-card) 46%, rgba(26, 32, 41, 0.93) 100%);
 }
 
-.live-player-avatar { grid-area: avatar; }
-.live-player-identity { grid-area: identity; }
-.live-player-alerts { grid-area: alerts; }
-.live-player-rank { grid-area: rank; }
-.live-player-stats { grid-area: stats; }
-.tier-3-detail { grid-area: detail; }
+.live-player-avatar {
+  grid-area: avatar;
+}
+.live-player-identity {
+  grid-area: identity;
+}
+.live-player-alerts {
+  grid-area: identity;
+}
+.live-player-rank {
+  grid-area: rank;
+}
+.live-player-stats {
+  grid-area: stats;
+}
+.tier-3-detail {
+  display: contents;
+}
 
-.live-player-rank { padding-left: 12px; border-left: 1px solid var(--border-subtle); }
-.live-player-stats { display: grid; grid-template-columns: 54px 42px 36px; gap: 4px; }
-.live-player-stats > div { align-items: flex-end; }
-.live-player-alerts { min-height: 22px; }
-.live-player-form-line { width: 100%; }
-.live-player-loadout { display: grid; position: relative; z-index: 2; grid-area: loadout; }
-.tier-3-detail { display: contents; }
-.live-player-form-line { grid-area: detail; position: relative; z-index: 2; }
-.live-current-rank-icon { order: -1; }
-.live-current-rank-name { color: var(--text-primary); }
-
-.live-team-panel { border-radius: var(--radius-lg); container-type: inline-size; }
-.live-team-header { background: var(--bg-panel); }
-.live-roster {
+.live-player-rank {
+  padding-left: 10px;
+  border-left: 1px solid var(--border-subtle);
+}
+.live-player-stats {
   display: grid;
-  grid-template-columns: minmax(0, 1fr);
-  grid-template-rows: repeat(var(--live-player-count), minmax(96px, 1fr));
-  gap: 8px;
-  padding: 8px;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 6px;
 }
-.live-player-slot { container-type: inline-size; min-width: 0; }
-.matchup-board { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
-.live-match-header { background: var(--bg-panel); border-radius: var(--radius-md); }
-.win-chance-track { background: var(--bg-card); border-radius: 4px; }
-.match-chip { border-radius: 3px; }
-.match-chip.win { background: var(--accent-team-a); }
-.match-chip.loss { background: var(--accent-team-b); }
+.live-player-stats > div {
+  align-items: flex-end;
+}
+.live-player-form-line {
+  width: 100%;
+  position: relative;
+  z-index: 2;
+}
+.live-player-loadout {
+  display: grid;
+  position: relative;
+  z-index: 2;
+  grid-area: loadout;
+}
+
+.live-current-rank-icon {
+  order: -1;
+}
+.live-current-rank-name {
+  color: var(--text-primary);
+}
+
+.live-player-form-line {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  min-width: 0;
+}
+.recent-form-tile {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.recent-form-tile-newest {
+  outline: 1px solid rgba(242, 245, 248, 0.65);
+  outline-offset: 0;
+}
+
+/* Threat flags are compact icons: a tinted chip whose meaning is explained
+   by the tooltip (hover/focus). Smurf = accent, boosting = warning. */
+.live-alert-badge {
+  border: 1px solid var(--accent);
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+.live-alert-smurf {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+.live-alert-boosting {
+  border-color: var(--warn);
+  background: rgba(245, 165, 36, 0.15);
+  color: var(--warn);
+}
+
+/* ------------------------------------------------------------------ */
+/* Responsive card density (container queries on the team panel)       */
+/* ------------------------------------------------------------------ */
 
 @container (max-width: 520px) {
-  .player-row { grid-template-columns: 40px minmax(100px, 1fr) 120px 120px; gap: 2px 8px; padding-inline: 10px; }
-  .player-row-self { padding-left: 8px; }
-  .live-player-stats { grid-template-columns: 42px 36px 34px; }
-  .live-player-rank { padding-left: 8px; }
-  .live-player-avatar, .live-player-avatar > img, .live-player-avatar > span:first-child { width: 40px !important; height: 40px !important; }
-
-  .live-player-peak-name { max-width: 70px; }
+  .player-row {
+    grid-template-columns: 52px minmax(96px, 1fr) 118px 118px;
+    gap: 2px 8px;
+    padding-inline: 8px;
+  }
+  .player-row-self {
+    padding-left: 7px;
+  }
+  .live-player-stats {
+    gap: 4px;
+  }
+  .live-player-rank {
+    padding-left: 8px;
+  }
+  .live-player-avatar,
+  .live-player-avatar > img,
+  .live-player-avatar > span:first-child {
+    width: 52px !important;
+    height: 52px !important;
+  }
+  .live-player-peak-name {
+    max-width: 64px;
+  }
 }
 
 @container (max-width: 440px) {
-  .player-row { grid-template-columns: 36px minmax(80px, 1fr) 106px 108px; }
-  .live-player-stats { grid-template-columns: 38px 32px 30px; }
-  .live-player-rank { padding-left: 6px; }
-  .live-player-peak { display: none; }
-  .live-player-form-line { justify-content: flex-end; }
+  .player-row {
+    grid-template-columns: 48px minmax(78px, 1fr) 104px 106px;
+  }
+  .live-player-stats {
+    gap: 3px;
+  }
+  .live-player-rank {
+    padding-left: 6px;
+  }
+  .live-player-peak {
+    display: none;
+  }
 }
 
 @container (min-width: 760px) {
-  .player-row { grid-template-columns: 48px minmax(180px, 1fr) 140px 176px; gap: 6px 16px; padding: 14px 16px; }
-  .live-player-stats { grid-template-columns: 64px 52px 52px; }
-  .live-current-rank-icon { width: 36px; height: 36px; }
-  .live-player-rank { justify-content: flex-start; gap: 10px; }
-  .player-row { grid-template-rows: minmax(48px, 1fr) 24px 42px; grid-template-areas: "avatar identity rank stats" "avatar alerts detail detail" "loadout loadout loadout loadout"; }
-  .tier-3-detail { display: contents; }
-  .live-player-form-line { grid-area: detail; position: relative; z-index: 2; }
-  .live-player-loadout img { max-width: 96px; }
+  .player-row {
+    grid-template-columns: 84px minmax(180px, 1fr) minmax(170px, 200px) minmax(170px, 190px);
+    gap: 6px 16px;
+    padding: 10px 14px 8px;
+    grid-template-rows: minmax(64px, 1fr) 38px;
+  }
+  .live-player-avatar,
+  .live-player-avatar > img,
+  .live-player-avatar > span:first-child {
+    width: 84px !important;
+    height: 84px !important;
+  }
+  .live-player-stats {
+    gap: 10px;
+  }
+  .live-player-rank {
+    padding-left: 12px;
+    gap: 10px;
+  }
+  .live-current-rank-icon {
+    width: 40px;
+    height: 40px;
+  }
+  .live-player-loadout img {
+    max-height: 26px;
+  }
 }
+
+/* ------------------------------------------------------------------ */
+/* Modals: match detail + player dossier                               */
+/* ------------------------------------------------------------------ */
 
 .modal-backdrop {
   position: fixed;
@@ -195,9 +456,9 @@ body {
   max-height: calc(100vh - 24px);
   overflow: hidden;
   background: var(--bg-panel);
-  border-radius: 6px;
+  border-radius: var(--radius-md);
   border: 1px solid var(--border-strong);
-  border-top: 3px solid var(--accent-info);
+  border-top: 3px solid var(--accent);
 }
 
 .player-profile-layer {
@@ -209,48 +470,251 @@ body {
   height: calc(100vh - 32px);
   max-height: 960px;
   border: 1px solid var(--border-strong);
-  border-radius: 10px;
-  box-shadow: -24px 0 64px #0008;
+  border-radius: var(--radius-lg);
+  box-shadow: 0 24px 80px #000c;
 }
-.drawer-profile-header { background: var(--bg-panel); }
-.drawer-player-card-art { position: absolute; right: 23%; top: 22px; width: 150px; height: 100px; object-fit: cover; border-radius: 4px; border: 1px solid var(--border-strong); }
-.drawer-player-card-matte { background: linear-gradient(90deg, var(--bg-panel) 0%, var(--bg-panel) 35%, transparent 58%, transparent 79%, var(--bg-panel) 81%); }
-.drawer-profile-header > .relative { text-shadow: 0 2px 5px #000; }
-.profile-dossier-grid { display: grid; grid-template-columns: 1.05fr 1fr; gap: 12px 24px; }
-.profile-dossier-column { min-width: 0; }
-.match-detail-teams { display: grid; gap: 12px; }
-.player-profile-layer .match-detail-teams { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-.profile-dossier-loadout { grid-row: 1; grid-column: 1 / -1; }
-.profile-kda { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
-.profile-kda > div, .profile-metrics > div { background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: 5px; padding: 12px; }
-.profile-kda strong, .profile-metrics strong { display: block; font-size: 24px; font-weight: 600; line-height: 1.25; }
-.profile-kda span, .profile-metrics span { display: block; font-size: 13px; color: var(--text-secondary); margin-top: 4px; }
-.profile-metrics { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
 
-.weapon-loadout { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; }
-.weapon-slot { display: flex; flex-direction: column; align-items: center; min-width: 0; border: 1px solid var(--border-subtle); border-radius: 4px; padding: 8px; background: var(--bg-app); }
-.weapon-image { display: flex; align-items: center; justify-content: center; min-width: 0; width: 100%; height: 58px; overflow: hidden; }
-.weapon-image img { width: 100%; height: 100%; object-fit: contain; }
-.weapon-name { font-size: 12px; color: var(--text-secondary); }
-.weapon-skin-name { max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 13px; color: var(--text-primary); }
-.weapon-unavailable { color: var(--text-muted); font-size: 11px; text-align: center; }
-.weapon-loadout-compact { gap: 6px; height: 100%; }
-.weapon-loadout-compact .weapon-slot { position: relative; min-height: 0; overflow: hidden; padding: 0 6px; flex-direction: row; gap: 4px; background: var(--bg-panel); }
-.weapon-loadout-compact .weapon-image { height: 18px; min-height: 0; }
-.weapon-loadout-compact .weapon-image img { max-height: 18px; }
-.weapon-loadout-compact .weapon-name { font-size: 10px; }
-.weapon-loadout-compact .weapon-skin-name { display: none; }
-.weapon-loadout-compact .weapon-unavailable { font-size: 10px; }
-.recent-match-row { display: grid; grid-template-columns: 150px minmax(150px, 1fr) 110px 70px 172px; gap: 16px; align-items: center; }
-.recent-map-art { position: relative; width: 150px; height: 70px; overflow: hidden; border-radius: 4px; background: var(--bg-app); }
-.recent-map-art > img { width: 100%; height: 100%; object-fit: cover; }
-.recent-map-art > span { position: absolute; bottom: 3px; right: 3px; }
-
-@container (min-width: 760px) {
-  .weapon-loadout-compact .weapon-image { height: 40px; }
-  .weapon-loadout-compact .weapon-image img { max-height: 40px; }
-  .weapon-loadout-compact .weapon-name { font-size: 12px; }
+.drawer-profile-header {
+  background: var(--bg-panel);
 }
+.drawer-player-card-art {
+  position: absolute;
+  right: 21%;
+  top: 18px;
+  width: 170px;
+  height: 108px;
+  object-fit: cover;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-strong);
+}
+.drawer-player-card-matte {
+  background: linear-gradient(90deg, var(--bg-panel) 0%, var(--bg-panel) 34%, transparent 56%, transparent 80%, var(--bg-panel) 82%);
+}
+.drawer-profile-header > .relative {
+  text-shadow: 0 2px 6px #000;
+}
+
+.profile-dossier-grid {
+  display: grid;
+  grid-template-columns: 1.05fr 1fr;
+  gap: 14px 24px;
+}
+.profile-dossier-column {
+  min-width: 0;
+}
+.profile-dossier-loadout {
+  grid-row: 1;
+  grid-column: 1 / -1;
+}
+.profile-kda {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+}
+.profile-kda > div,
+.profile-metrics > div {
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+  padding: 10px 12px;
+}
+.profile-kda strong,
+.profile-metrics strong {
+  display: block;
+  font-family: Bahnschrift, "Segoe UI Variable Display", "Segoe UI", sans-serif;
+  font-size: 22px;
+  font-weight: 600;
+  line-height: 1.2;
+}
+.profile-kda span,
+.profile-metrics span {
+  display: block;
+  font-size: 11.5px;
+  color: var(--text-secondary);
+  margin-top: 3px;
+}
+.profile-metrics {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+}
+
+/* ------------------------------------------------------------------ */
+/* Weapon loadout                                                      */
+/* ------------------------------------------------------------------ */
+
+.weapon-loadout {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+}
+.weapon-slot {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 0;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+  padding: 8px;
+  background: var(--bg-inset);
+}
+.weapon-image {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 0;
+  width: 100%;
+  height: 54px;
+  overflow: hidden;
+}
+.weapon-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+.weapon-text {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+.weapon-name {
+  font-size: 10px;
+  font-weight: 600;
+  line-height: 1.15;
+  color: var(--text-secondary);
+}
+.weapon-skin-name {
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 12.5px;
+  line-height: 1.15;
+  color: var(--text-primary);
+}
+.weapon-unavailable {
+  color: var(--text-muted);
+  font-size: 10.5px;
+  text-align: center;
+}
+
+/* Compact variant: the full-width strip anchored to a live player card. */
+.weapon-loadout-compact {
+  gap: 6px;
+  height: 100%;
+}
+.weapon-loadout-compact .weapon-slot {
+  position: relative;
+  min-height: 0;
+  overflow: hidden;
+  padding: 0 8px;
+  flex-direction: row;
+  gap: 6px;
+  align-items: center;
+  background: var(--bg-inset);
+}
+.weapon-loadout-compact .weapon-image {
+  height: 100%;
+  min-height: 0;
+  width: 22px;
+  flex: none;
+}
+.weapon-loadout-compact .weapon-image img {
+  max-height: 20px;
+  width: auto;
+}
+.weapon-loadout-compact .weapon-text {
+  gap: 0;
+}
+.weapon-loadout-compact .weapon-name {
+  font-size: 9px;
+}
+.weapon-loadout-compact .weapon-skin-name {
+  font-size: 10.5px;
+}
+.weapon-loadout-compact .weapon-unavailable {
+  font-size: 10px;
+  white-space: nowrap;
+}
+
+/* ------------------------------------------------------------------ */
+/* Match rows (player dossier, history)                                */
+/* ------------------------------------------------------------------ */
+
+.recent-match-row {
+  display: grid;
+  grid-template-columns: 148px minmax(140px, 1fr) 104px 64px 168px;
+  gap: 14px;
+  align-items: center;
+}
+.recent-map-art {
+  position: relative;
+  width: 148px;
+  height: 64px;
+  overflow: hidden;
+  border-radius: var(--radius-sm);
+  background: var(--bg-inset);
+}
+.recent-map-art > img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.recent-map-art > span {
+  position: absolute;
+  bottom: 3px;
+  right: 3px;
+}
+
+/* ------------------------------------------------------------------ */
+/* Match detail (shared by history modal + dossier)                    */
+/* ------------------------------------------------------------------ */
+
+.match-detail-teams {
+  display: grid;
+  gap: 12px;
+}
+.player-profile-layer .match-detail-teams {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+.detail-team-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 10px;
+  background: var(--bg-panel);
+  border: 1px solid var(--border-subtle);
+  border-top: 3px solid var(--team-accent, var(--border-strong));
+  border-radius: var(--radius-md) var(--radius-md) 0 0;
+}
+.detail-team-table {
+  border: 1px solid var(--border-subtle);
+  border-top: 0;
+  border-radius: 0 0 var(--radius-md) var(--radius-md);
+  background: var(--bg-card);
+}
+.detail-row {
+  display: grid;
+  grid-template-columns: 30px minmax(110px, 1fr) 132px 64px 50px 58px 52px;
+  gap: 8px;
+  align-items: center;
+  padding: 6px 10px;
+  border-bottom: 1px solid var(--border-subtle);
+}
+.detail-row:last-child {
+  border-bottom: 0;
+}
+.detail-row-subject {
+  background: rgba(76, 194, 255, 0.06);
+  box-shadow: inset 3px 0 0 var(--ally);
+}
+.detail-row-mvp {
+  background: rgba(240, 180, 41, 0.05);
+}
+
+/* ------------------------------------------------------------------ */
+/* Motion                                                              */
+/* ------------------------------------------------------------------ */
 
 @keyframes rise {
   from {
@@ -282,17 +746,21 @@ body {
 .stagger > *:nth-child(10) { animation-delay: 270ms; }
 
 .pulse-dot {
-  opacity: 0.9;
+  animation: pulse-dot 1.6s ease-in-out infinite;
+}
+@keyframes pulse-dot {
+  0%, 100% { opacity: 0.9; }
+  50% { opacity: 0.35; }
 }
 
 @keyframes drawer-in {
   from {
     opacity: 0;
-    transform: translateX(16px);
+    transform: translateY(10px) scale(0.995);
   }
   to {
     opacity: 1;
-    transform: translateX(0);
+    transform: translateY(0) scale(1);
   }
 }
 
@@ -300,28 +768,47 @@ body {
   animation: drawer-in 160ms ease-out both;
 }
 
-.live-team-panel { overflow: hidden; }
-.live-roster { overflow-y: auto; }
-
-.live-alert-badge { border: 1px solid var(--accent-gold); }
-.live-alert-smurf, .live-alert-boosting { background: var(--accent-gold); color: #ffffff; }
-.live-alert-reason { display: inline-flex; align-items: center; gap: 0.25rem; }
+.live-team-panel {
+  overflow: hidden;
+}
+.live-roster {
+  overflow-y: auto;
+}
 
 @media (max-height: 740px) {
-  .live-view { gap: 8px; padding: 8px; }
-  .live-match-header { height: 40px; min-height: 40px; }
-  .live-roster { gap: 6px; padding: 6px; }
-  .player-row { padding-block: 4px; }
-  .live-player-art { opacity: 0.14; }
+  .live-view {
+    gap: 6px;
+    padding: 6px;
+  }
+  .live-match-header {
+    min-height: 44px;
+  }
+  .live-roster {
+    gap: 5px;
+    padding: 5px;
+  }
+  .player-row {
+    padding-block: 5px;
+  }
+  .live-player-art {
+    opacity: 0.12;
+  }
 }
 
 @media (max-width: 1050px) {
-  .live-team-header { row-gap: 4px; }
-  .live-team-stats { flex-basis: 100%; margin-left: 0; }
+  .live-team-header {
+    row-gap: 4px;
+  }
+  .live-team-stats {
+    flex-basis: 100%;
+    margin-left: 0;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  *, *::before, *::after {
+  *,
+  *::before,
+  *::after {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
@@ -329,5 +816,42 @@ body {
   }
 }
 
-.player-profile-layer .modal { font-family: Bahnschrift, "Segoe UI", sans-serif; }
-.player-profile-layer .font-display, .player-profile-layer .font-mono { font-family: inherit; }
+.player-profile-layer .modal {
+  font-family: Bahnschrift, "Segoe UI", sans-serif;
+}
+.player-profile-layer .font-display,
+.player-profile-layer .font-mono {
+  font-family: inherit;
+}
+
+/* ---------- Saved players ---------- */
+.saved-player-card {
+  container-type: inline-size;
+  border: 1px solid var(--border);
+  background: var(--bg-card);
+  transition: background 120ms ease, border-color 120ms ease;
+}
+.saved-player-card:hover {
+  border-color: var(--border-strong);
+}
+.saved-player-main {
+  display: grid;
+  grid-template-columns: minmax(190px, 230px) minmax(200px, 1fr) 130px 150px auto;
+  gap: 16px;
+  align-items: start;
+  padding: 14px 16px;
+}
+@container (max-width: 920px) {
+  .saved-player-main {
+    grid-template-columns: minmax(190px, 260px) minmax(200px, 1fr) 130px 150px;
+  }
+  .saved-player-main > :last-child {
+    grid-column: 1 / -1;
+    justify-self: end;
+  }
+}
+@container (max-width: 560px) {
+  .saved-player-main {
+    grid-template-columns: 1fr 1fr;
+  }
+}

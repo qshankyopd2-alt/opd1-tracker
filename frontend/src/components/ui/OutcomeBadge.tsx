@@ -13,16 +13,16 @@ export function normalizeOutcome(result: string | null | undefined): Outcome {
 }
 
 const outcomeClasses: Record<Outcome, string> = {
-  win: "border-win-ring bg-win-subtle text-win",
-  loss: "border-loss-ring bg-loss-subtle text-loss",
-  draw: "border-white/15 bg-white/[0.06] text-white/75",
-  unresolved: "border-white/10 bg-white/[0.03] text-white/45",
+  win: "border-victory/45 bg-victory-subtle text-victory",
+  loss: "border-defeat/45 bg-defeat-subtle text-defeat",
+  draw: "border-draw/40 bg-draw-subtle text-draw",
+  unresolved: "border-dashed border-edge bg-inset text-text-muted",
 };
 
 const sizeClasses: Record<BadgeSize, string> = {
-  xs: "h-5 gap-1 rounded-md px-1.5 text-[11px]",
-  sm: "h-8 gap-1.5 rounded-md px-3 text-[12px]",
-  lg: "min-w-[176px] gap-3 rounded-md px-5 py-3 text-[15px]",
+  xs: "h-[18px] gap-1 rounded-sm px-1.5 text-[10.5px]",
+  sm: "h-7 gap-1.5 rounded-sm px-2.5 text-[11.5px]",
+  lg: "min-w-[172px] gap-3 rounded-sm px-5 py-3 text-[14px]",
 };
 
 const icons = { win: CheckCircle2, loss: XCircle, draw: MinusCircle, unresolved: CircleHelp };
@@ -44,16 +44,16 @@ export function OutcomeBadge({
   return (
     <span
       className={clsx(
-        "inline-flex shrink-0 items-center justify-center border font-semibold",
+        "inline-flex shrink-0 items-center justify-center border font-display font-semibold uppercase tracking-[0.06em]",
         outcomeClasses[outcome],
         sizeClasses[size],
         className
       )}
       data-testid={`outcome-${outcome}`}
     >
-      <Icon size={size === "lg" ? 20 : size === "sm" ? 14 : 11} aria-hidden="true" />
+      <Icon size={size === "lg" ? 18 : size === "sm" ? 13 : 10} aria-hidden="true" />
       <span>{size === "xs" ? compactLabels[outcome] : labels[outcome]}</span>
-      {size === "lg" && score && <span className="font-mono text-xl tabular-nums tracking-normal text-white">{score}</span>}
+      {size === "lg" && score && <span className="font-mono text-xl tabular-nums tracking-normal text-text-primary">{score}</span>}
     </span>
   );
 }

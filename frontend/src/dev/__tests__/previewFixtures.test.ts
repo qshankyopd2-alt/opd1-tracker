@@ -25,8 +25,15 @@ describe("design preview fixtures", () => {
       expect(player.form).toHaveLength(5);
       expect(player.form.every((result) => result === "W" || result === "L")).toBe(true);
       expect(player.weapons).toHaveLength(4);
-      expect(player.weapons.map((weapon) => weapon.weapon)).toEqual(["Vandal", "Phantom", "Operator", "Melee"]);
-      for (const weapon of player.weapons) expect(weapon.skin?.icon).toBeTruthy();
+      expect(player.weapons.map((weapon) => weapon.weapon)).toEqual(["Vandal", "Phantom", "Operator", "Sheriff"]);
+      for (const weapon of player.weapons) {
+        if (weapon.weapon === "Sheriff") {
+          // Honest sidearm state: standard weapon (no skin) or no loadout data — never invented
+          expect(weapon.skin === null || weapon.skin?.icon === null).toBe(true);
+        } else {
+          expect(weapon.skin?.icon).toBeTruthy();
+        }
+      }
       if (player.encounter) {
         expect(player.encounter.withCount).toBe(
           player.encounter.winsWith + player.encounter.lossesWith
@@ -39,7 +46,10 @@ describe("design preview fixtures", () => {
       }
     }
 
-    expect(snapshot.board.players.some((player) => player.name.length > 30 && player.party)).toBe(true);
+    // A max-length (but realistic) Riot ID sharing a card with a party badge
+    expect(snapshot.board.players.some((player) => player.name.length >= 21 && player.party)).toBe(true);
+    // Riot IDs are max 16 name + 4 tag chars — the fixture never invents longer ones
+    expect(snapshot.board.players.every((player) => player.name.length <= 21)).toBe(true);
     expect(snapshot.board.players.some((player) => player.smurf)).toBe(true);
     expect(snapshot.board.players.some((player) => player.streak?.type === "W" && player.streak.count >= 3)).toBe(true);
     expect(snapshot.board.players.some((player) => player.streak?.type === "L" && player.streak.count >= 3)).toBe(true);

@@ -4,7 +4,7 @@ export function ErrorBanner({ message, onRetry, testId }: { message: string; onR
   return (
     <div
       data-testid={testId ?? "error-banner"}
-      className="flex items-center gap-3 border border-red-900/60 bg-red-950/30 text-red-300 rounded-md px-3 py-2 text-[13px]"
+      className="flex items-center gap-3 border border-defeat/40 bg-defeat-subtle text-defeat rounded-md px-3 py-2 text-[13px]"
     >
       <AlertTriangle size={15} className="shrink-0" aria-hidden="true" />
       <span className="flex-1">{message}</span>
@@ -14,7 +14,7 @@ export function ErrorBanner({ message, onRetry, testId }: { message: string; onR
           aria-label="Retry operation"
           data-testid="error-retry-button"
           onClick={onRetry}
-          className="inline-flex items-center gap-1.5 border border-red-800 rounded-sm px-2 py-1 text-[11px] uppercase tracking-wider font-semibold hover:bg-red-900/40 transition-colors focus-visible:ring-2 focus-visible:ring-brand"
+          className="inline-flex items-center gap-1.5 border border-defeat/50 rounded-sm px-2 py-1 text-[11px] uppercase tracking-wider font-semibold hover:bg-defeat/20 transition-colors focus-visible:ring-2 focus-visible:ring-accent"
         >
           <RotateCw size={11} aria-hidden="true" /> Retry
         </button>

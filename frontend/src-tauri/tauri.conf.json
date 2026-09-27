@@ -14,9 +14,11 @@
       {
         "title": "OPD1 Tracker",
         "width": 1200,
-        "height": 700,
+        "height": 800,
         "minWidth": 1200,
-        "minHeight": 700,
+        "minHeight": 800,
+        "maxWidth": 1200,
+        "maxHeight": 800,
         "resizable": false,
         "center": true,
         "backgroundColor": "#12141a"

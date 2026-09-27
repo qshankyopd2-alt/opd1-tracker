@@ -1,5 +1,5 @@
-import { Fragment, useEffect, useMemo, useState } from "react";
-import { Bookmark, ChevronDown, ChevronUp, Pencil, RotateCw, Save, Search, Trash2 } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
+import { Bookmark, ChevronDown, Pencil, RotateCw, Save, Search, Trash2 } from "lucide-react";
 import { ApiError, backend } from "../../api/client";
 import type { SavedPlayer } from "../../api/types";
 import { AgentAvatar } from "../../components/domain/AgentAvatar";
@@ -11,6 +11,15 @@ import { usePoll } from "../../hooks/usePoll";
 import { timeAgo } from "../../lib/format";
 
 const designModeEnabled = import.meta.env.DEV && import.meta.env.VITE_DESIGN_MODE === "true";
+
+function StatCell({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="flex min-w-0 flex-col">
+      <span className="micro-label">{label}</span>
+      <span className="num font-display text-[14px] font-bold text-text-primary tabular-nums">{value}</span>
+    </div>
+  );
+}
 
 export function EncountersView() {
   const [query, setQuery] = useState("");
@@ -62,29 +71,27 @@ export function EncountersView() {
     <div className="space-y-4 p-5" data-testid="saved-players-view">
       <PageHeader title="Saved players">
         <label className="relative ml-auto">
-          <Search size={13} className="absolute left-2 top-1/2 -translate-y-1/2 text-zinc-400" />
+          <Search size={13} className="absolute left-2 top-1/2 -translate-y-1/2 text-text-muted" />
           <input
             aria-label="Search saved players"
             data-testid="saved-players-search"
             value={query}
             onChange={(event) => setQuery(event.target.value)}
             placeholder="Search name or note…"
-            className="w-56 rounded-sm border border-edge bg-panel py-1.5 pl-7 pr-2 text-[12px] text-zinc-200 placeholder:text-zinc-500"
+            className="w-56 rounded-sm border border-edge bg-inset py-1.5 pl-7 pr-2 text-[12px] text-text-secondary placeholder:text-text-muted"
           />
         </label>
         <button
           data-testid="saved-players-refresh-button"
           onClick={refresh}
-          className="inline-flex items-center gap-1.5 border border-edge rounded-sm px-2.5 py-1.5 text-[12px] font-semibold text-zinc-400 hover:bg-zinc-800 transition-colors"
+          className="inline-flex items-center gap-1.5 border border-edge rounded-sm px-2.5 py-1.5 text-[12px] font-bold text-text-muted hover:bg-card transition-colors"
         >
           <RotateCw size={12} /> Refresh
         </button>
       </PageHeader>
-      <div className="flex flex-wrap items-end gap-3">
-        <p className="text-[12px] text-zinc-400">
-          Notes stay on this PC. Encounter history updates whenever you meet a saved player again.
-        </p>
-      </div>
+      <p className="text-[12px] text-text-secondary">
+        Notes stay on this PC. Encounter history updates whenever you meet a saved player again.
+      </p>
 
       {(error || mutationError) && (
         <ErrorBanner
@@ -104,185 +111,177 @@ export function EncountersView() {
           />
         </div>
       ) : (
-        <div className="overflow-x-auto rounded-md border border-edge bg-card">
-          <table className="w-full min-w-[860px] text-[12px]" data-testid="saved-players-table">
-            <thead>
-              <tr className="border-b border-edge text-[12px] text-zinc-400">
-                <th className="py-2 pl-3 text-left font-medium">Player</th>
-                <th className="text-left font-medium">Your note</th>
-                <th className="text-right font-medium">Stats</th>
-                <th className="text-right font-medium">Encounters</th>
-                <th className="pr-3 text-right font-medium">Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {rows.map((player) => {
-                const timeline = player.timeline ?? [];
-                const isEditing = editing === player.puuid;
-                const isExpanded = expanded === player.puuid;
-                return (
-                  <Fragment key={player.puuid}>
-                    <tr className="border-b border-edge transition-colors hover:bg-zinc-800/35 group/row">
-                      <td className="py-2.5 pl-3">
-                        <span className="flex min-w-0 items-center gap-3">
-                          <AgentAvatar portrait={player.topAgentPortrait} name={player.topAgent ?? player.name} color={player.topAgentColor ?? undefined} size={32} />
-                          <span className="min-w-0">
-                            <span className="block max-w-[180px] truncate text-[14px] font-semibold text-zinc-100">
-                              {player.name ?? player.puuid.slice(0, 8)}
-                            </span>
-                            <span className="text-[12px] text-zinc-400 flex items-center gap-1.5">
-                              <span>Seen {timeAgo(player.lastSeen)}</span>
-                              <span className="text-zinc-700">&middot;</span>
-                              <span>Saved {timeAgo(player.savedAt)}</span>
-                            </span>
-                            {(player.agents ?? []).length > 0 && (
-                              <span className="block text-[12px] text-zinc-400 truncate mt-0.5 max-w-[180px]">
-                                {(player.agents ?? []).slice(0, 3).join(", ")}
-                              </span>
-                            )}
-                          </span>
-                        </span>
-                      </td>
-                      <td className="max-w-[280px] py-2 pr-4 align-top">
-                        {isEditing ? (
-                          <textarea
-                            aria-label={`Note for ${player.name ?? "saved player"}`}
-                            data-testid={`saved-player-note-${player.puuid}`}
-                            autoFocus
-                            value={draft}
-                            maxLength={500}
-                            onChange={(event) => setDraft(event.target.value)}
-                            className="min-h-16 w-full resize-y rounded-sm border border-edge bg-panel px-2.5 py-1.5 text-[12px] text-zinc-200 focus-visible:ring-1 focus-visible:ring-brand"
-                          />
-                        ) : (
-                          <button
-                            type="button"
-                            aria-label={`Edit note for ${player.name ?? "saved player"}`}
-                            data-testid={`saved-player-note-open-${player.puuid}`}
-                            onClick={() => { setEditing(player.puuid); setDraft(player.note); }}
-                            className="group/note relative min-h-10 w-full rounded-sm px-2 py-1.5 text-left hover:bg-zinc-800/50"
-                            title="Click to edit note"
-                          >
-                            <span className="block text-zinc-400 text-[12px] leading-relaxed pr-6 line-clamp-3">
-                              {player.note || <span className="text-zinc-400">Add a note…</span>}
-                            </span>
-                            <Pencil size={10} className="absolute right-2 top-2 text-zinc-400 opacity-0 group-hover/note:opacity-100 transition-opacity" />
-                          </button>
-                        )}
-                      </td>
-                      <td className="text-right num text-[12px] text-zinc-400 py-2 align-middle">
-                        <div className="flex flex-col items-end gap-0.5">
-                          <div>K/D: <span className="text-zinc-200 font-medium">{player.withKd?.toFixed(2) ?? "—"}</span></div>
-                          <div>ACS: <span className="text-zinc-200 font-medium">{player.withAcs ? Math.round(player.withAcs) : "—"}</span></div>
-                          <div>HS%: <span className="text-zinc-200 font-medium">{player.withHsPct ? Math.round(player.withHsPct) + "%" : "—"}</span></div>
+        <div className="space-y-2" data-testid="saved-players-table">
+          {rows.map((player) => {
+            const timeline = player.timeline ?? [];
+            const isEditing = editing === player.puuid;
+            const isExpanded = expanded === player.puuid;
+            const wins = (player.winsWith ?? 0) + (player.winsAgainst ?? 0);
+            const losses = (player.lossesWith ?? 0) + (player.lossesAgainst ?? 0);
+            return (
+              <article key={player.puuid} className="saved-player-card group/row">
+                <div className="saved-player-main">
+                  {/* Identity */}
+                  <div className="flex min-w-0 items-start gap-3">
+                    <AgentAvatar portrait={player.topAgentPortrait} name={player.topAgent ?? player.name} color={player.topAgentColor ?? undefined} size={40} />
+                    <div className="min-w-0">
+                      <div className="truncate font-display text-[15px] font-bold text-text-primary">
+                        {player.name ?? player.puuid.slice(0, 8)}
+                      </div>
+                      <div className="mt-0.5 flex flex-wrap items-center gap-x-1.5 text-[11.5px] text-text-muted">
+                        <span>Seen {timeAgo(player.lastSeen)}</span>
+                        <span aria-hidden="true">·</span>
+                        <span>Saved {timeAgo(player.savedAt)}</span>
+                      </div>
+                      {(player.agents ?? []).length > 0 && (
+                        <div className="mt-1 truncate text-[11.5px] text-text-muted" title={(player.agents ?? []).join(", ")}>
+                          {(player.agents ?? []).slice(0, 3).join(", ")}
                         </div>
-                      </td>
-                      <td className="text-right num py-2 align-middle">
-                        <div className="flex flex-col items-end gap-1">
-                          <div className="text-[12px]">
-                            <span className="text-zinc-300 font-medium">{player.withCount ?? 0}</span> <span className="text-zinc-400">with</span>
-                            <span className="text-zinc-600 mx-1">/</span>
-                            <span className="text-zinc-300 font-medium">{player.againstCount ?? 0}</span> <span className="text-zinc-400">against</span>
-                          </div>
-                          <div className="text-[12px] bg-panel border border-edge rounded px-1.5 py-0.5">
-                            <span className="text-victory font-medium">{(player.winsWith ?? 0) + (player.winsAgainst ?? 0)}W</span>
-                            <span className="text-zinc-600 mx-1">–</span>
-                            <span className="text-defeat font-medium">{(player.lossesWith ?? 0) + (player.lossesAgainst ?? 0)}L</span>
-                          </div>
-                        </div>
-                      </td>
-                      <td className="pr-3 text-right align-middle">
-                        <span className="inline-flex items-center gap-0.5 opacity-60 group-hover/row:opacity-100 transition-opacity">
-                          {isEditing ? (
-                            <button
-                              type="button"
-                              disabled={busy === player.puuid}
-                              onClick={() => void mutate(player, true, draft)}
-                              title="Save note"
-                              aria-label="Save note"
-                              data-testid={`saved-player-save-${player.puuid}`}
-                              className="rounded-sm p-1.5 text-zinc-100 hover:bg-zinc-700 disabled:opacity-50 transition-colors"
-                            >
-                              <Save size={14} />
-                            </button>
-                          ) : (
-                            <button
-                              type="button"
-                              onClick={() => { setEditing(player.puuid); setDraft(player.note); }}
-                              title="Edit note"
-                              aria-label="Edit note"
-                              data-testid={`saved-player-edit-${player.puuid}`}
-                              className="rounded-sm p-1.5 text-zinc-400 hover:bg-zinc-700 hover:text-zinc-100 transition-colors"
-                            >
-                              <Pencil size={14} />
-                            </button>
-                          )}
-                          <button
-                            type="button"
-                            onClick={() => setExpanded(isExpanded ? null : player.puuid)}
-                            title="Encounter games"
-                            aria-label={isExpanded ? "Collapse encounter games" : "Expand encounter games"}
-                            aria-expanded={isExpanded}
-                            data-testid={`saved-player-expand-${player.puuid}`}
-                            className="rounded-sm p-1.5 text-zinc-400 hover:bg-zinc-700 hover:text-zinc-100 transition-colors"
-                          >
-                            {isExpanded ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
-                          </button>
-                          <button
-                            type="button"
-                            disabled={busy === player.puuid}
-                            onClick={() => void mutate(player, false, "")}
-                            title="Remove saved player"
-                            aria-label="Remove saved player"
-                            data-testid={`saved-player-remove-${player.puuid}`}
-                            className="rounded-sm p-1.5 text-zinc-400 hover:bg-defeat/10 hover:text-defeat disabled:opacity-50 transition-colors"
-                          >
-                            <Trash2 size={14} />
-                          </button>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Note */}
+                  <div className="min-w-0 flex-1 border-l border-edge pl-4">
+                    {isEditing ? (
+                      <textarea
+                        aria-label={`Note for ${player.name ?? "saved player"}`}
+                        data-testid={`saved-player-note-${player.puuid}`}
+                        autoFocus
+                        value={draft}
+                        maxLength={500}
+                        onChange={(event) => setDraft(event.target.value)}
+                        className="min-h-16 w-full resize-y rounded-sm border border-edge bg-inset px-2.5 py-1.5 text-[12px] text-text-secondary focus-visible:ring-1 focus-visible:ring-brand"
+                      />
+                    ) : (
+                      <button
+                        type="button"
+                        aria-label={`Edit note for ${player.name ?? "saved player"}`}
+                        data-testid={`saved-player-note-open-${player.puuid}`}
+                        onClick={() => { setEditing(player.puuid); setDraft(player.note); }}
+                        className="group/note relative min-h-10 w-full rounded-sm px-2 py-1.5 text-left hover:bg-card-hover"
+                        title="Click to edit note"
+                      >
+                        <span className="block text-text-muted text-[12px] leading-relaxed pr-6 line-clamp-3">
+                          {player.note || "Add a note…"}
                         </span>
-                      </td>
-                    </tr>
-                    {isExpanded && (
-                      <tr className="border-b border-edge bg-ink/40">
-                        <td colSpan={5} className="px-5 py-4">
-                          <div className="mb-3 flex items-center justify-between">
-                            <div className="text-[12px] font-semibold text-zinc-300">Encounter history</div>
-                            <div className="text-[12px] text-zinc-400">Last {timeline.length} matches</div>
-                          </div>
-                          {timeline.length ? (
-                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2">
-                              {[...timeline].reverse().map((item) => (
-                                <div key={item.matchId} className="flex items-center gap-2 rounded-sm border border-edge bg-panel px-2.5 py-2 text-[12px]">
-                                  <div className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-sm text-[12px] font-semibold ${
-                                    item.result === "win" ? "bg-victory/10 text-victory" : item.result === "loss" ? "bg-defeat/10 text-defeat" : "bg-zinc-800 text-zinc-400"
-                                  }`}>
-                                    {item.result === "win" ? "W" : item.result === "loss" ? "L" : "–"}
-                                  </div>
-                                  <div className="min-w-0 flex-1">
-                                    <div className="flex items-baseline justify-between gap-2">
-                                      <span className="font-medium text-zinc-200 capitalize truncate">{item.side}</span>
-                                      <span className="text-[12px] text-zinc-400 whitespace-nowrap">{timeAgo(item.at)}</span>
-                                    </div>
-                                    <div className="flex items-center gap-1.5 text-[12px] text-zinc-400 truncate mt-0.5">
-                                      {item.map && <span>{item.map}</span>}
-                                      {item.map && item.agent && <span className="text-zinc-700">&middot;</span>}
-                                      {item.agent && <span>{item.agent}</span>}
-                                    </div>
-                                  </div>
-                                </div>
-                              ))}
-                            </div>
-                          ) : (
-                            <p className="text-[12px] text-zinc-400">The current match is recorded. Its result appears here after the match ends.</p>
-                          )}
-                        </td>
-                      </tr>
+                        <Pencil size={10} className="absolute right-2 top-2 text-text-muted opacity-0 group-hover/note:opacity-100 transition-opacity" />
+                      </button>
                     )}
-                  </Fragment>
-                );
-              })}
-            </tbody>
-          </table>
+                  </div>
+
+                  {/* Your stats in matches with them */}
+                  <div className="flex shrink-0 flex-col gap-1.5 border-l border-edge pl-4">
+                    <StatCell label="K/D · with them" value={player.withKd?.toFixed(2) ?? "—"} />
+                    <StatCell label="ACS" value={player.withAcs ? String(Math.round(player.withAcs)) : "—"} />
+                    <StatCell label="HS%" value={player.withHsPct ? `${Math.round(player.withHsPct)}%` : "—"} />
+                  </div>
+
+                  {/* Encounters */}
+                  <div className="flex shrink-0 flex-col gap-1.5 border-l border-edge pl-4">
+                    <div className="flex items-center gap-3">
+                      <StatCell label="With" value={String(player.withCount ?? 0)} />
+                      <StatCell label="Against" value={String(player.againstCount ?? 0)} />
+                    </div>
+                    <div className="num font-display text-[13px] font-bold">
+                      <span className="text-victory">{wins}W</span>
+                      <span className="text-text-muted">–</span>
+                      <span className="text-defeat">{losses}L</span>
+                    </div>
+                  </div>
+
+                  {/* Actions */}
+                  <div className="flex shrink-0 items-start justify-end gap-0.5 opacity-70 group-hover/row:opacity-100 transition-opacity">
+                    {isEditing ? (
+                      <button
+                        type="button"
+                        disabled={busy === player.puuid}
+                        onClick={() => void mutate(player, true, draft)}
+                        title="Save note"
+                        aria-label="Save note"
+                        data-testid={`saved-player-save-${player.puuid}`}
+                        className="rounded-sm p-1.5 text-text-primary hover:bg-card-hover disabled:opacity-50 transition-colors"
+                      >
+                        <Save size={14} />
+                      </button>
+                    ) : (
+                      <button
+                        type="button"
+                        onClick={() => { setEditing(player.puuid); setDraft(player.note); }}
+                        title="Edit note"
+                        aria-label="Edit note"
+                        data-testid={`saved-player-edit-${player.puuid}`}
+                        className="rounded-sm p-1.5 text-text-muted hover:bg-card-hover hover:text-text-primary transition-colors"
+                      >
+                        <Pencil size={14} />
+                      </button>
+                    )}
+                    <button
+                      type="button"
+                      onClick={() => setExpanded(isExpanded ? null : player.puuid)}
+                      title="Encounter games"
+                      aria-label={isExpanded ? "Collapse encounter games" : "Expand encounter games"}
+                      aria-expanded={isExpanded}
+                      data-testid={`saved-player-expand-${player.puuid}`}
+                      className="rounded-sm p-1.5 text-text-muted hover:bg-card-hover hover:text-text-primary transition-colors"
+                    >
+                      <ChevronDown size={14} className={`transition-transform ${isExpanded ? "rotate-180" : ""}`} />
+                    </button>
+                    <button
+                      type="button"
+                      disabled={busy === player.puuid}
+                      onClick={() => void mutate(player, false, "")}
+                      title="Remove saved player"
+                      aria-label="Remove saved player"
+                      data-testid={`saved-player-remove-${player.puuid}`}
+                      className="rounded-sm p-1.5 text-text-muted hover:bg-defeat/10 hover:text-defeat disabled:opacity-50 transition-colors"
+                    >
+                      <Trash2 size={14} />
+                    </button>
+                  </div>
+                </div>
+
+                {isExpanded && (
+                  <div className="border-t border-edge px-4 py-4" data-testid={`saved-player-timeline-${player.puuid}`}>
+                    <div className="mb-3 flex items-center justify-between">
+                      <div className="micro-label flex items-center gap-2">
+                        <span className="section-tick" aria-hidden="true" /> Encounter history
+                      </div>
+                      <div className="text-[11.5px] text-text-muted">Last {timeline.length} matches</div>
+                    </div>
+                    {timeline.length ? (
+                      <div className="grid grid-cols-1 lg:grid-cols-3 gap-2">
+                        {[...timeline].reverse().map((item) => (
+                          <div key={item.matchId} className="flex items-center gap-2 rounded-sm border border-edge bg-inset px-2.5 py-2 text-[12px]">
+                            <div
+                              className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-sm font-display text-[11px] font-bold ${
+                                item.result === "win" ? "bg-victory/10 text-victory" : item.result === "loss" ? "bg-defeat/10 text-defeat" : "bg-card-hover text-text-secondary"
+                              }`}
+                            >
+                              {item.result === "win" ? "W" : item.result === "loss" ? "L" : "–"}
+                            </div>
+                            <div className="min-w-0 flex-1">
+                              <div className="flex items-baseline justify-between gap-2">
+                                <span className="font-display text-[11px] font-bold uppercase tracking-[0.08em] text-text-primary capitalize">{item.side}</span>
+                                <span className="text-[11.5px] text-text-muted whitespace-nowrap">{timeAgo(item.at)}</span>
+                              </div>
+                              <div className="flex items-center gap-1.5 text-[11.5px] text-text-muted truncate mt-0.5">
+                                {item.map && <span>{item.map}</span>}
+                                {item.map && item.agent && <span aria-hidden="true">·</span>}
+                                {item.agent && <span>{item.agent}</span>}
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <p className="text-[12px] text-text-secondary">The current match is recorded. Its result appears here after the match ends.</p>
+                    )}
+                  </div>
+                )}
+              </article>
+            );
+          })}
         </div>
       )}
     </div>

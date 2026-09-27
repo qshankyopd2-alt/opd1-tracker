@@ -156,9 +156,7 @@ export function DrawStudioPanel() {
 
           <div className="mb-4 grid gap-4 sm:grid-cols-[1fr_1fr_150px]">
             <div>
-              <span className="mb-2 block text-[12px] font-semibold text-zinc-400">
-                Brush glyph
-              </span>
+              <span className="micro-label mb-2 block">Brush glyph</span>
               <div className="flex flex-wrap gap-1.5">
                 {DRAW_GLYPHS.slice(0, 8).map((glyph) => (
                   <GlyphButton key={glyph} glyph={glyph} selected={draw === glyph} onClick={() => setDraw(glyph)} />
@@ -169,15 +167,13 @@ export function DrawStudioPanel() {
                   maxLength={2}
                   aria-label="Custom brush glyph"
                   placeholder="+"
-                  className="h-8 w-10 rounded-sm border border-edge bg-panel text-center font-code text-sm text-zinc-200 placeholder:text-zinc-500"
+                  className="h-8 w-10 rounded-sm border border-edge bg-inset text-center font-code text-sm text-text-primary placeholder:text-text-muted"
                 />
               </div>
             </div>
 
             <div>
-              <span className="mb-2 block text-[12px] font-semibold text-zinc-400">
-                Background glyph
-              </span>
+              <span className="micro-label mb-2 block">Background glyph</span>
               <div className="flex gap-1.5">
                 {BACKGROUND_GLYPHS.map((glyph) => (
                   <GlyphButton
@@ -191,8 +187,8 @@ export function DrawStudioPanel() {
             </div>
 
             <label className="block">
-              <span className="mb-2 block text-[12px] font-semibold text-zinc-400">
-                Height — {height}
+              <span className="micro-label mb-2 block">
+                Height — <span className="num">{height}</span>
               </span>
               <input
                 type="range"
@@ -200,13 +196,13 @@ export function DrawStudioPanel() {
                 max={MAX_ROWS}
                 value={height}
                 onChange={(event) => resize(Number(event.target.value))}
-                className="w-full accent-brand"
+                className="w-full accent-accent"
               />
             </label>
           </div>
 
           <div
-            className="touch-none overflow-auto rounded-sm border border-edge bg-ink/80 p-2"
+            className="touch-none overflow-auto rounded-sm border border-edge bg-inset p-2"
             onPointerLeave={() => {
               paint.current.active = false;
             }}
@@ -223,39 +219,39 @@ export function DrawStudioPanel() {
                     aria-label={`Canvas cell ${rowIndex + 1}, ${columnIndex + 1}`}
                     onPointerDown={() => beginPaint(rowIndex, columnIndex)}
                     onPointerEnter={() => continuePaint(rowIndex, columnIndex)}
-                    className={`aspect-square w-full rounded-[2px] border border-white/[0.04] transition-colors ${
-                      cell ? "bg-brand" : "bg-zinc-800 hover:bg-zinc-700"
+                    className={`aspect-square w-full rounded-[2px] border border-edge/40 transition-colors ${
+                      cell ? "bg-accent" : "bg-card hover:bg-card-hover"
                     }`}
                   />
                 )),
               )}
             </div>
           </div>
-          <p className="mt-2 text-[12px] text-zinc-400">Drag to paint. Start on a filled cell to erase.</p>
+          <p className="mt-2 text-[12px] text-text-muted">Drag to paint. Start on a filled cell to erase.</p>
         </div>
 
-        <div className="rounded-md border border-brand/20 bg-card p-4">
+        <div className="rounded-md border border-edge bg-card p-4">
           <div className="mb-2 flex items-center justify-between">
-            <span className="text-[12px] font-semibold text-brand">Preview</span>
-            <span className="rounded-sm bg-victory/15 px-2 py-0.5 text-[12px] font-semibold text-victory">
+            <span className="micro-label flex items-center gap-2">
+              <span className="section-tick" aria-hidden="true" /> Preview
+            </span>
+            <span className="rounded-sm bg-victory/15 px-2 py-0.5 text-[11px] font-bold text-victory">
               Chat ready
             </span>
           </div>
-          <div className="overflow-auto rounded-sm border border-edge bg-ink/80 p-4">
-            <pre className="min-w-max whitespace-pre font-code text-[12px] leading-[1.08] text-zinc-100">
-              {preview}
-            </pre>
+          <div className="overflow-auto rounded-sm border border-edge bg-inset p-4">
+            <pre className="min-w-max whitespace-pre font-code text-[12px] leading-[1.08] text-text-primary">{preview}</pre>
           </div>
           <button
             type="button"
             onClick={() => void onCopy()}
-            className={`mt-3 flex w-full items-center justify-center gap-1.5 rounded-sm px-4 py-2.5 text-[12px] font-semibold transition-colors ${
+            className={`mt-3 flex w-full items-center justify-center gap-1.5 rounded-sm px-4 py-2.5 text-[12px] font-bold transition-colors ${
               copied ? "bg-victory text-ink" : "bg-brand text-ink hover:bg-brand-hover"
             }`}
           >
             <Copy size={13} /> {copied ? "Copied" : "Copy art"}
           </button>
-          <p className="mt-3 text-[12px] leading-relaxed text-zinc-400">
+          <p className="mt-3 text-[12px] leading-relaxed text-text-muted">
             Copy your art, then paste it into VALORANT chat.
           </p>
         </div>
@@ -277,7 +273,7 @@ function ToolButton({ label, icon: Icon, onClick, disabled = false }: ToolButton
       type="button"
       disabled={disabled}
       onClick={onClick}
-      className="rounded-sm border border-edge bg-panel px-2.5 py-1.5 text-[12px] font-semibold text-zinc-300 transition-colors hover:text-zinc-100 disabled:cursor-not-allowed disabled:opacity-30"
+      className="rounded-sm border border-edge bg-inset px-2.5 py-1.5 text-[12px] font-bold text-text-secondary transition-colors hover:text-text-primary disabled:cursor-not-allowed disabled:opacity-30"
     >
       <span className="inline-flex items-center gap-1.5">
         <Icon size={12} /> {label}
@@ -298,7 +294,7 @@ function GlyphButton({ glyph, selected, onClick }: GlyphButtonProps) {
       type="button"
       onClick={onClick}
       className={`grid h-8 w-8 place-items-center rounded-sm border font-code text-sm transition-colors ${
-        selected ? "border-brand bg-brand text-ink" : "border-edge bg-panel text-zinc-300 hover:border-brand/40"
+        selected ? "border-accent bg-accent/15 text-text-primary" : "border-edge bg-inset text-text-secondary hover:border-border-strong"
       }`}
     >
       {glyph}

@@ -116,7 +116,7 @@ const SAMPLE_RANK_ICONS: Record<number, string> = {
 
 type PreviewSkin = NonNullable<LivePlayer["weapons"][number]["skin"]>;
 
-const SAMPLE_WEAPON_SKINS: Record<"Vandal" | "Phantom" | "Operator" | "Melee", PreviewSkin[]> = {
+const SAMPLE_WEAPON_SKINS: Record<"Vandal" | "Phantom" | "Operator" | "Sheriff", PreviewSkin[]> = {
   Vandal: [
     { name: "Araxys Vandal", icon: "https://media.valorant-api.com/weaponskins/4c926aa9-4f26-bc80-c486-9b888333373f/displayicon.png" },
     { name: "Champions 2023 Vandal", icon: "https://media.valorant-api.com/weaponskins/b0f65660-4c51-13b7-9d01-e29a1e2879b0/displayicon.png" },
@@ -137,13 +137,20 @@ const SAMPLE_WEAPON_SKINS: Record<"Vandal" | "Phantom" | "Operator" | "Melee", P
     { name: "Elderflame Operator", icon: "https://media.valorant-api.com/weaponskins/d722313d-43cb-b38d-7841-75880a3ed2cb/displayicon.png" },
     { name: "Origin Operator", icon: "https://media.valorant-api.com/weaponskins/17831113-4ff0-a6c9-0b20-6f9c077d74a2/displayicon.png" },
   ],
-  Melee: [
-    { name: "Kuronami no Yaiba", icon: "https://media.valorant-api.com/weaponskins/e37229ed-4ddf-5e7e-e744-8fba60fa2c37/displayicon.png" },
-    { name: "Champions 2022 Butterfly Knife", icon: "https://media.valorant-api.com/weaponskins/6946cd0e-4e4a-ec4f-9238-dfb71715722b/displayicon.png" },
-    { name: "Reaver Karambit", icon: "https://media.valorant-api.com/weaponskins/b73d7b16-4652-bc5b-5c4c-068aabb19d0a/displayicon.png" },
-    { name: "Glitchpop Dagger", icon: "https://media.valorant-api.com/weaponskins/ddc025b2-475f-889a-2800-80b4215582bc/displayicon.png" },
-  ],
+  // The Sheriff is a sidearm. Most players run the standard weapon (no
+  // skin), so the fixture mirrors that honest state; one player has no
+  // loadout data at all to exercise the "Unavailable" slot.
+  Sheriff: [],
 };
+
+// Knife skins are collection items (not featured live-loadout slots) and
+// still appear in the Collection page fixture.
+const SAMPLE_KNIFE_SKINS: PreviewSkin[] = [
+  { name: "Kuronami no Yaiba", icon: "https://media.valorant-api.com/weaponskins/e37229ed-4ddf-5e7e-e744-8fba60fa2c37/displayicon.png" },
+  { name: "Champions 2022 Butterfly Knife", icon: "https://media.valorant-api.com/weaponskins/6946cd0e-4e4a-ec4f-9238-dfb71715722b/displayicon.png" },
+  { name: "Reaver Karambit", icon: "https://media.valorant-api.com/weaponskins/b73d7b16-4652-bc5b-5c4c-068aabb19d0a/displayicon.png" },
+  { name: "Glitchpop Dagger", icon: "https://media.valorant-api.com/weaponskins/ddc025b2-475f-889a-2800-80b4215582bc/displayicon.png" },
+];
 
 function pick<T>(arr: T[], i: number): T {
   return arr[i % arr.length];
@@ -177,7 +184,7 @@ function makePlayer(index: number, opts: {
     { weapon: "Vandal", skin: pick(SAMPLE_WEAPON_SKINS.Vandal, index) },
     { weapon: "Phantom", skin: pick(SAMPLE_WEAPON_SKINS.Phantom, index + 1) },
     { weapon: "Operator", skin: pick(SAMPLE_WEAPON_SKINS.Operator, index + 2) },
-    { weapon: "Melee", skin: pick(SAMPLE_WEAPON_SKINS.Melee, index + 3) },
+    { weapon: "Sheriff", skin: index === 8 ? null : { name: "Standard", icon: null } },
   ];
   const form: ("W" | "L")[] = [];
   for (let i = 0; i < 5; i++) form.push(((index + i) % 2 === 0 ? "W" : "L"));
@@ -185,7 +192,7 @@ function makePlayer(index: number, opts: {
   return {
     puuid: `puuid-${opts.team}-${index}`,
     name: opts.longName
-      ? "XxX_" + (opts.name ?? pick(SAMPLE_NAMES, index)) + "_LONG_RADIANT_Pro_2026_XxX#MOCK"
+      ? "SixteenCharName1#MOCK"
       : opts.nameHidden
         ? "HiddenPlayer#????"
         : `${opts.name ?? pick(SAMPLE_NAMES, index)}#MOCK`,
@@ -322,8 +329,16 @@ function makeBoard(state: "MENUS" | "PREGAME" | "INGAME" | "OFFLINE", seed: numb
         makePlayer(6, { team: "enemy", tier: 22, party: 1 }),
         makePlayer(7, { team: "enemy", tier: 21, party: 1 }),
         makePlayer(8, { team: "enemy", tier: 19, party: 2, smurf: true }),
-        makePlayer(9, { team: "enemy", tier: 17, party: 2, name: "VeryLongEnemyName#9999" }),
+        // Realistic max-length Riot ID (16-char name + 4-char tag)
+        makePlayer(9, { team: "enemy", tier: 17, party: 2, name: "VeryLongEnemyNam" }),
       ];
+  if (state === "MENUS") {
+    // In the lobby the five allied players queue together as one party
+    const color = allyPlayers[1].party?.color ?? "#3B82F6";
+    for (const p of allyPlayers) {
+      p.party = { id: "party-1", color, number: 1 };
+    }
+  }
   const allPlayers = [...allyPlayers, ...enemyPlayers];
   const parties = partiesFor(allPlayers);
   const detection: PartyDetection = {
@@ -363,7 +378,49 @@ function makeBoard(state: "MENUS" | "PREGAME" | "INGAME" | "OFFLINE", seed: numb
     partyDetection: detection,
     score: state === "INGAME" ? { ally: 8, enemy: 6, round: 15 } : null,
     lockProgress: state === "PREGAME" ? { locked: 3, total: 5 } : null,
-    queue: state === "MENUS" ? { available: true, queueName: "Competitive", inQueue: false, partySize: 3 } : undefined,
+    queue: state === "MENUS" ? { available: true, queueName: "Competitive", inQueue: false, partySize: 5, isOwner: true, allReady: false } : undefined,
+    recap: state === "MENUS"
+      ? {
+          matchId: "preview-recap-0",
+          map: "Ascent",
+          mode: "Competitive",
+          result: "Victory",
+          scores: { Blue: 13, Red: 9 },
+          mvp: null,
+          teamMvp: null,
+          you: {
+            puuid: "puuid-ally-0",
+            name: "NovaFlux#MOCK",
+            team: "Blue",
+            agent: "Jett",
+            agentPortrait: AGENT_ROSTER[0].portrait,
+            agentColor: AGENT_ROSTER[0].color,
+            kills: 18,
+            deaths: 14,
+            assists: 7,
+            kd: 1.29,
+            acs: 262,
+            hsPct: 31,
+            rankTier: 24,
+            rank: RANK(24).name,
+            rankColor: RANK(24).color,
+            rankIcon: SAMPLE_RANK_ICONS[24] ?? null,
+            rr: 104,
+            level: 300,
+            playerCard: null,
+            isSubject: true,
+            isMatchMvp: true,
+            isTeamMvp: false,
+          },
+          yourAvgKd: 1.29,
+          rrDelta: 28,
+          tierAfter: 24,
+          rrAfter: 104,
+          players: [],
+          mapSplash: MAPS.find((m) => m.name === "Ascent")?.splash ?? null,
+          at: Date.now() - 42 * 60_000,
+        }
+      : undefined,
     selfPuuid: "puuid-ally-0",
     sourceDetail: "Synthetic Design Mode fixture",
     appVersion: "1.0.2-preview",
@@ -718,7 +775,7 @@ function makeInventory(): Inventory {
     { ...SAMPLE_WEAPON_SKINS.Phantom[1], vp: 1775, tier: "Premium" },
     { ...SAMPLE_WEAPON_SKINS.Operator[0], vp: 2175, tier: "Premium" },
     { ...SAMPLE_WEAPON_SKINS.Operator[2], vp: 2475, tier: "Exclusive" },
-    { ...SAMPLE_WEAPON_SKINS.Melee[3], vp: 5350, tier: "Premium" },
+    { ...SAMPLE_KNIFE_SKINS[3], vp: 5350, tier: "Premium" },
   ];
   const recent: InventoryItem[] = [
     { ...SAMPLE_WEAPON_SKINS.Phantom[3], vp: 2675, tier: "Deluxe" },

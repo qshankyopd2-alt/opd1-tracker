@@ -18,39 +18,49 @@ describe("RecentFormTiles", () => {
     const html = render(form);
 
     expect(html.match(/data-testid="recent-tile-/g)).toHaveLength(5);
-    expect(html.match(/data-testid="outcome-unresolved"/g) ?? []).toHaveLength(placeholders);
+    expect(html.match(/match-chip unresolved/g) ?? []).toHaveLength(placeholders);
   });
 
-  it("preserves newest-to-oldest order and exposes a text summary", () => {
+  it("renders chronologically oldest → newest with the newest tile highlighted on the right", () => {
+    // form is newest-first: [W, L, L, W, W] → oldest→newest display: W, W, L, L, W
     const html = render(["W", "L", "L", "W", "W"], 24);
 
-    expect(html).toContain("Recent form, newest to oldest: Win, Loss, Loss, Win, Win. Newest match RR +24.");
-    expect(html).not.toContain(">Newest<");
-    expect(html).not.toContain(">Oldest<");
-    expect(html).not.toContain(">→<");
-    expect(html).not.toContain('data-testid="recent-recency-scale"');
-    expect(html).not.toContain('data-testid="recent-recency-rail"');
-    expect(html).not.toContain("data-recency-marker");
-    expect(html).toContain("flex-row-reverse");
+    expect(html).toContain("Recent form, oldest to newest: Win, Win, Loss, Loss, Win. Newest match RR +24.");
+    // The newest match (dataIndex 0) is the rightmost tile.
+    expect(html.indexOf('data-testid="recent-tile-0"')).toBeGreaterThan(html.indexOf('data-testid="recent-tile-4"'));
     expect(html.match(/data-recency="current"/g)).toHaveLength(1);
-    expect(html).toContain('data-size="20"');
-    expect(html).toContain('data-size="19"');
-    expect(html).toContain('data-size="18"');
-    expect(html).toContain('data-size="17"');
-    expect(html).toContain('data-size="16"');
+    expect(html.match(/data-recency="past"/g)).toHaveLength(4);
+    expect(html).toContain("recent-form-tile-newest");
+    // Tile 0 carries the current marker
+    const newestTile = html.slice(
+      html.indexOf('data-testid="recent-tile-0"'),
+      html.indexOf('data-testid="recent-tile-0"') + 600,
+    );
+    expect(newestTile).toContain('data-recency="current"');
+    expect(newestTile).toContain("recent-form-tile-newest");
+    // No legacy ordering scaffolding
+    expect(html).not.toContain("flex-row-reverse");
+    expect(html).not.toContain("recent-recency-scale");
+    expect(html).not.toContain("recent-recency-rail");
+    expect(html).not.toContain("data-recency-marker");
     expect(html).not.toContain("live-alert-badge");
+    // Progressive sizing: leftmost (oldest) smallest, rightmost (newest) largest
+    expect(html).toContain('data-size="9"');
+    expect(html).toContain('data-size="13"');
+    // No "5M" scope label — the tooltip alone explains the strip
+    expect(html).not.toContain(">5M<");
     expect(html).toContain("motion-reduce:transition-none");
-    expect(html).toContain("group-focus-within/row:opacity-100");
-    expect(html).not.toContain("group-focus-visible/card");
-    expect(html.indexOf('data-testid="recent-tile-0"')).toBeLessThan(html.indexOf('data-testid="recent-tile-4"'));
-    expect(html.indexOf("+24 RR")).toBeLessThan(html.indexOf('id="recent-tooltip-1"'));
-    expect(html.lastIndexOf("+24 RR")).toBeLessThan(html.indexOf('id="recent-tooltip-1"'));
+    expect(html).toContain("group-hover/form-tile:opacity-100");
+    expect(html).toContain("group-focus-within/form-tile:opacity-100");
+    // Result words appear in per-tile tooltips
+    expect(html).toContain("Victory");
+    expect(html).toContain("Defeat");
   });
 
   it("clips results after the fifth match", () => {
     const html = render(["W", "W", "W", "W", "W", "L"]);
 
-    expect(html).toContain("Recent form, newest to oldest: Win, Win, Win, Win, Win.");
+    expect(html).toContain("Recent form, oldest to newest: Win, Win, Win, Win, Win.");
     expect(html).not.toContain("Defeat");
   });
 
@@ -62,13 +72,15 @@ describe("RecentFormTiles", () => {
     const html = render(["W", "L", "W", "L", "W"], rr);
 
     expect(html).toContain(expected);
-    expect(html.lastIndexOf(expected)).toBeLessThan(html.indexOf('id="recent-tooltip-1"'));
+    // Only the newest tile carries the live RR value
+    expect(html.match(new RegExp(expected.replace("+", "\\+"), "g"))).toHaveLength(1);
   });
 
   it("omits RR when the newest delta is unavailable", () => {
     const html = render(["W", "L", "W", "L", "W"], null);
 
     expect(html).not.toContain(" RR");
+    expect(html).toContain("RR unavailable");
   });
 
   it("shows real RR and elapsed time for every loaded match", () => {

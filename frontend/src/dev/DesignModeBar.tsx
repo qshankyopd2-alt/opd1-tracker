@@ -45,12 +45,12 @@ export function DesignModeBar() {
         >
           <div className="mb-2 flex items-center justify-between">
             <div className="text-[10px] uppercase tracking-[0.2em] text-brand font-bold">Design Harness</div>
-            <div className="text-[9px] text-zinc-500">DEV ONLY</div>
+            <div className="text-[9px] text-text-muted">DEV ONLY</div>
           </div>
           <div className="space-y-3">
             {Object.entries(groups).map(([group, items]) => (
               <div key={group}>
-                <div className="text-[9px] uppercase tracking-wider text-zinc-500 mb-1">{group}</div>
+                <div className="text-[9px] uppercase tracking-wider text-text-muted mb-1">{group}</div>
                 <div className="grid grid-cols-1 gap-1">
                   {items.map((item) => (
                     <button
@@ -62,8 +62,8 @@ export function DesignModeBar() {
                       }}
                       className={`text-left rounded-sm border px-2 py-1.5 text-[11px] transition-colors ${
                         view === item.id
-                          ? "border-brand bg-brand/15 text-zinc-100"
-                          : "border-edge bg-card text-zinc-300 hover:border-zinc-600"
+                          ? "border-brand bg-brand/15 text-text-primary"
+                          : "border-edge bg-card text-text-secondary hover:border-border-strong"
                       }`}
                     >
                       {item.label}
@@ -73,7 +73,7 @@ export function DesignModeBar() {
               </div>
             ))}
           </div>
-          <div className="mt-3 border-t border-edge pt-2 text-[9px] text-zinc-500 leading-relaxed">
+          <div className="mt-3 border-t border-edge pt-2 text-[9px] text-text-muted leading-relaxed">
             <div>Fixtures only run when VITE_DESIGN_MODE=true (dev). Production builds never see this panel.</div>
             <div className="mt-1">Source payload keeps <code>source: "local"</code> so the real <code>showBoard</code> gate still works.</div>
           </div>

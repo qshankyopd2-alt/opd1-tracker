@@ -14,13 +14,13 @@ export function Badge({
   className?: string;
 }) {
   const style: CSSProperties = filled
-    ? { backgroundColor: color, color: "#09090B", borderColor: color }
-    : { color, borderColor: `${color}66` };
+    ? { backgroundColor: color, color: "#0c0e12", borderColor: color }
+    : { color, borderColor: `${color}59` };
   return (
     <span
       data-testid={testId}
       style={style}
-      className={`inline-flex items-center gap-1 border rounded-sm px-1.5 py-px text-[12px] font-semibold whitespace-nowrap ${className}`}
+      className={`inline-flex items-center gap-1 rounded-sm border px-1.5 py-px text-[11.5px] font-semibold whitespace-nowrap ${className}`}
     >
       {children}
     </span>

@@ -19,7 +19,7 @@ export async function verifyPlayerNavigation(page) {
     });
     check(state.count === 1 && state.label === expected && state.visible, 'One dialog must reference its visible title');
   };
-  await page.getByRole('button', { name: 'View profile for NovaFlux', exact: true }).click();
+  await page.getByRole('button', { name: 'View profile for NovaFlux#MOCK', exact: true }).click();
   await title('player-drawer-title');
   await id('drawer-tab-matches').click();
   await id('drawer-match-preview-match-7').click();
@@ -31,7 +31,7 @@ export async function verifyPlayerNavigation(page) {
   await id('match-detail-back').click();
   check(await focus('drawer-match-preview-match-7') === 'drawer-match-preview-match-7', 'Back restores selected match focus');
   const scroll = await id('drawer-scroll-region').evaluate((el) => el.scrollTop);
-  check(scroll > 0, 'Fixture must exercise a scrolled match list at 1200x700');
+  check(scroll > 0, 'Fixture must exercise a scrolled match list at 1200x800');
   await id('drawer-match-preview-match-1').click();
   await id('meta-note-input').waitFor({ state: 'visible' });
   await id('match-detail-back').press('Escape');
@@ -73,8 +73,8 @@ export async function verifyRosterLayout(page) {
       }),
     };
   });
-  if (state.rows !== 10 || state.skins !== 40 || !state.contained || !state.visible || state.horizontalOverflow || state.background !== 'rgb(17, 17, 17)') {
+  if (state.rows !== 10 || state.skins !== 40 || !state.contained || !state.visible || state.horizontalOverflow || state.background !== 'rgb(12, 14, 18)') {
     throw new Error(`Roster regression: ${JSON.stringify(state)}`);
   }
-  return 'PASS: approved neutral palette, ten cards, forty contained skin slots, no horizontal overflow';
+  return 'PASS: OPD1 Command palette, ten cards, forty contained skin slots, no horizontal overflow';
 }

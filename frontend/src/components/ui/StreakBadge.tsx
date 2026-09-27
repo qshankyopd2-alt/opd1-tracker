@@ -4,9 +4,17 @@ import { clsx } from "clsx";
 export function StreakBadge({ type, count, className }: { type: "W" | "L"; count: number; className?: string }) {
   const Icon = type === "W" ? Flame : TrendingDown;
   return (
-    <span className={clsx("inline-flex h-5 shrink-0 items-center gap-1 rounded-sm border border-edge bg-panel px-1.5 text-[11px] font-semibold text-text-secondary tabular-nums", className)} data-testid={`streak-${type.toLowerCase()}`}>
+    <span
+      className={clsx(
+        "inline-flex h-[18px] shrink-0 items-center gap-1 rounded-sm border border-edge bg-panel px-1.5 font-display text-[10.5px] font-semibold uppercase tracking-[0.05em] text-text-secondary tabular-nums",
+        className
+      )}
+      data-testid={`streak-${type.toLowerCase()}`}
+      title={`${count} ${type === "W" ? "win" : "loss"} streak`}
+    >
       <Icon size={10} fill={type === "W" ? "currentColor" : "none"} aria-hidden="true" />
-      {count}{type}
+      {count}
+      {type}
     </span>
   );
 }

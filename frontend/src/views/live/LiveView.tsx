@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import type { LivePlayer } from "../../api/types";
-import { EyeOff } from "lucide-react";
+import { LockKeyhole } from "lucide-react";
 import { ErrorBanner } from "../../components/ui/ErrorBanner";
 import { TableSkeleton } from "../../components/ui/Skeleton";
 import { useLiveData } from "../../state/LiveDataContext";
@@ -9,6 +9,7 @@ import { OfflineHero } from "./OfflineHero";
 import { PlayerDrawer } from "./PlayerDrawer";
 import { RecapCard } from "./RecapCard";
 import { TeamPanel } from "./TeamPanel";
+import { LobbyQueueCard } from "./LobbyQueueCard";
 import { splitTeams } from "./teamSplit";
 import { useRecentFormDetails } from "../../hooks/useRecentFormDetails";
 
@@ -23,7 +24,7 @@ export function LiveView() {
   const accountPuuid = board?.selfPuuid ?? null;
 
   useEffect(() => {
-    setSelected((current) => current && current.accountPuuid !== accountPuuid ? null : current);
+    setSelected((current) => (current && current.accountPuuid !== accountPuuid ? null : current));
     setSavedOverrides({});
   }, [accountPuuid]);
 
@@ -87,19 +88,76 @@ export function LiveView() {
   const menus = board.state === "MENUS";
   const { allyId, enemyId, ally, enemy } = splitTeams(board);
 
+  const drawer = selected ? (
+    <PlayerDrawer
+      key={`${selected.accountPuuid}:${selected.player.puuid}`}
+      player={selected.player}
+      accountPuuid={selected.accountPuuid}
+      restoreFocus={selected.restoreFocus}
+      onSavedChange={(saved, note) => {
+        setSavedOverrides((current) => ({
+          ...current,
+          [selected.player.puuid]: { saved, note },
+        }));
+        setSelected((current) =>
+          current
+            ? {
+                ...current,
+                player: { ...current.player, saved, savedNote: note },
+              }
+            : current
+        );
+      }}
+      onClose={() => setSelected(null)}
+    />
+  ) : null;
+
+  if (menus) {
+    return (
+      <div data-testid="live-view" className="flex h-full min-h-0 w-full flex-col gap-2 overflow-hidden p-2" data-live-state="menus">
+        <MatchHeader board={board} />
+        {board.recap && <RecapCard recap={board.recap} />}
+        <div className="grid min-h-0 flex-1 grid-cols-[minmax(0,1fr)_280px] items-stretch gap-2">
+          <TeamPanel
+            label="Your party"
+            accent="victory"
+            players={ally}
+            stats={allyId ? board.teamStats?.[allyId] : undefined}
+            parties={board.parties ?? []}
+            partyDetection={allyId ? board.partyDetection?.teams?.[allyId] : undefined}
+            savedOverrides={savedOverrides}
+            pregame={false}
+            lobby
+            onSelect={(player, restoreFocus) => setSelected({ player, accountPuuid, restoreFocus })}
+            recentDetailsByPlayer={recentDetailsByPlayer}
+            onRequestRecentDetails={onRequestRecentDetails}
+            testId="ally-team-panel"
+          />
+          <div className="flex min-h-0 flex-col gap-2">
+            <LobbyQueueCard queue={board.queue} />
+          </div>
+        </div>
+        {drawer}
+      </div>
+    );
+  }
 
   return (
     <div
       data-testid="live-view"
-      className={menus ? "w-full space-y-4 p-5" : "live-view flex h-full min-h-0 w-full flex-col gap-2 overflow-hidden p-2"}
+      className="live-view flex h-full min-h-0 w-full flex-col gap-2 overflow-hidden p-2"
+      data-live-state={board.state}
     >
       <MatchHeader board={board} />
 
-      {menus && board.recap && <RecapCard recap={board.recap} />}
-
-      <div className={`matchup-board grid min-w-0 items-stretch gap-2 ${menus ? "" : "min-h-0 flex-1"} ${enemy.length > 0 || pregame ? "grid-cols-2" : "grid-cols-1"}`}>
+      <div
+        className={`matchup-board grid min-h-0 flex-1 items-stretch ${
+          enemy.length > 0 || pregame ? "grid-cols-2" : "grid-cols-1"
+        }`}
+        data-testid="matchup-board"
+      >
         <TeamPanel
-          label={menus ? "Your party" : "Your team"}
+          label="Your team"
           accent="victory"
           players={ally}
           stats={allyId ? board.teamStats?.[allyId] : undefined}
@@ -131,35 +189,19 @@ export function LiveView() {
           pregame && (
             <div
               data-testid="enemy-hidden-panel"
-              className="flex min-h-[120px] flex-1 flex-col items-center justify-center gap-2 rounded-xl border border-dashed border-edge bg-panel/30 text-zinc-500"
+              className="flex min-h-[120px] flex-1 flex-col items-center justify-center gap-2 rounded-md border border-dashed border-edge bg-panel/40 text-text-muted"
             >
-              <EyeOff size={24} className="text-zinc-600 mb-1" />
-              <div className="text-[14px] font-semibold text-[var(--text-primary)]">Enemy team hidden</div>
-              <div className="text-[12px] text-[var(--text-secondary)]">Revealed once the match starts</div>
+              <LockKeyhole size={22} className="mb-1 text-text-muted" />
+              <div className="font-display text-[13px] font-bold uppercase tracking-[0.1em] text-text-secondary">
+                Enemy team hidden
+              </div>
+              <div className="text-[12px] text-text-muted">Revealed once the match starts</div>
             </div>
           )
         )}
       </div>
 
-      {selected && (
-        <PlayerDrawer
-          key={`${selected.accountPuuid}:${selected.player.puuid}`}
-          player={selected.player}
-          accountPuuid={selected.accountPuuid}
-          restoreFocus={selected.restoreFocus}
-          onSavedChange={(saved, note) => {
-            setSavedOverrides((current) => ({
-              ...current,
-              [selected.player.puuid]: { saved, note },
-            }));
-            setSelected((current) => current ? {
-              ...current,
-              player: { ...current.player, saved, savedNote: note },
-            } : current);
-          }}
-          onClose={() => setSelected(null)}
-        />
-      )}
+      {drawer}
     </div>
   );
 }

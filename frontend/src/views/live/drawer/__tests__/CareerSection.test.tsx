@@ -11,12 +11,13 @@ describe("Player Drawer sections", () => {
     expect(connectionSummary(5, 2, 1)).toBe("5 matches · 2W–1L–0D · 2 results unavailable");
     expect(connectionSummary(2, 3, 1, 0, 0)).toBe("4 matches · 3W–1L–0D");
   });
-  it("renders grouped overview copy and truthful loadout fallbacks", () => {
+
+  it("renders the dossier with loadout on top and truthful loadout fallbacks", () => {
     const snapshot = makeSnapshot("INGAME", 1);
     const player = snapshot.board.players[0];
     const weapons = player.weapons
-      .filter((weapon) => weapon.weapon !== "Melee")
-      .map((weapon) => weapon.weapon === "Phantom" ? { ...weapon, skin: null } : weapon);
+      .filter((weapon) => weapon.weapon !== "Sheriff")
+      .map((weapon) => (weapon.weapon === "Phantom" ? { ...weapon, skin: null } : weapon));
     const html = renderToStaticMarkup(
       <CareerSection
         player={{ ...player, weapons, encounter: { withCount: 2, againstCount: 3, winsWith: 1, lossesWith: 1, winsAgainst: 2, lossesAgainst: 1 } }}
@@ -30,28 +31,52 @@ describe("Player Drawer sections", () => {
       />,
     );
 
+    expect(html).toContain("Loadout");
     expect(html).toContain("Recent performance");
     expect(html).toContain("This act");
     expect(html).toContain("Rank history");
-    expect(html).toContain("Most played agents");
     expect(html).toContain("Most played maps");
-    expect(html).toContain('class="sr-only"> win rate</span>');
-    expect(html).toContain("Jett");
-    expect(html).toContain("grid-cols-[repeat(auto-fit,minmax(132px,1fr))]");
+    expect(html).toContain("Most played agents");
     expect(html).toContain("Frequent teammates");
     expect(html).toContain("Connections");
     expect(html).toContain("Together");
     expect(html).toContain("Against");
-    expect(html).toContain("Loadout");
+    expect(html).toContain('class="sr-only"> win rate</span>');
+    expect(html).toContain("Jett");
+    expect(html).toContain("grid-cols-[repeat(auto-fit,minmax(128px,1fr))]");
+    // Unpriced loadout slots never invent a skin
     expect(html).toContain("Unavailable");
     expect(html).not.toContain("Standard");
 
+    // Loadout leads the dossier, then the left column, then the right column
+    expect(html.indexOf("Loadout")).toBeLessThan(html.indexOf("Recent performance"));
     expect(html.indexOf("Recent performance")).toBeLessThan(html.indexOf("This act"));
     expect(html.indexOf("This act")).toBeLessThan(html.indexOf("Rank history"));
-    expect(html.indexOf("Rank history")).toBeLessThan(html.indexOf("Most played agents"));
+    expect(html.indexOf("Rank history")).toBeLessThan(html.indexOf("Most played maps"));
+    expect(html.indexOf("Most played maps")).toBeLessThan(html.indexOf("Most played agents"));
     expect(html.indexOf("Most played agents")).toBeLessThan(html.indexOf("Frequent teammates"));
     expect(html.indexOf("Frequent teammates")).toBeLessThan(html.indexOf("Connections"));
-    expect(html.indexOf("Loadout")).toBeLessThan(html.indexOf("Recent performance"));
+  });
+
+  it("labels the recent performance scope and the current-act scope separately", () => {
+    const snapshot = makeSnapshot("INGAME", 1);
+    const html = renderToStaticMarkup(
+      <CareerSection
+        player={snapshot.board.players[0]}
+        career={snapshot.career}
+        careerUsable
+        loading={false}
+        error={null}
+        mapSplashes={new Map()}
+        previousRankIcon={null}
+        previousRankColor="#A1A1AA"
+      />,
+    );
+
+    expect(html).toContain("Last 8 matches");
+    expect(html).toContain("Current competitive act");
+    // Recent sample win rate vs act win rate are distinct fields
+    expect(html).toContain("Win rate");
   });
 
   it("renders aligned teammate names, fallbacks, agents, and party state", () => {
@@ -83,12 +108,12 @@ describe("Player Drawer sections", () => {
     expect(populated.match(/data-testid="drawer-match-(?!list)/g)).toHaveLength(8);
     expect(populated).toContain("/splash.png");
     expect(populated).toContain('title="Ascendant 2 · 30 RR"');
-    expect(populated).toContain('aria-label="Ending rank Ascendant 2 · 30 RR"');
+    expect(populated).toContain('title="Ending rank Ascendant 2 · 30 RR"');
     expect(populated).not.toContain("grayscale");
     expect(populated).toContain("recent-map-art");
   });
 
-  it("renders Avg K/D/A using career.averages (3 numbers) with W/L record above the bar", () => {
+  it("renders Avg K/D/A using career.averages (3 numbers) with the W/L record above the bar", () => {
     const snapshot = makeSnapshot("INGAME", 1);
     const player = snapshot.board.players[0];
     const html = renderToStaticMarkup(
@@ -109,8 +134,10 @@ describe("Player Drawer sections", () => {
     for (const [field, label] of [["kills", "Avg kills"], ["deaths", "Avg deaths"], ["assists", "Avg assists"]] as const) {
       expect(html).toContain(`<strong>${snapshot.career.averages[field].toFixed(1)}</strong><span>${label}</span>`);
     }
-    // W/L record stays above the bar
+    // W/L record stays above the outcome bar
     expect(html).toContain("Last 8 matches");
-    expect(html).toContain("4W – 4L");
+    expect(html).toContain(">4W<");
+    expect(html).toContain("> – <");
+    expect(html).toContain(">4L<");
   });
 });
